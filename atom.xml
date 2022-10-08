@@ -6,7 +6,7 @@
   <link href="http://moduokesi.top/atom.xml" rel="self"/>
   
   <link href="http://moduokesi.top/"/>
-  <updated>2022-10-07T13:23:37.009Z</updated>
+  <updated>2022-10-08T03:26:16.275Z</updated>
   <id>http://moduokesi.top/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>VMware软件安装及问题解决</title>
+    <link href="http://moduokesi.top/2022/10/08/VMware%E5%AE%89%E8%A3%85/"/>
+    <id>http://moduokesi.top/2022/10/08/VMware%E5%AE%89%E8%A3%85/</id>
+    <published>2022-10-08T03:26:00.000Z</published>
+    <updated>2022-10-08T03:26:16.275Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="Linux" scheme="http://moduokesi.top/categories/Linux/"/>
+    
+    
+    <category term="问题解决" scheme="http://moduokesi.top/tags/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/"/>
+    
+  </entry>
   
   <entry>
     <title>paper</title>

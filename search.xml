@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>paper</title>
-    <url>/2022/06/28/paper/</url>
-    <content><![CDATA[
-]]></content>
-      <categories>
-        <category>开始</category>
-      </categories>
-      <tags>
-        <tag>分类</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Hello World</title>
     <url>/2022/06/27/hello-world/</url>
     <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very
@@ -39,6 +27,140 @@ you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p
       </categories>
       <tags>
         <tag>标签</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>VMware软件安装及问题解决</title>
+    <url>/2022/10/08/VMware%E5%AE%89%E8%A3%85/</url>
+    <content><![CDATA[<h2 id="vmware软件安装">VMware软件安装</h2>
+<blockquote>
+<p>前言：最近学习Redis时需要用到虚拟机，导致不得去下载安装一个虚拟机了，在准备安装VMware时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用</p>
+</blockquote>
+<h3 id="准备工作">准备工作</h3>
+<blockquote>
+<p>本文将在Windows系统下使用VMware软件配置Linux虚拟机，下文将会详解VMware软件的安装步骤</p>
+</blockquote>
+<p>VMware软件下载地址：https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html
+Linux CentOS
+7版本下载映像文件地址：http://mirrors.aliyun.com/centos/7/isos/x86_64/</p>
+<p>按图片所示下载即可</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262109879.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>这里我选择的是CentOS-7.0-x86_64-DVD-2009.iso 版本</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262106973.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>在下载路径下右键以管理员身份运行</p>
+<p><strong>在这里要敲重点！！！如果你没有以管理员身份运行这个选项，那么就看接下来的问题解决部分，如果你有这个选项点击这个自行无视。</strong></p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262117313.png" alt="QQ截图20220926211709">
+<figcaption aria-hidden="true">QQ截图20220926211709</figcaption>
+</figure>
+<h3 id="问题解决">问题解决</h3>
+<blockquote>
+<p>按住快捷键Win+R打开运行窗口，输入“regedit”，</p>
+<p>这样就打开了注册表编辑器</p>
+<p>在编辑器左侧依次找到HKEY_CURRENT_USER</p>
+<p>然后将RestrictToPermittedSnapins的值设置为0</p>
+</blockquote>
+<p>上面那个方法如果找这个路径时发现MMC不存在，那么就要使用下面这个方法</p>
+<p>按下Win +
+R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又会惊讶的发现，gpedit.msc打不开了！别着急，下面还有解决方案，当然，如果你能打开组策略编辑器的话继续往下看</p>
+<p>对于无法打开组策略编辑器的情况，win + r
+键打开运行后，输入notepad打开记事本，复制粘贴以下内容</p>
+<pre><code>@echo off
+
+pushd &quot;%~dp0&quot;
+
+dir /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~3*.mum &gt;List.txt
+
+dir /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~3*.mum &gt;&gt;List.txt
+
+for /f %%i in (&#39;findstr /i . List.txt 2^&gt;nul&#39;) do dism /online /norestart /add-package:&quot;C:\Windows\servicing\Packages\%%i&quot;
+
+pause</code></pre>
+<p>记事本左上角文件另存为到任意路径下</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262129654.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>文件名写为gpedit.cmd，保存类型选择所有文件，编码选择ANSI</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262131529.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>点击保存后在你保存的路径下右键以管理员身份运行</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262132085.png" alt="QQ截图20220926213211">
+<figcaption aria-hidden="true">QQ截图20220926213211</figcaption>
+</figure>
+<p>等待运行结束后发现win + R键打开的gpedit.msc可以正常打开了</p>
+<p>接下来进入组策略编辑器，双击计算机配置 --&gt; Windows设置 --&gt;
+安全设置</p>
+<p>双击本地策略</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262139507.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>进入安全选项找到下面两项选择已启用</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262141895.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p><strong>大功告成！！！</strong></p>
+<h3 id="安装vmware">安装VMware</h3>
+<p>当解决上述问题后开始准备下载VM软件了，右键以管理员身份运行后等待片刻来到安装界面</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262147272.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>一路下一步来到这个界面，安装路径自己选择，我选择安装在D盘下的目录里</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262148344.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>勾选取消“启动时检查产品更新”</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262149952.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>一路下一步，点击安装</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262151352.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>点击许可证</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262153587.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>这里要输入许可证密钥（这里大家自行网络上获取），然后点击输入，安装结束，注意不要误点到跳过了。</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262155195.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>输入密钥确认安装后就可以使用VMware了！</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>问题解决</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>paper</title>
+    <url>/2022/06/28/paper/</url>
+    <content><![CDATA[
+]]></content>
+      <categories>
+        <category>开始</category>
+      </categories>
+      <tags>
+        <tag>分类</tag>
       </tags>
   </entry>
 </search>
