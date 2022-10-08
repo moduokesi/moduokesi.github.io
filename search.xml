@@ -71,17 +71,17 @@ Linux CentOS
 R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又会惊讶的发现，gpedit.msc打不开了！别着急，下面还有解决方案，当然，如果你能打开组策略编辑器的话继续往下看</p>
 <p>对于无法打开组策略编辑器的情况，win + r
 键打开运行后，输入notepad打开记事本，复制粘贴以下内容</p>
-<pre><code>@echo off
-
-pushd &quot;%~dp0&quot;
-
-dir /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~3*.mum &gt;List.txt
-
-dir /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~3*.mum &gt;&gt;List.txt
-
-for /f %%i in (&#39;findstr /i . List.txt 2^&gt;nul&#39;) do dism /online /norestart /add-package:&quot;C:\Windows\servicing\Packages\%%i&quot;
-
-pause</code></pre>
+<blockquote>
+<p><span class="citation" data-cites="echo">@echo</span> off</p>
+<p>pushd "%~dp0"</p>
+<p>dir /b C:-Windows-GroupPolicy-ClientExtensions-Package~3*.mum
+&gt;List.txt</p>
+<p>dir /b C:-Windows-GroupPolicy-ClientTools-Package~3*.mum
+&gt;&gt;List.txt</p>
+<p>for /f %%i in ('findstr /i . List.txt 2^&gt;nul') do dism /online
+/norestart /add-package:"C:%%i"</p>
+<p>pause</p>
+</blockquote>
 <p>记事本左上角文件另存为到任意路径下</p>
 <figure>
 <img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262129654.png" alt="img">
