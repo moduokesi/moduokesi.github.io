@@ -54,7 +54,7 @@ Linux CentOS
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
 <p>在下载路径下右键以管理员身份运行</p>
-<p><strong>在这里要敲重点！！！如果你没有以管理员身份运行这个选项，那么就看接下来的问题解决部分，如果你有这个选项点击这个自行无视。</strong></p>
+<p><strong>在这里要敲重点！！！如果你没有以管理员身份运行这个选项，那么就看接下来的问题解决部分，如果你有这个选项请点击<a href="#1">跳转</a>自行无视。</strong></p>
 <figure>
 <img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262117313.png" alt="QQ截图20220926211709">
 <figcaption aria-hidden="true">QQ截图20220926211709</figcaption>
@@ -111,6 +111,7 @@ pause</code></pre>
 <figcaption aria-hidden="true">img</figcaption>
 </figure>
 <p><strong>大功告成！！！</strong></p>
+<p><span id="1"></span></p>
 <h3 id="安装vmware">安装VMware</h3>
 <p>当解决上述问题后开始准备下载VM软件了，右键以管理员身份运行后等待片刻来到安装界面</p>
 <figure>
