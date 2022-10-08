@@ -40,9 +40,9 @@ you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p
 <blockquote>
 <p>本文将在Windows系统下使用VMware软件配置Linux虚拟机，下文将会详解VMware软件的安装步骤</p>
 </blockquote>
-<p>VMware软件下载地址：https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html
+<p>VMware软件下载地址：https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html<br>
 Linux CentOS
-7版本下载映像文件地址：http://mirrors.aliyun.com/centos/7/isos/x86_64/</p>
+7版本下载映像文件地址：http://mirrors.aliyun.com/centos/7/isos/x86_64/<br></p>
 <p>按图片所示下载即可</p>
 <figure>
 <img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262109879.png" alt="img">
