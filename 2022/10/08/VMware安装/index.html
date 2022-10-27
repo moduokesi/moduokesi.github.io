@@ -57,6 +57,8 @@
     <script src="/js/kr-dark.min.js"></script>
   
   
+    <link rel="stylesheet" id="highlight-css" href="/css/highlight/night-eighties.min.css" media="all"></script>
+  
   
   <link rel="stylesheet" id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="all"></script>
   <link rel="stylesheet" id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="all"></script>
@@ -226,7 +228,7 @@
                     <i class="fa fa-edit"></i> 
                     
                     
-                        ~1.79K
+                        ~1.78K
                     
                     字
                 </li>
@@ -283,17 +285,7 @@ Linux CentOS
 R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又会惊讶的发现，gpedit.msc打不开了！别着急，下面还有解决方案，当然，如果你能打开组策略编辑器的话继续往下看</p>
 <p>对于无法打开组策略编辑器的情况，win + r
 键打开运行后，输入notepad打开记事本，复制粘贴以下内容</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">@echo</span> off</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">pushd</span> <span class="st">&quot;%~dp0&quot;</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~3<span class="pp">*</span>.mum <span class="op">&gt;</span>List.txt</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~3<span class="pp">*</span>.mum <span class="op">&gt;&gt;</span>List.txt</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="ex">/f</span> %%i in <span class="er">(</span><span class="st">&#39;findstr /i . List.txt 2^&gt;nul&#39;</span><span class="kw">)</span> <span class="cf">do</span> <span class="ex">dism</span> /online /norestart /add-package:<span class="st">&quot;C:\Windows\servicing\Packages\%%i&quot;</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">pause</span></span></code></pre></div>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@<span class="built_in">echo</span> off</span><br><span class="line"></span><br><span class="line"><span class="built_in">pushd</span> <span class="string">&quot;%~dp0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~3*.mum &gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~3*.mum &gt;&gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> /f %%i <span class="keyword">in</span> (<span class="string">&#x27;findstr /i . List.txt 2^&gt;nul&#x27;</span>) <span class="keyword">do</span> dism /online /norestart /add-package:<span class="string">&quot;C:\Windows\servicing\Packages\%%i&quot;</span></span><br><span class="line"></span><br><span class="line">pause</span><br></pre></td></tr></table></figure>
 <p>记事本左上角文件另存为到任意路径下</p>
 <figure>
 <img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262129654.png" alt="img">
