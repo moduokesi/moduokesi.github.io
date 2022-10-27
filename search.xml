@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>paper</title>
-    <url>/2022/06/28/paper/</url>
-    <content><![CDATA[
-]]></content>
-      <categories>
-        <category>开始</category>
-      </categories>
-      <tags>
-        <tag>分类</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Hello World</title>
     <url>/2022/06/27/hello-world/</url>
     <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very
@@ -110,6 +98,18 @@ R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又
       </categories>
       <tags>
         <tag>问题解决</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>paper</title>
+    <url>/2022/06/28/paper/</url>
+    <content><![CDATA[
+]]></content>
+      <categories>
+        <category>开始</category>
+      </categories>
+      <tags>
+        <tag>分类</tag>
       </tags>
   </entry>
 </search>
