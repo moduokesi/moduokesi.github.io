@@ -16,12 +16,12 @@
   
     <meta name="keywords" content="问题解决" />
   
-  <meta name="description" content="VMware软件安装  前言：最近学习Redis时需要用到虚拟机，导致不得去下载安装一个虚拟机了，在准备安装VMware时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用  准备工作  本文将在Windows系统下使用VMware软件配置Linux虚拟机，下文将会详解VMware软件的安装步骤  VMware软件下载地址：https:&#x2F;&#x2F;www.vmware.com&#x2F;cn&#x2F;">
+  <meta name="description" content="VMware软件安装  前言：最近学习Redis时需要使用Linux系统，导致不得去安装一个虚拟机了，在准备安装VMware软件时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用  准备工作  本文将在Windows系统下使用VMware软件配置Linux虚拟机，下文将会详解VMware软件的安装步骤  VMware软件下载地址：https:&#x2F;&#x2F;www.vmware.com">
 <meta property="og:type" content="article">
 <meta property="og:title" content="VMware软件安装及问题解决">
 <meta property="og:url" content="http://moduokesi.top/2022/10/08/VMware%E5%AE%89%E8%A3%85/index.html">
 <meta property="og:site_name" content="叶落风随">
-<meta property="og:description" content="VMware软件安装  前言：最近学习Redis时需要用到虚拟机，导致不得去下载安装一个虚拟机了，在准备安装VMware时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用  准备工作  本文将在Windows系统下使用VMware软件配置Linux虚拟机，下文将会详解VMware软件的安装步骤  VMware软件下载地址：https:&#x2F;&#x2F;www.vmware.com&#x2F;cn&#x2F;">
+<meta property="og:description" content="VMware软件安装  前言：最近学习Redis时需要使用Linux系统，导致不得去安装一个虚拟机了，在准备安装VMware软件时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用  准备工作  本文将在Windows系统下使用VMware软件配置Linux虚拟机，下文将会详解VMware软件的安装步骤  VMware软件下载地址：https:&#x2F;&#x2F;www.vmware.com">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262109879.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262106973.png">
@@ -38,7 +38,7 @@
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262153587.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262155195.png">
 <meta property="article:published_time" content="2022-10-08T03:26:00.000Z">
-<meta property="article:modified_time" content="2022-10-27T07:08:51.673Z">
+<meta property="article:modified_time" content="2022-10-27T07:20:29.367Z">
 <meta property="article:author" content="Modox">
 <meta property="article:tag" content="问题解决">
 <meta name="twitter:card" content="summary">
@@ -228,7 +228,7 @@
                     <i class="fa fa-edit"></i> 
                     
                     
-                        ~1.64K
+                        ~1.65K
                     
                     字
                 </li>
@@ -239,7 +239,7 @@
             
             <div id="expire-alert" class="alert alert-warning hidden" role="alert">
                 <div class="icon"><i class="fa fa-warning"></i></div>
-                <div class="text"><p>本文最后编辑于 <time datetime="1666854531673"></time> 前，其中的内容可能需要更新。</p></div>
+                <div class="text"><p>本文最后编辑于 <time datetime="1666855229367"></time> 前，其中的内容可能需要更新。</p></div>
             </div>
             
             
@@ -251,7 +251,7 @@
             <hr />
             <div itemprop="articleBody"><h2 id="vmware软件安装">VMware软件安装</h2>
 <blockquote>
-<p>前言：最近学习Redis时需要用到虚拟机，导致不得去下载安装一个虚拟机了，在准备安装VMware时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用</p>
+<p>前言：最近学习Redis时需要使用Linux系统，导致不得去安装一个虚拟机了，在准备安装VMware软件时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用</p>
 </blockquote>
 <h3 id="准备工作">准备工作</h3>
 <blockquote>
@@ -273,9 +273,9 @@ Linux CentOS 7版本下载映像文件地址：<a target="_blank" rel="noopener"
 <p>在编辑器左侧依次找到HKEY_CURRENT_USER</p>
 <p>然后将RestrictToPermittedSnapins的值设置为0</p>
 </blockquote>
-<p>上面那个方法如果找这个路径时发现MMC不存在，那么就要使用下面这个方法</p>
+<p>上面的方法如果输入路径后发现MMC不存在，那么下面这个方法就派上用场了！</p>
 <p>按下Win +
-R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又会惊讶的发现，gpedit.msc打不开了！别着急，下面还有解决方案，当然，如果你能打开组策略编辑器的话继续往下看</p>
+R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又会惊讶的发现，gpedit.msc打不开了！别着急，下面还有解决方案。当然，如果你能打开组策略编辑器的话可以点击<a href="#2">这里</a>继续往下看</p>
 <p>对于无法打开组策略编辑器的情况，win + r
 键打开运行后，输入notepad打开记事本，复制粘贴以下内容</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@<span class="built_in">echo</span> off</span><br><span class="line"></span><br><span class="line"><span class="built_in">pushd</span> <span class="string">&quot;%~dp0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~3*.mum &gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~3*.mum &gt;&gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> /f %%i <span class="keyword">in</span> (<span class="string">&#x27;findstr /i . List.txt 2^&gt;nul&#x27;</span>) <span class="keyword">do</span> dism /online /norestart /add-package:<span class="string">&quot;C:\Windows\servicing\Packages\%%i&quot;</span></span><br><span class="line"></span><br><span class="line">pause</span><br></pre></td></tr></table></figure>
@@ -285,9 +285,10 @@ R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262131529.png"></p>
 <p>点击保存后在你保存的路径下右键以管理员身份运行</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262132085.png"></p>
-<p>等待运行结束后发现win + R键打开的gpedit.msc可以正常打开了</p>
+<p>等待运行结束后发现win + R键打开的gpedit.msc可以正常打开了<br></p>
+<p><span id="2"></span></p>
 <p>接下来进入组策略编辑器，双击计算机配置 --&gt; Windows设置 --&gt;
-安全设置</p>
+安全设置<br></p>
 <p>双击本地策略</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262139507.png"></p>
 <p>进入安全选项找到下面两项选择已启用</p>
@@ -377,11 +378,11 @@ R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又
             const title         = "「VMware软件安装及问题解决」";
             const excerpt       = `VMware软件安装
 
-前言：最近学习Redis时需要用到虚拟机，导致不得去下载安装一个虚拟机了，在准备安装VMware时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用
+前言：最近学习Redis时需要使用Linux系统，导致不得去安装一个虚拟机了，在准备安装VMware软件时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用
 
 准备工作
 
-本文将在Windows系统下...`;
+本文将在Window...`;
             let _URL;
             switch (dest) {
                 case "qq"       : _URL = qqBase+"url="+hostUrl+"&title="+title+"&desc=&summary="+excerpt+"&site=cxpy";     break;
@@ -403,7 +404,7 @@ R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又
                     <a class="tag-none-link" href="/tags/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/" rel="tag">问题解决</a>
                 </div>
                 <div class="pull-date">
-                    <time datetime="2022-10-27T07:08:51.673Z" itemprop="dateModified">最后编辑：2022-10-27</time>
+                    <time datetime="2022-10-27T07:20:29.367Z" itemprop="dateModified">最后编辑：2022-10-27</time>
                 </div>
             </div>
         </footer>
