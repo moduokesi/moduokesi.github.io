@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   
   
-  <title>VMWare实现Redis持久化 | 叶落风随</title>
+  <title>VMWare演示Redis持久化 | 叶落风随</title>
   <meta name="author" content="Modox" />
   <meta http-equiv="Cache-Control" content="no-transform" />
   <meta http-equiv="Cache-Control" content="no-siteapp" />
@@ -16,15 +16,16 @@
   
     <meta name="keywords" content="学习笔记" />
   
-  <meta name="description" content="VMware实现Redis持久化 Redis持久化的作用 Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全性得以大大提升。 RDB  RDB全称为Redis Database Backup file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就">
+  <meta name="description" content="VMware演示Redis持久化 Redis持久化的作用 Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全性得以大大提升。 RDB  RDB全称为Redis Database Backup file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就">
 <meta property="og:type" content="article">
-<meta property="og:title" content="VMWare实现Redis持久化">
-<meta property="og:url" content="http://moduokesi.top/2022/10/28/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96/index.html">
+<meta property="og:title" content="VMWare演示Redis持久化">
+<meta property="og:url" content="http://moduokesi.top/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/index.html">
 <meta property="og:site_name" content="叶落风随">
-<meta property="og:description" content="VMware实现Redis持久化 Redis持久化的作用 Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全性得以大大提升。 RDB  RDB全称为Redis Database Backup file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就">
+<meta property="og:description" content="VMware演示Redis持久化 Redis持久化的作用 Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全性得以大大提升。 RDB  RDB全称为Redis Database Backup file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282119328.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291303145.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301657349.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291312066.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282139525.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282141216.png">
@@ -37,8 +38,20 @@
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291316731.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282221596.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291318662.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301559763.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301615021.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301617321.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301618239.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301622298.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301626879.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301628595.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301630032.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301633106.png">
+<meta property="og:image" content="http://moduokesi.top/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/Users/86130/AppData/Roaming/Tencent/Users/2484792357/QQ/WinTemp/RichOle/LBDM52Q%5BBMBTK%7DPKDK~HB2V.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301640485.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301647804.png">
 <meta property="article:published_time" content="2022-10-28T12:49:50.000Z">
-<meta property="article:modified_time" content="2022-10-29T05:37:40.952Z">
+<meta property="article:modified_time" content="2022-10-30T08:57:20.783Z">
 <meta property="article:author" content="Modox">
 <meta property="article:tag" content="学习笔记">
 <meta name="twitter:card" content="summary">
@@ -212,11 +225,11 @@
 
             <article itemscope itemtype="https://schema.org/Article">
     
-    <link itemprop="mainEntityOfPage" href="http://moduokesi.top/2022/10/28/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96/">
+    <link itemprop="mainEntityOfPage" href="http://moduokesi.top/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/">
     <div class="kratos-hentry kratos-post-inner clearfix">
         <header class="kratos-entry-header">
             
-                <h1 class="kratos-entry-title text-center" itemprop="name headline">VMWare实现Redis持久化</h1>
+                <h1 class="kratos-entry-title text-center" itemprop="name headline">VMWare演示Redis持久化</h1>
             
             
             <ul class="kratos-post-meta text-center">
@@ -228,7 +241,7 @@
                     <i class="fa fa-edit"></i> 
                     
                     
-                        1425
+                        ~2.27K
                     
                     字
                 </li>
@@ -239,17 +252,17 @@
             
             <div id="expire-alert" class="alert alert-warning hidden" role="alert">
                 <div class="icon"><i class="fa fa-warning"></i></div>
-                <div class="text"><p>本文最后编辑于 <time datetime="1667021860952"></time> 前，其中的内容可能需要更新。</p></div>
+                <div class="text"><p>本文最后编辑于 <time datetime="1667120240783"></time> 前，其中的内容可能需要更新。</p></div>
             </div>
             
             
             
                 <div class="kratos-post-inner-toc toc-div-class" >
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#vmware%E5%AE%9E%E7%8E%B0redis%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-number">1.</span> <span class="toc-text">VMware实现Redis持久化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">1.1.</span> <span class="toc-text">Redis持久化的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rdb"><span class="toc-number">1.2.</span> <span class="toc-text">RDB</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rdb%E6%BC%94%E7%A4%BA"><span class="toc-number">1.3.</span> <span class="toc-text">RDB演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0rdb%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE"><span class="toc-number">1.4.</span> <span class="toc-text">实现RDB的相关配置</span></a></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#vmware%E6%BC%94%E7%A4%BAredis%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-number">1.</span> <span class="toc-text">VMware演示Redis持久化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">1.1.</span> <span class="toc-text">Redis持久化的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rdb"><span class="toc-number">1.2.</span> <span class="toc-text">RDB</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rdb%E6%BC%94%E7%A4%BA"><span class="toc-number">1.3.</span> <span class="toc-text">RDB演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0rdb%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE"><span class="toc-number">1.4.</span> <span class="toc-text">实现RDB的相关配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aof"><span class="toc-number">1.5.</span> <span class="toc-text">AOF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aof%E6%BC%94%E7%A4%BA"><span class="toc-number">1.6.</span> <span class="toc-text">AOF演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rdb%E5%92%8Caof%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc-number">1.7.</span> <span class="toc-text">RDB和AOF的比较</span></a></li></ol></li></ol>
                 </div>
             
             <hr />
-            <div itemprop="articleBody"><h2 id="vmware实现redis持久化">VMware实现Redis持久化</h2>
+            <div itemprop="articleBody"><h2 id="vmware演示redis持久化">VMware演示Redis持久化</h2>
 <h3 id="redis持久化的作用">Redis持久化的作用</h3>
 <p>Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全性得以大大提升。<br></p>
 <h3 id="rdb">RDB</h3>
@@ -268,6 +281,7 @@ file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就�
 <p>使用<code>redis-server redis.conf</code>指令在任意路径下运行Redis</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291303145.png"></p>
 <p>接下来创建一个新的终端创建连接，存入键值对</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301657349.png"></p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291312066.png"></p>
 <p>接着回到上一个终端使用<code>ctrl + c</code>关闭Redis，可以看到<code>DB saved on disk</code>表示文件正常保存</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282139525.png"></p>
@@ -306,6 +320,45 @@ num命令发现结果为空，再set
 一个新的键值，回到Redis窗口发现出现<code>Background saving started</code>字段即表示成功！</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282221596.png"></p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291318662.png"></p>
+<h3 id="aof">AOF</h3>
+<blockquote>
+<p>AOF全称为Append Only File
+(追加文件)。Redis处理的每一个写命令都会记录在AOF文件，可以看做是命令日志文件。</p>
+</blockquote>
+<p>开启AOF需要在Redis的配置文件中修改配置，AOF记录命令的频率有三种:<code>always</code>
+、<code>everysec</code>和<code>no</code></p>
+<p>always配置胜在能记录每一次Redis执行的写命令，几乎不会丢失数据，但对性能会有很大的影响</p>
+<p>everysec配置每隔一秒将缓冲区里的数据写入到AOF文件，避免直接对AOF文件操作而性能上有了提升，但是在数据间隔的一秒内如果出现服务宕机的情况会丢失最多一秒的数据</p>
+<p>no配置执行频率最低，性能最好，但是可靠性很低，不推荐使用</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301559763.png"></p>
+<h3 id="aof演示">AOF演示</h3>
+<p>先使用 cd 命令进入到Redis的安装路径下</p>
+<p>使用<code>vi redis.conf</code>命令修改redis配置文件</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301615021.png"></p>
+<p>将之前的save 5 1注释掉，写入save ""，表示禁用RDB</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301617321.png"></p>
+<p>将appendonly修改为yes，开启AOF</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301618239.png"></p>
+<p>AOF执行频率的命令配置默认为<code>appendfsync everysec</code>，不需要修改</p>
+<p>修改完毕后回到终端，使用<code>rm -rf *.rdb</code>删除之前的RDB文件</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301622298.png"></p>
+<p>可以看到当前目录下rdb文件已删除</p>
+<p>使用<code>redis-server redis.conf</code>命令重启Redis</p>
+<p>发现日志中出现没有对RDB的读取，修改成功</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301626879.png"></p>
+<p>在另一终端打开命令行，输入如下指令</p>
+<p>返回空集合，说明所有数据已被清除</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301628595.png"></p>
+<p>set一个键值对</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301630032.png"></p>
+<p>这时我们打开文件夹进入本机的Redis的安装路径下，发现AOF文件已经被创建成功，打开AOF文件，set命令已经被写入成功，说明<strong>AOF已经生效了</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301633106.png"></p>
+<p>接下来验证AOF的重启恢复，先重启Redis服务，红框内的日志表示数据已经从AOF文件加载完毕</p>
+<p><img src="/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/Users\86130\AppData\Roaming\Tencent\Users\2484792357\QQ\WinTemp\RichOle\LBDM52Q%5BBMBTK%7DPKDK~HB2V.png"></p>
+<p>这时候我们回到命令行使用<code>keys *</code>命令，返回num，依然有数据，说明AOF重启能保证数据的恢复，证明完毕</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301640485.png"></p>
+<h3 id="rdb和aof的比较">RDB和AOF的比较</h3>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301647804.png"></p>
 </div>
         </div>
         
@@ -359,7 +412,7 @@ num命令发现结果为空，再set
     <script type="text/javascript">
         $(()=>{
             new QRCode("wechat-qr", {
-                text: "http://moduokesi.top/2022/10/28/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96/",
+                text: "http://moduokesi.top/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/",
                 width: 150,
                 height: 150,
                 correctLevel : QRCode.CorrectLevel.H
@@ -371,9 +424,9 @@ num命令发现结果为空，再set
             const qzoneBase     = "https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?";
             const facebookBase  = "https://www.facebook.com/sharer/sharer.php?";
             const twitterBase   = "https://twitter.com/intent/tweet?";
-            const hostUrl       = "http://moduokesi.top/2022/10/28/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96/";
-            const title         = "「VMWare实现Redis持久化」";
-            const excerpt       = `VMware实现Redis持久化
+            const hostUrl       = "http://moduokesi.top/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/";
+            const title         = "「VMWare演示Redis持久化」";
+            const excerpt       = `VMware演示Redis持久化
 Redis持久化的作用
 Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全...`;
             let _URL;
@@ -397,7 +450,7 @@ Redis是内存存储，如果出现服务器宕机、服务重启等情况可能
                     <a class="tag-none-link" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag">学习笔记</a>
                 </div>
                 <div class="pull-date">
-                    <time datetime="2022-10-29T05:37:40.952Z" itemprop="dateModified">最后编辑：2022-10-29</time>
+                    <time datetime="2022-10-30T08:57:20.783Z" itemprop="dateModified">最后编辑：2022-10-30</time>
                 </div>
             </div>
         </footer>
@@ -480,7 +533,7 @@ Redis是内存存储，如果出现服务器宕机、服务重启等情况可能
         <span class="toc-progress-bar" role="progressbar" aria-label="阅读进度："></span>
     </h4>
     <div class="textwidget">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#vmware%E5%AE%9E%E7%8E%B0redis%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-text">VMware实现Redis持久化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text">Redis持久化的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rdb"><span class="toc-text">RDB</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rdb%E6%BC%94%E7%A4%BA"><span class="toc-text">RDB演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0rdb%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE"><span class="toc-text">实现RDB的相关配置</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#vmware%E6%BC%94%E7%A4%BAredis%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-text">VMware演示Redis持久化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text">Redis持久化的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rdb"><span class="toc-text">RDB</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rdb%E6%BC%94%E7%A4%BA"><span class="toc-text">RDB演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0rdb%E7%9A%84%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE"><span class="toc-text">实现RDB的相关配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aof"><span class="toc-text">AOF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#aof%E6%BC%94%E7%A4%BA"><span class="toc-text">AOF演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rdb%E5%92%8Caof%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc-text">RDB和AOF的比较</span></a></li></ol></li></ol>
     </div>
 </aside>
                 
@@ -516,7 +569,7 @@ Redis是内存存储，如果出现服务器宕机、服务重启等情况可能
         
           
           
-            <a class="list-group-item" href="/2022/10/28/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96/"><i class="fa  fa-book"></i> VMWare实现Redis持久化</a>
+            <a class="list-group-item" href="/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/"><i class="fa  fa-book"></i> VMWare演示Redis持久化</a>
             
           
         
