@@ -6,7 +6,7 @@
   <link href="http://moduokesi.top/atom.xml" rel="self"/>
   
   <link href="http://moduokesi.top/"/>
-  <updated>2022-10-30T02:10:33.297Z</updated>
+  <updated>2022-10-29T04:07:34.039Z</updated>
   <id>http://moduokesi.top/</id>
   
   <author>
@@ -15,72 +15,6 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>VMWare实现Redis持久化问题排查.md</title>
-    <link href="http://moduokesi.top/2022/10/30/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5-md/"/>
-    <id>http://moduokesi.top/2022/10/30/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5-md/</id>
-    <published>2022-10-30T02:10:33.000Z</published>
-    <updated>2022-10-30T02:10:33.297Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">
-</summary>
-        
-      
-    
-    
-    
-    
-  </entry>
-  
-  <entry>
-    <title>VMWare实现Redis持久化.md</title>
-    <link href="http://moduokesi.top/2022/10/30/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96-md/"/>
-    <id>http://moduokesi.top/2022/10/30/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96-md/</id>
-    <published>2022-10-30T02:10:24.000Z</published>
-    <updated>2022-10-30T02:10:24.150Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">
-</summary>
-        
-      
-    
-    
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Redis报错：Could-not-connect-to-Redis-at-127.0.0.16379-Connection-refused解决方案.md</title>
-    <link href="http://moduokesi.top/2022/10/30/Redis%E6%8A%A5%E9%94%99%EF%BC%9ACould-not-connect-to-Redis-at-127-0-0-16379-Connection-refused%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-md/"/>
-    <id>http://moduokesi.top/2022/10/30/Redis%E6%8A%A5%E9%94%99%EF%BC%9ACould-not-connect-to-Redis-at-127-0-0-16379-Connection-refused%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-md/</id>
-    <published>2022-10-30T02:09:59.000Z</published>
-    <updated>2022-10-30T02:09:59.728Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">
-</summary>
-        
-      
-    
-    
-    
-    
-  </entry>
   
   <entry>
     <title>VMWare实现Redis持久化问题排查</title>
