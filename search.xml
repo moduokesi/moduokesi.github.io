@@ -1,6 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>VMWare实现Redis持久化.md</title>
+    <url>/2022/10/30/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96-md/</url>
+    <content><![CDATA[
+]]></content>
+  </entry>
+  <entry>
+    <title>VMWare实现Redis持久化</title>
+    <url>/2022/10/28/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96/</url>
+    <content><![CDATA[<h2 id="vmware实现redis持久化">VMware实现Redis持久化</h2>
+<h3 id="redis持久化的作用">Redis持久化的作用</h3>
+<p>Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全性得以大大提升。<br></p>
+<h3 id="rdb">RDB</h3>
+<blockquote>
+<p>RDB全称为Redis Database Backup
+file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就是把内存重的所有数据都记录道磁盘中。当Redis实例故障重启后，从磁盘读取快照文件，恢复数据。</p>
+</blockquote>
+<p>RDB实现数据持久化有两种命令：<code>save</code>和<code>bgsave</code></p>
+<p>save命令适合用于准备将Redis停机的情况。</p>
+<p>在执行save命令时会占用Redis的主进程，阻塞所有命令，因此不适用于Redis正在运行的情况。</p>
+<p>而bgsave命令会执行fork操作开启一个子进程，避免主进程收到影响。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282119328.png"></p>
+<p>此外，当Redis停机时会执行一次RDB操作进行数据备份。</p>
+<p>下面将对该情况进行验证</p>
+<h3 id="rdb演示">RDB演示</h3>
+<p>使用<code>redis-server redis.conf</code>指令在任意路径下运行Redis</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291303145.png"></p>
+<p>接下来创建一个新的终端创建连接，存入键值对</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291312066.png"></p>
+<p>接着回到上一个终端使用<code>ctrl + c</code>关闭Redis，可以看到<code>DB saved on disk</code>表示文件正常保存</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282139525.png"></p>
+<p>在当前路径下使用ll查看所有文件，看到dump.rdb快照文件已经生成<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282141216.png"></p>
+<p>接着再次在当前终端使用<code>redis-server redis.conf</code>启动Redis，此时数据会自动恢复，回到另一个终端窗口</p>
+<p>此时将使用<code>ctrl + c</code>关闭当前命令行客户端，重新使用<code>redis-cli</code>开启一个新的命令行</p>
+<p>这时使用get num命令发现数据返回为789，（如果get
+num返回错误<strong>Error：Server closed the
+connection</strong>要将redis.conf的<strong>protected-mode</strong>设置为No关闭保护模式）表明数据备份成功</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291313549.png"></p>
+<p><strong>Redis停机自动执行RDB证明完毕！</strong></p>
+<h3 id="实现rdb的相关配置">实现RDB的相关配置</h3>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282152250.png"></p>
+<p>这里需要 cd 到redis的安装目录下，我的安装目录在
+/usr/local/src/redis-6.2.6下</p>
+<p>这里老师用的MobaXterm可以直接使用第三方文件打开配置文件进行修改，因为我用的是VMware所以只能使用Linux命令进行修改配置</p>
+<p>使用 <code>vi redis.conf</code>修改配置文件</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282159322.png"></p>
+<p>这里有一些小技巧：</p>
+<ul>
+<li>按下INSERT键进入修改状态，此时才可以对文件进行修改</li>
+<li>按下ESC键可以使用一些命令：<code>/xxx</code>可以查找跳跃到当前文件中的xxx名称，<code>:wq</code>保存当前文件并退出，<code>:q</code>不保存并退出当前文件，<code>:q!</code>不保存并强制退出当前文件</li>
+</ul>
+<p>下面就可以对配置文件进行修改了！</p>
+<p>修改为五秒内执行一次操作就出发RDB备份</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282209053.png"></p>
+<p>接着</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282211172.png"></p>
+<p>再查找rdbcompression后修改为yes即可</p>
+<p>使用:wq保存并退出</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282214630.png"></p>
+<p>rdb文件名修改后使用终端再次运行Redis，发现此时没有DB文件录入消息，之前的dump.rdb文件已不能被读取</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291316731.png"></p>
+<p>到另一个终端重新使用redis-cli开启命令行，使用get
+num命令发现结果为空，再set
+一个新的键值，回到Redis窗口发现出现<code>Background saving started</code>字段即表示成功！</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282221596.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291318662.png"></p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>VMWare实现Redis持久化问题排查.md</title>
+    <url>/2022/10/30/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5-md/</url>
+    <content><![CDATA[
+]]></content>
+  </entry>
+  <entry>
+    <title>Redis报错：Could-not-connect-to-Redis-at-127.0.0.16379-Connection-refused解决方案.md</title>
+    <url>/2022/10/30/Redis%E6%8A%A5%E9%94%99%EF%BC%9ACould-not-connect-to-Redis-at-127-0-0-16379-Connection-refused%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-md/</url>
+    <content><![CDATA[
+]]></content>
+  </entry>
+  <entry>
+    <title>VMWare实现Redis持久化问题排查</title>
+    <url>/2022/10/29/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/</url>
+    <content><![CDATA[<h2 id="vmware实现redis持久化问题排查">VMware实现Redis持久化问题排查</h2>
+<blockquote>
+<p>前言：在学习黑马的Redis持久化课程时因为老师用的MobaXterm软件与我使用的VMware存在差异，同时，老师上传的视频的redis配置与我大为不同而导致了一系列的问题，在进行了一天的排查（死杠）后终于解决了问题，感慨良多。在遇到问题解决不了的时候还是要多回头看，没准在出发点就能找到问题了。
+下面就将展示问题的描述和解决方案</p>
+</blockquote>
+<h3 id="问题描述">问题描述</h3>
+<blockquote>
+<p>老师在使用MobaXterm软件时使用<code>redis-server redis.conf</code>命令指定配置文件在<strong>前台</strong>启动Redis</p>
+<p>然而我在使用redis-server命令却出现了下面的两种情况：</p>
+</blockquote>
+<p>第一种：不指定配置文件启动Redis</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291124212.png"></p>
+<p>发现监听6379端口失败</p>
+<p>第二种：指定配置文件启动Redis</p>
+<p>这里要先cd到自己的Redis安装路径下，然后使用命令<code>redis-server redis.conf</code></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291126030.png"></p>
+<p>发现没有产生日志，这里使用<code>ps -ef | grep redis</code>查看后端端口占用情况</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291127803.png"></p>
+<p>显然，后台端口已经被占用了，这里是因为Redis配置了开机自启动和后台启动，导致端口占用而无法使用redis-server命令</p>
+<h3 id="问题解决">问题解决</h3>
+<p>在执行以下操作前建议使用VMware创建一个快照，防止后续操作不当导致虚拟机设置出现问题<br></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282129924.png"></p>
+<p>先使用以下命令关闭后台端口</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 关闭Redis后台启动，xxx是自己设置的密码</span></span><br><span class="line">redis-cli -p 6379 -a xxxx shutdown</span><br></pre></td></tr></table></figure>
+<p>此时cd到Redis的安装目录下，使用命令<code>ps -ef | grep redis</code>查看后台端口占用情况，发现后台端口关闭</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291139316.png"></p>
+<p>然后在当前路径下使用<code>vi redis.conf</code>关闭Redis后台启动</p>
+<p>将 daemonize 修改为 no</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291141606.png"></p>
+<p>这样Redis就不会在后台启动了！</p>
+<p>接着可以开心的使用<code>redis-server redis.conf</code>指定配置文件启动redis了！</p>
+<p>然而，如果你使用该命令后又出现了如下情况</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291145134.png"></p>
+<p>发现当前窗口确实是像前台启动一样阻塞的，但是却没有任何日志信息输出，这时我们打开RESP等图形化界面看一下连接是否成功</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291146893.png"></p>
+<p>嗯，确实成功了，说明Redis服务确实启动了，但还是没有日志文件，那么这是怎么回事呢？</p>
+<p>哈哈，不用着急，我们先使用<code>ctrl + c</code>停止当前端口，然后再回到RESP上发现连接终止，这就说明我们之前做的操作没有问题！现在我们回到终端，使用<code>vi redis.conf</code>命令进入到配置文件中</p>
+<p>找到<strong>logfile</strong>，发现logfile后面的引号内为一个日志文件</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291150818.png"></p>
+<p>这个时候一切都真相大白了，因为在一开始配置Redis时，我们将在logfile的引号内<strong>写入了一个日志文件名称</strong>（一开始的logfile内的引号默认是空的），这就导致了我们使用redis-server命令输出的日志都进入到这个日志文件中，所以启动时当然看不到任何信息了！现在我们将引号内的文件命删除，保存并退出</p>
+<p>再次使用<code>redis-server redis.conf</code>命令启动Redis</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291153693.png"></p>
+<p>启动成功，大功告成！</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>问题解决</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>VMware软件安装及问题解决</title>
     <url>/2022/10/08/VMware%E5%AE%89%E8%A3%85/</url>
     <content><![CDATA[<h2 id="vmware软件安装">VMware软件安装</h2>
@@ -69,47 +209,6 @@ R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又
       </categories>
       <tags>
         <tag>问题解决</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2022/06/27/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very
-first post. Check <a href="https://hexo.io/docs/">documentation</a> for
-more info. If you get any problems when using Hexo, you can find the
-answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or
-you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="quick-start">Quick Start</h2>
-<h3 id="create-a-new-post">Create a new post</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="run-server">Run server</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="generate-static-files">Generate static files</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="deploy-to-remote-sites">Deploy to remote sites</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-      <categories>
-        <category>开始</category>
-      </categories>
-      <tags>
-        <tag>标签</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>paper</title>
-    <url>/2022/06/28/paper/</url>
-    <content><![CDATA[
-]]></content>
-      <categories>
-        <category>开始</category>
-      </categories>
-      <tags>
-        <tag>分类</tag>
       </tags>
   </entry>
 </search>

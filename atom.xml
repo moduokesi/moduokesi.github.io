@@ -6,7 +6,7 @@
   <link href="http://moduokesi.top/atom.xml" rel="self"/>
   
   <link href="http://moduokesi.top/"/>
-  <updated>2022-10-27T07:22:53.238Z</updated>
+  <updated>2022-10-30T02:10:33.297Z</updated>
   <id>http://moduokesi.top/</id>
   
   <author>
@@ -15,6 +15,123 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>VMWare实现Redis持久化问题排查.md</title>
+    <link href="http://moduokesi.top/2022/10/30/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5-md/"/>
+    <id>http://moduokesi.top/2022/10/30/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5-md/</id>
+    <published>2022-10-30T02:10:33.000Z</published>
+    <updated>2022-10-30T02:10:33.297Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">
+</summary>
+        
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>VMWare实现Redis持久化.md</title>
+    <link href="http://moduokesi.top/2022/10/30/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96-md/"/>
+    <id>http://moduokesi.top/2022/10/30/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96-md/</id>
+    <published>2022-10-30T02:10:24.000Z</published>
+    <updated>2022-10-30T02:10:24.150Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">
+</summary>
+        
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Redis报错：Could-not-connect-to-Redis-at-127.0.0.16379-Connection-refused解决方案.md</title>
+    <link href="http://moduokesi.top/2022/10/30/Redis%E6%8A%A5%E9%94%99%EF%BC%9ACould-not-connect-to-Redis-at-127-0-0-16379-Connection-refused%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-md/"/>
+    <id>http://moduokesi.top/2022/10/30/Redis%E6%8A%A5%E9%94%99%EF%BC%9ACould-not-connect-to-Redis-at-127-0-0-16379-Connection-refused%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-md/</id>
+    <published>2022-10-30T02:09:59.000Z</published>
+    <updated>2022-10-30T02:09:59.728Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">
+</summary>
+        
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>VMWare实现Redis持久化问题排查</title>
+    <link href="http://moduokesi.top/2022/10/29/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/"/>
+    <id>http://moduokesi.top/2022/10/29/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/</id>
+    <published>2022-10-29T12:49:50.000Z</published>
+    <updated>2022-10-29T04:07:34.039Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="Linux" scheme="http://moduokesi.top/categories/Linux/"/>
+    
+    
+    <category term="问题解决" scheme="http://moduokesi.top/tags/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>VMWare实现Redis持久化</title>
+    <link href="http://moduokesi.top/2022/10/28/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96/"/>
+    <id>http://moduokesi.top/2022/10/28/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96/</id>
+    <published>2022-10-28T12:49:50.000Z</published>
+    <updated>2022-10-29T05:37:40.952Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;vmware实现redis持久化&quot;&gt;VMware实现Redis持久化&lt;/h2&gt;
+&lt;h3</summary>
+        
+      
+    
+    
+    
+    <category term="Linux" scheme="http://moduokesi.top/categories/Linux/"/>
+    
+    
+    <category term="学习笔记" scheme="http://moduokesi.top/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
+    
+  </entry>
   
   <entry>
     <title>VMware软件安装及问题解决</title>
@@ -38,58 +155,6 @@
     
     
     <category term="问题解决" scheme="http://moduokesi.top/tags/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>paper</title>
-    <link href="http://moduokesi.top/2022/06/28/paper/"/>
-    <id>http://moduokesi.top/2022/06/28/paper/</id>
-    <published>2022-06-28T08:32:44.000Z</published>
-    <updated>2022-10-07T13:23:37.009Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">
-</summary>
-        
-      
-    
-    
-    
-    <category term="开始" scheme="http://moduokesi.top/categories/%E5%BC%80%E5%A7%8B/"/>
-    
-    
-    <category term="分类" scheme="http://moduokesi.top/tags/%E5%88%86%E7%B1%BB/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="http://moduokesi.top/2022/06/27/hello-world/"/>
-    <id>http://moduokesi.top/2022/06/27/hello-world/</id>
-    <published>2022-06-27T12:12:05.947Z</published>
-    <updated>2022-10-08T06:59:36.032Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very
-first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt;</summary>
-        
-      
-    
-    
-    
-    <category term="开始" scheme="http://moduokesi.top/categories/%E5%BC%80%E5%A7%8B/"/>
-    
-    
-    <category term="标签" scheme="http://moduokesi.top/tags/%E6%A0%87%E7%AD%BE/"/>
     
   </entry>
   
