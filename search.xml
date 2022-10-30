@@ -1,74 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>VMWare实现Redis持久化</title>
-    <url>/2022/10/28/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96/</url>
-    <content><![CDATA[<h2 id="vmware实现redis持久化">VMware实现Redis持久化</h2>
-<h3 id="redis持久化的作用">Redis持久化的作用</h3>
-<p>Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全性得以大大提升。<br></p>
-<h3 id="rdb">RDB</h3>
-<blockquote>
-<p>RDB全称为Redis Database Backup
-file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就是把内存重的所有数据都记录道磁盘中。当Redis实例故障重启后，从磁盘读取快照文件，恢复数据。</p>
-</blockquote>
-<p>RDB实现数据持久化有两种命令：<code>save</code>和<code>bgsave</code></p>
-<p>save命令适合用于准备将Redis停机的情况。</p>
-<p>在执行save命令时会占用Redis的主进程，阻塞所有命令，因此不适用于Redis正在运行的情况。</p>
-<p>而bgsave命令会执行fork操作开启一个子进程，避免主进程收到影响。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282119328.png"></p>
-<p>此外，当Redis停机时会执行一次RDB操作进行数据备份。</p>
-<p>下面将对该情况进行验证</p>
-<h3 id="rdb演示">RDB演示</h3>
-<p>使用<code>redis-server redis.conf</code>指令在任意路径下运行Redis</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291303145.png"></p>
-<p>接下来创建一个新的终端创建连接，存入键值对</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291312066.png"></p>
-<p>接着回到上一个终端使用<code>ctrl + c</code>关闭Redis，可以看到<code>DB saved on disk</code>表示文件正常保存</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282139525.png"></p>
-<p>在当前路径下使用ll查看所有文件，看到dump.rdb快照文件已经生成<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282141216.png"></p>
-<p>接着再次在当前终端使用<code>redis-server redis.conf</code>启动Redis，此时数据会自动恢复，回到另一个终端窗口</p>
-<p>此时将使用<code>ctrl + c</code>关闭当前命令行客户端，重新使用<code>redis-cli</code>开启一个新的命令行</p>
-<p>这时使用get num命令发现数据返回为789，（如果get
-num返回错误<strong>Error：Server closed the
-connection</strong>要将redis.conf的<strong>protected-mode</strong>设置为No关闭保护模式）表明数据备份成功</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291313549.png"></p>
-<p><strong>Redis停机自动执行RDB证明完毕！</strong></p>
-<h3 id="实现rdb的相关配置">实现RDB的相关配置</h3>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282152250.png"></p>
-<p>这里需要 cd 到redis的安装目录下，我的安装目录在
-/usr/local/src/redis-6.2.6下</p>
-<p>这里老师用的MobaXterm可以直接使用第三方文件打开配置文件进行修改，因为我用的是VMware所以只能使用Linux命令进行修改配置</p>
-<p>使用 <code>vi redis.conf</code>修改配置文件</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282159322.png"></p>
-<p>这里有一些小技巧：</p>
-<ul>
-<li>按下INSERT键进入修改状态，此时才可以对文件进行修改</li>
-<li>按下ESC键可以使用一些命令：<code>/xxx</code>可以查找跳跃到当前文件中的xxx名称，<code>:wq</code>保存当前文件并退出，<code>:q</code>不保存并退出当前文件，<code>:q!</code>不保存并强制退出当前文件</li>
-</ul>
-<p>下面就可以对配置文件进行修改了！</p>
-<p>修改为五秒内执行一次操作就出发RDB备份</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282209053.png"></p>
-<p>接着</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282211172.png"></p>
-<p>再查找rdbcompression后修改为yes即可</p>
-<p>使用:wq保存并退出</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282214630.png"></p>
-<p>rdb文件名修改后使用终端再次运行Redis，发现此时没有DB文件录入消息，之前的dump.rdb文件已不能被读取</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291316731.png"></p>
-<p>到另一个终端重新使用redis-cli开启命令行，使用get
-num命令发现结果为空，再set
-一个新的键值，回到Redis窗口发现出现<code>Background saving started</code>字段即表示成功！</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282221596.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291318662.png"></p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-      <tags>
-        <tag>学习笔记</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>VMware软件安装及问题解决</title>
     <url>/2022/10/08/VMware%E5%AE%89%E8%A3%85/</url>
     <content><![CDATA[<h2 id="vmware软件安装">VMware软件安装</h2>
@@ -140,9 +72,9 @@ R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又
       </tags>
   </entry>
   <entry>
-    <title>VMWare实现Redis持久化问题排查</title>
-    <url>/2022/10/29/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/</url>
-    <content><![CDATA[<h2 id="vmware实现redis持久化问题排查">VMware实现Redis持久化问题排查</h2>
+    <title>Redis持久化问题排查</title>
+    <url>/2022/10/29/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/</url>
+    <content><![CDATA[<h2 id="redis持久化问题排查">Redis持久化问题排查</h2>
 <blockquote>
 <p>前言：在学习黑马的Redis持久化课程时因为老师用的MobaXterm软件与我使用的VMware存在差异，同时，老师上传的视频的redis配置与我大为不同而导致了一系列的问题，在进行了一天的排查（死杠）后终于解决了问题，感慨良多。在遇到问题解决不了的时候还是要多回头看，没准在出发点就能找到问题了。
 下面就将展示问题的描述和解决方案</p>
@@ -191,6 +123,74 @@ R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又
       </categories>
       <tags>
         <tag>问题解决</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>VMWare实现Redis持久化</title>
+    <url>/2022/10/28/VMWare%E5%AE%9E%E7%8E%B0Redis%E6%8C%81%E4%B9%85%E5%8C%96/</url>
+    <content><![CDATA[<h2 id="vmware实现redis持久化">VMware实现Redis持久化</h2>
+<h3 id="redis持久化的作用">Redis持久化的作用</h3>
+<p>Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全性得以大大提升。<br></p>
+<h3 id="rdb">RDB</h3>
+<blockquote>
+<p>RDB全称为Redis Database Backup
+file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就是把内存重的所有数据都记录道磁盘中。当Redis实例故障重启后，从磁盘读取快照文件，恢复数据。</p>
+</blockquote>
+<p>RDB实现数据持久化有两种命令：<code>save</code>和<code>bgsave</code></p>
+<p>save命令适合用于准备将Redis停机的情况。</p>
+<p>在执行save命令时会占用Redis的主进程，阻塞所有命令，因此不适用于Redis正在运行的情况。</p>
+<p>而bgsave命令会执行fork操作开启一个子进程，避免主进程收到影响。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282119328.png"></p>
+<p>此外，当Redis停机时会执行一次RDB操作进行数据备份。</p>
+<p>下面将对该情况进行验证</p>
+<h3 id="rdb演示">RDB演示</h3>
+<p>使用<code>redis-server redis.conf</code>指令在任意路径下运行Redis</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291303145.png"></p>
+<p>接下来创建一个新的终端创建连接，存入键值对</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291312066.png"></p>
+<p>接着回到上一个终端使用<code>ctrl + c</code>关闭Redis，可以看到<code>DB saved on disk</code>表示文件正常保存</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282139525.png"></p>
+<p>在当前路径下使用ll查看所有文件，看到dump.rdb快照文件已经生成<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282141216.png"></p>
+<p>接着再次在当前终端使用<code>redis-server redis.conf</code>启动Redis，此时数据会自动恢复，回到另一个终端窗口</p>
+<p>此时将使用<code>ctrl + c</code>关闭当前命令行客户端，重新使用<code>redis-cli</code>开启一个新的命令行</p>
+<p>这时使用get num命令发现数据返回为789，（如果get
+num返回错误<strong>Error：Server closed the
+connection</strong>要将redis.conf的<strong>protected-mode</strong>设置为No关闭保护模式）表明数据备份成功</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291313549.png"></p>
+<p><strong>Redis停机自动执行RDB证明完毕！</strong></p>
+<h3 id="实现rdb的相关配置">实现RDB的相关配置</h3>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282152250.png"></p>
+<p>这里需要 cd 到redis的安装目录下，我的安装目录在
+/usr/local/src/redis-6.2.6下</p>
+<p>这里老师用的MobaXterm可以直接使用第三方文件打开配置文件进行修改，因为我用的是VMware所以只能使用Linux命令进行修改配置</p>
+<p>使用 <code>vi redis.conf</code>修改配置文件</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282159322.png"></p>
+<p>这里有一些小技巧：</p>
+<ul>
+<li>按下INSERT键进入修改状态，此时才可以对文件进行修改</li>
+<li>按下ESC键可以使用一些命令：<code>/xxx</code>可以查找跳跃到当前文件中的xxx名称，<code>:wq</code>保存当前文件并退出，<code>:q</code>不保存并退出当前文件，<code>:q!</code>不保存并强制退出当前文件</li>
+</ul>
+<p>下面就可以对配置文件进行修改了！</p>
+<p>修改为五秒内执行一次操作就出发RDB备份</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282209053.png"></p>
+<p>接着</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282211172.png"></p>
+<p>再查找rdbcompression后修改为yes即可</p>
+<p>使用:wq保存并退出</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282214630.png"></p>
+<p>rdb文件名修改后使用终端再次运行Redis，发现此时没有DB文件录入消息，之前的dump.rdb文件已不能被读取</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291316731.png"></p>
+<p>到另一个终端重新使用redis-cli开启命令行，使用get
+num命令发现结果为空，再set
+一个新的键值，回到Redis窗口发现出现<code>Background saving started</code>字段即表示成功！</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282221596.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291318662.png"></p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
       </tags>
   </entry>
 </search>
