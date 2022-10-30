@@ -26,10 +26,10 @@
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282119328.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291303145.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301657349.png">
-<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291312066.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301708367.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282139525.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282141216.png">
-<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291313549.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301704159.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282152250.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282159322.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282209053.png">
@@ -44,14 +44,14 @@
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301618239.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301622298.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301626879.png">
-<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301628595.png">
+<meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301703747.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301630032.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301633106.png">
 <meta property="og:image" content="http://moduokesi.top/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/Users/86130/AppData/Roaming/Tencent/Users/2484792357/QQ/WinTemp/RichOle/LBDM52Q%5BBMBTK%7DPKDK~HB2V.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301640485.png">
 <meta property="og:image" content="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301647804.png">
 <meta property="article:published_time" content="2022-10-28T12:49:50.000Z">
-<meta property="article:modified_time" content="2022-10-30T08:57:20.783Z">
+<meta property="article:modified_time" content="2022-10-30T09:09:04.288Z">
 <meta property="article:author" content="Modox">
 <meta property="article:tag" content="学习笔记">
 <meta name="twitter:card" content="summary">
@@ -241,7 +241,7 @@
                     <i class="fa fa-edit"></i> 
                     
                     
-                        ~2.27K
+                        ~2.28K
                     
                     字
                 </li>
@@ -252,7 +252,7 @@
             
             <div id="expire-alert" class="alert alert-warning hidden" role="alert">
                 <div class="icon"><i class="fa fa-warning"></i></div>
-                <div class="text"><p>本文最后编辑于 <time datetime="1667120240783"></time> 前，其中的内容可能需要更新。</p></div>
+                <div class="text"><p>本文最后编辑于 <time datetime="1667120944288"></time> 前，其中的内容可能需要更新。</p></div>
             </div>
             
             
@@ -282,7 +282,7 @@ file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就�
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291303145.png"></p>
 <p>接下来创建一个新的终端创建连接，存入键值对</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301657349.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291312066.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301708367.png"></p>
 <p>接着回到上一个终端使用<code>ctrl + c</code>关闭Redis，可以看到<code>DB saved on disk</code>表示文件正常保存</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282139525.png"></p>
 <p>在当前路径下使用ll查看所有文件，看到dump.rdb快照文件已经生成<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282141216.png"></p>
@@ -291,7 +291,7 @@ file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就�
 <p>这时使用get num命令发现数据返回为789，（如果get
 num返回错误<strong>Error：Server closed the
 connection</strong>要将redis.conf的<strong>protected-mode</strong>设置为No关闭保护模式）表明数据备份成功</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291313549.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301704159.png"></p>
 <p><strong>Redis停机自动执行RDB证明完毕！</strong></p>
 <h3 id="实现rdb的相关配置">实现RDB的相关配置</h3>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282152250.png"></p>
@@ -348,7 +348,10 @@ num命令发现结果为空，再set
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301626879.png"></p>
 <p>在另一终端打开命令行，输入如下指令</p>
 <p>返回空集合，说明所有数据已被清除</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301628595.png"></p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301703747.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
 <p>set一个键值对</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301630032.png"></p>
 <p>这时我们打开文件夹进入本机的Redis的安装路径下，发现AOF文件已经被创建成功，打开AOF文件，set命令已经被写入成功，说明<strong>AOF已经生效了</strong></p>
@@ -450,7 +453,7 @@ Redis是内存存储，如果出现服务器宕机、服务重启等情况可能
                     <a class="tag-none-link" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag">学习笔记</a>
                 </div>
                 <div class="pull-date">
-                    <time datetime="2022-10-30T08:57:20.783Z" itemprop="dateModified">最后编辑：2022-10-30</time>
+                    <time datetime="2022-10-30T09:09:04.288Z" itemprop="dateModified">最后编辑：2022-10-30</time>
                 </div>
             </div>
         </footer>
