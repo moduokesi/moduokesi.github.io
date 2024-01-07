@@ -6,7 +6,7 @@
   <link href="https://moduokesi.top/atom.xml" rel="self"/>
   
   <link href="https://moduokesi.top/"/>
-  <updated>2022-10-30T07:22:42.341Z</updated>
+  <updated>2024-01-07T06:29:10.860Z</updated>
   <id>https://moduokesi.top/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>【IDEA结合Git实现项目管理实战】一、配置篇</title>
+    <link href="https://moduokesi.top/2023/12/10/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/"/>
+    <id>https://moduokesi.top/2023/12/10/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/</id>
+    <published>2023-12-10T08:20:10.000Z</published>
+    <updated>2024-01-07T06:29:10.860Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;idea结合git实现项目管理实战一配置篇&quot;&gt;【IDEA结合Git实现项目管理实战】一、配置篇&lt;/h1&gt;
+&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="Git" scheme="https://moduokesi.top/categories/Git/"/>
+    
+    
+    <category term="项目管理" scheme="https://moduokesi.top/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/"/>
+    
+  </entry>
   
   <entry>
     <title>Redis持久化问题排查</title>
