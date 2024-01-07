@@ -237,82 +237,6 @@ R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又
       </tags>
   </entry>
   <entry>
-    <title>【IDEA结合Git实现项目管理实战】一、配置篇</title>
-    <url>/2023/12/07/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/</url>
-    <content><![CDATA[<h2 id="前言">前言</h2>
-<blockquote>
-<p>本系列将结合我个人参与团队协作开发项目的经验来介绍如何使用IDEA结合Git实现项目管理，因此可能与真正的企业开发协作存在差异，且文章所涉及的解析可能存在个人理解与实际的偏差。</p>
-<p>本系列主讲如何具体操作，因此对于Git内部的原理将<strong>不会过多深究</strong>。</p>
-<p>本文严禁任何形式的转载、搬运！</p>
-</blockquote>
-<p>本文作为该系列的<strong>配置篇</strong>，将介绍如何<strong>使用IDEA整合git</strong>，从而实现项目管理。</p>
-<p>本文将使用<strong>Gitee</strong>作为项目管理工具。</p>
-<p>注意：本文假定你已经拥有了一个Gitee账号并已经配置了密钥。</p>
-<h2 id="下载插件">下载插件</h2>
-<p>打开设置</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101052093.png"></p>
-<p>在插件中搜索<strong>Gitee</strong>并下载安装，安装完毕后IDEA会提醒重启IDE，重启后插件才会生效！</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101052329.png"></p>
-<h2 id="添加账号">添加账号</h2>
-<p>IDEA重启后，再次打开设置，在版本控制中可以看到Gitee这一栏，点击加号添加账号</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101055207.png"></p>
-<p>点击加号后我们选择<strong>Log in via Gitee</strong></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101056039.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101057087.png"></p>
-<p>授权完毕后点击应用。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101058578.png"></p>
-<h2 id="项目管理">项目管理</h2>
-<p>最后一个步骤就是正式的实现项目的版本控制了，实现这一步骤有两种操作。</p>
-<p>第一种是<strong>将IDEA本地的项目上传到gitee中</strong></p>
-<p>第二种是<strong>从远程clone一个仓库到IDEA本地中</strong></p>
-<p>下面我们来逐个介绍这两种操作，并简述这两者之间的区别和使用场景。</p>
-<h3 id="将idea本地的下面上传到gitee中">1.将IDEA本地的下面上传到Gitee中</h3>
-<p>现在我们打开你想要托管给Gitee的项目，打开工具栏的VCS，点击<strong>Share
-Project on Gitee</strong></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101106369.png"></p>
-<p>这里我们可以设置仓库名（Repository
-name），Remote是远程分支名，可以不用修改，Description是这个仓库的描述，这里自己填写即可。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101108667.png"></p>
-<p>填写完毕后点击share，弹出这个窗口。</p>
-<p>我们需要在本窗口中添加需要进行版本管理的文件以进行初始化，可以看到，本项目的所有文件都是<strong>理论篇</strong>提到的红色文件名的文件，这是因为这个项目还没有上传到远程仓库，也就不存在被Git跟踪的文件，所以都是红色文件名。</p>
-<p>这里我们填写下提交信息并点击添加按钮，就可以上传成功了。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101111093.png"></p>
-<p>上传完毕后，我们可以观察到IDEA中出现了这三个功能块，至于这些功能块有何具体作用，我们将在基础篇详细介绍，这里不过多解释了。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101114291.png"></p>
-<p>这时候我们可以打开gitee的网站，点击顶部工具栏的头像，选择我的仓库，就可以看到刚刚创建的仓库了!</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101117539.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101118688.png"></p>
-<h3 id="从远程clone一个仓库到idea本地中">2.从远程clone一个仓库到IDEA本地中</h3>
-<p>这一步我们将从远程仓库中clone一个项目到本地中。</p>
-<p>我们在gitee中选择一个想要clone的远程仓库，这里我使用的是我自己的远程仓库：</p>
-<p><a href="https://gitee.com/moduokesi_admin/work-space">https://gitee.com/moduokesi_admin/work-space</a></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101122842.png"></p>
-<p>点击VCS，选择从版本控制中获取。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101127137.png"></p>
-<p>在仓库URL中，在URL中粘贴我们刚才复制的HTTPS地址，在目录中选择我们想要放置远程仓库代码的本地地址，填写完毕后点击克隆。</p>
-<p>注意：目录必须是一个空目录</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101128513.png"></p>
-<p>等待克隆完成后项目会自动跳转到你选择的目录。</p>
-<h2 id="总结">总结</h2>
-<p>通过以上的介绍，我们了解到实现版本控制有两种操作：</p>
-<p>第一种操作适用于以下场景：</p>
-<ul>
-<li>本地你已经开发好了项目，需要将项目托管给远程仓库。</li>
-</ul>
-<p>第二种操作适用于以下场景：</p>
-<ul>
-<li>团队已经有了远程仓库（有人已经将远程仓库创建好了），这时候我们直接clone即可。</li>
-<li>在gitee或github中看到了优质项目，我们clone本地进行学习</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Git</category>
-      </categories>
-      <tags>
-        <tag>项目管理</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【IDEA结合Git实现项目管理实战】三、实战篇</title>
     <url>/2023/12/15/%E4%B8%89%E3%80%81%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E5%AE%9E%E6%88%98/</url>
     <content><![CDATA[<h2 id="前言">前言</h2>
@@ -802,6 +726,82 @@ dev也就代表目标分支的方向（在右侧）</p>
 <p>在变基操作时，冲突可能发生在<strong>当前分支的提交记录和目标分支的提交记录之间的每个提交记录</strong>上。这是因为变基是将一系列提交应用到另一个分支上，而不仅仅是最新的提交。如果两个分支都修改了相同的文件，冲突可能会在每个提交记录上发生，而不仅仅是最新的提交。</p>
 <p>总的来说，冲突是由于两个分支都对同一文件进行了修改，而 Git
 无法自动解决冲突的情况下发生的。在合并操作中，冲突通常发生在最新的提交记录上；在变基操作中，冲突可能发生在多个提交记录上。</p>
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>项目管理</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【IDEA结合Git实现项目管理实战】一、配置篇</title>
+    <url>/2023/12/07/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/</url>
+    <content><![CDATA[<h2 id="前言">前言</h2>
+<blockquote>
+<p>本系列将结合我个人参与团队协作开发项目的经验来介绍如何使用IDEA结合Git实现项目管理，因此可能与真正的企业开发协作存在差异，且文章所涉及的解析可能存在个人理解与实际的偏差。</p>
+<p>本系列主讲如何具体操作，因此对于Git内部的原理将<strong>不会过多深究</strong>。</p>
+<p>本文严禁任何形式的转载、搬运！</p>
+</blockquote>
+<p>本文作为该系列的<strong>配置篇</strong>，将介绍如何<strong>使用IDEA整合git</strong>，从而实现项目管理。</p>
+<p>本文将使用<strong>Gitee</strong>作为项目管理工具。</p>
+<p>注意：本文假定你已经拥有了一个Gitee账号并已经配置了密钥。</p>
+<h2 id="下载插件">下载插件</h2>
+<p>打开设置</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101052093.png"></p>
+<p>在插件中搜索<strong>Gitee</strong>并下载安装，安装完毕后IDEA会提醒重启IDE，重启后插件才会生效！</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101052329.png"></p>
+<h2 id="添加账号">添加账号</h2>
+<p>IDEA重启后，再次打开设置，在版本控制中可以看到Gitee这一栏，点击加号添加账号</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101055207.png"></p>
+<p>点击加号后我们选择<strong>Log in via Gitee</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101056039.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101057087.png"></p>
+<p>授权完毕后点击应用。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101058578.png"></p>
+<h2 id="项目管理">项目管理</h2>
+<p>最后一个步骤就是正式的实现项目的版本控制了，实现这一步骤有两种操作。</p>
+<p>第一种是<strong>将IDEA本地的项目上传到gitee中</strong></p>
+<p>第二种是<strong>从远程clone一个仓库到IDEA本地中</strong></p>
+<p>下面我们来逐个介绍这两种操作，并简述这两者之间的区别和使用场景。</p>
+<h3 id="将idea本地的下面上传到gitee中">1.将IDEA本地的下面上传到Gitee中</h3>
+<p>现在我们打开你想要托管给Gitee的项目，打开工具栏的VCS，点击<strong>Share
+Project on Gitee</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101106369.png"></p>
+<p>这里我们可以设置仓库名（Repository
+name），Remote是远程分支名，可以不用修改，Description是这个仓库的描述，这里自己填写即可。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101108667.png"></p>
+<p>填写完毕后点击share，弹出这个窗口。</p>
+<p>我们需要在本窗口中添加需要进行版本管理的文件以进行初始化，可以看到，本项目的所有文件都是<strong>理论篇</strong>提到的红色文件名的文件，这是因为这个项目还没有上传到远程仓库，也就不存在被Git跟踪的文件，所以都是红色文件名。</p>
+<p>这里我们填写下提交信息并点击添加按钮，就可以上传成功了。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101111093.png"></p>
+<p>上传完毕后，我们可以观察到IDEA中出现了这三个功能块，至于这些功能块有何具体作用，我们将在基础篇详细介绍，这里不过多解释了。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101114291.png"></p>
+<p>这时候我们可以打开gitee的网站，点击顶部工具栏的头像，选择我的仓库，就可以看到刚刚创建的仓库了!</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101117539.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101118688.png"></p>
+<h3 id="从远程clone一个仓库到idea本地中">2.从远程clone一个仓库到IDEA本地中</h3>
+<p>这一步我们将从远程仓库中clone一个项目到本地中。</p>
+<p>我们在gitee中选择一个想要clone的远程仓库，这里我使用的是我自己的远程仓库：</p>
+<p><a href="https://gitee.com/moduokesi_admin/work-space">https://gitee.com/moduokesi_admin/work-space</a></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101122842.png"></p>
+<p>点击VCS，选择从版本控制中获取。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101127137.png"></p>
+<p>在仓库URL中，在URL中粘贴我们刚才复制的HTTPS地址，在目录中选择我们想要放置远程仓库代码的本地地址，填写完毕后点击克隆。</p>
+<p>注意：目录必须是一个空目录</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101128513.png"></p>
+<p>等待克隆完成后项目会自动跳转到你选择的目录。</p>
+<h2 id="总结">总结</h2>
+<p>通过以上的介绍，我们了解到实现版本控制有两种操作：</p>
+<p>第一种操作适用于以下场景：</p>
+<ul>
+<li>本地你已经开发好了项目，需要将项目托管给远程仓库。</li>
+</ul>
+<p>第二种操作适用于以下场景：</p>
+<ul>
+<li>团队已经有了远程仓库（有人已经将远程仓库创建好了），这时候我们直接clone即可。</li>
+<li>在gitee或github中看到了优质项目，我们clone本地进行学习</li>
+</ul>
 ]]></content>
       <categories>
         <category>Git</category>
