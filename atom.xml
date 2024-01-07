@@ -6,7 +6,7 @@
   <link href="https://moduokesi.top/atom.xml" rel="self"/>
   
   <link href="https://moduokesi.top/"/>
-  <updated>2024-01-07T06:29:10.860Z</updated>
+  <updated>2024-01-07T06:35:13.850Z</updated>
   <id>https://moduokesi.top/</id>
   
   <author>
@@ -17,11 +17,63 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>【IDEA结合Git实现项目管理实战】一、配置篇</title>
-    <link href="https://moduokesi.top/2023/12/10/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/"/>
-    <id>https://moduokesi.top/2023/12/10/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/</id>
+    <title>【IDEA结合Git实现项目管理实战】三、实战篇</title>
+    <link href="https://moduokesi.top/2023/12/15/%E4%B8%89%E3%80%81%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E5%AE%9E%E6%88%98/"/>
+    <id>https://moduokesi.top/2023/12/15/%E4%B8%89%E3%80%81%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E5%AE%9E%E6%88%98/</id>
+    <published>2023-12-15T04:01:20.000Z</published>
+    <updated>2024-01-07T06:35:13.850Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;idea结合git实现项目管理实战三实战篇&quot;&gt;【IDEA结合Git实现项目管理实战】三、实战篇&lt;/h1&gt;
+&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="Git" scheme="https://moduokesi.top/categories/Git/"/>
+    
+    
+    <category term="项目管理" scheme="https://moduokesi.top/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【IDEA结合Git实现项目管理实战】二、基础篇</title>
+    <link href="https://moduokesi.top/2023/12/10/%E4%BA%8C%E3%80%81Git%E7%9A%84%E5%9B%9B%E4%B8%AA%E5%8C%BA%E5%9F%9F/"/>
+    <id>https://moduokesi.top/2023/12/10/%E4%BA%8C%E3%80%81Git%E7%9A%84%E5%9B%9B%E4%B8%AA%E5%8C%BA%E5%9F%9F/</id>
     <published>2023-12-10T08:20:10.000Z</published>
-    <updated>2024-01-07T06:29:10.860Z</updated>
+    <updated>2024-01-07T06:33:44.030Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;idea结合git实现项目管理实战二基础篇&quot;&gt;【IDEA结合Git实现项目管理实战】二、基础篇&lt;/h1&gt;
+&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="Git" scheme="https://moduokesi.top/categories/Git/"/>
+    
+    
+    <category term="项目管理" scheme="https://moduokesi.top/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【IDEA结合Git实现项目管理实战】一、配置篇</title>
+    <link href="https://moduokesi.top/2023/12/07/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/"/>
+    <id>https://moduokesi.top/2023/12/07/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/</id>
+    <published>2023-12-07T02:30:29.000Z</published>
+    <updated>2024-01-07T06:34:06.909Z</updated>
     
     
       
@@ -29,6 +81,32 @@
         
         
     <summary type="html">&lt;h1 id=&quot;idea结合git实现项目管理实战一配置篇&quot;&gt;【IDEA结合Git实现项目管理实战】一、配置篇&lt;/h1&gt;
+&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="Git" scheme="https://moduokesi.top/categories/Git/"/>
+    
+    
+    <category term="项目管理" scheme="https://moduokesi.top/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【IDEA结合Git实现项目管理实战】四、git冲突篇</title>
+    <link href="https://moduokesi.top/2023/01/04/%E5%9B%9B%E3%80%81%E8%A7%A3%E5%86%B3%E4%BB%A3%E7%A0%81%E5%86%B2%E7%AA%81/"/>
+    <id>https://moduokesi.top/2023/01/04/%E5%9B%9B%E3%80%81%E8%A7%A3%E5%86%B3%E4%BB%A3%E7%A0%81%E5%86%B2%E7%AA%81/</id>
+    <published>2023-01-04T10:21:22.000Z</published>
+    <updated>2024-01-07T06:36:18.834Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;idea结合git实现项目管理实战四git冲突篇&quot;&gt;【IDEA结合Git实现项目管理实战】四、git冲突篇&lt;/h1&gt;
 &lt;h2</summary>
         
       
