@@ -1,117 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>VMWare演示Redis持久化</title>
-    <url>/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/</url>
-    <content><![CDATA[<h2 id="vmware演示redis持久化">VMware演示Redis持久化</h2>
-<h3 id="redis持久化的作用">Redis持久化的作用</h3>
-<p>Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全性得以大大提升。<br></p>
-<h3 id="rdb">RDB</h3>
-<blockquote>
-<p>RDB全称为Redis Database Backup
-file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就是把内存重的所有数据都记录道磁盘中。当Redis实例故障重启后，从磁盘读取快照文件，恢复数据。</p>
-</blockquote>
-<p>RDB实现数据持久化有两种命令：<code>save</code>和<code>bgsave</code></p>
-<p>save命令适合用于准备将Redis停机的情况。</p>
-<p>在执行save命令时会占用Redis的主进程，阻塞所有命令，因此不适用于Redis正在运行的情况。</p>
-<p>而bgsave命令会执行fork操作开启一个子进程，避免主进程收到影响。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282119328.png"></p>
-<p>此外，当Redis停机时会执行一次RDB操作进行数据备份。</p>
-<p>下面将对该情况进行验证</p>
-<h3 id="rdb演示">RDB演示</h3>
-<p>使用<code>redis-server redis.conf</code>指令在任意路径下运行Redis</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291303145.png"></p>
-<p>接下来创建一个新的终端创建连接，存入键值对</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301657349.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301708367.png"></p>
-<p>接着回到上一个终端使用<code>ctrl + c</code>关闭Redis，可以看到<code>DB saved on disk</code>表示文件正常保存</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282139525.png"></p>
-<p>在当前路径下使用ll查看所有文件，看到dump.rdb快照文件已经生成<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282141216.png"></p>
-<p>接着再次在当前终端使用<code>redis-server redis.conf</code>启动Redis，此时数据会自动恢复，回到另一个终端窗口</p>
-<p>此时将使用<code>ctrl + c</code>关闭当前命令行客户端，重新使用<code>redis-cli</code>开启一个新的命令行</p>
-<p>这时使用get num命令发现数据返回为789，（如果get
-num返回错误<strong>Error：Server closed the
-connection</strong>要将redis.conf的<strong>protected-mode</strong>设置为No关闭保护模式）表明数据备份成功</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301704159.png"></p>
-<p><strong>Redis停机自动执行RDB证明完毕！</strong></p>
-<h3 id="实现rdb的相关配置">实现RDB的相关配置</h3>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282152250.png"></p>
-<p>这里需要 cd 到redis的安装目录下，我的安装目录在
-/usr/local/src/redis-6.2.6下</p>
-<p>这里老师用的MobaXterm可以直接使用第三方文件打开配置文件进行修改，因为我用的是VMware所以只能使用Linux命令进行修改配置</p>
-<p>使用 <code>vi redis.conf</code>修改配置文件</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282159322.png"></p>
-<p>这里有一些小技巧：</p>
-<ul>
-<li>按下INSERT键进入修改状态，此时才可以对文件进行修改</li>
-<li>按下ESC键可以使用一些命令：<code>/xxx</code>可以查找跳跃到当前文件中的xxx名称，<code>:wq</code>保存当前文件并退出，<code>:q</code>不保存并退出当前文件，<code>:q!</code>不保存并强制退出当前文件</li>
-</ul>
-<p>下面就可以对配置文件进行修改了！</p>
-<p>修改为五秒内执行一次操作就出发RDB备份</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282209053.png"></p>
-<p>接着</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282211172.png"></p>
-<p>再查找rdbcompression后修改为yes即可</p>
-<p>使用:wq保存并退出</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282214630.png"></p>
-<p>rdb文件名修改后使用终端再次运行Redis，发现此时没有DB文件录入消息，之前的dump.rdb文件已不能被读取</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291316731.png"></p>
-<p>到另一个终端重新使用redis-cli开启命令行，使用get
-num命令发现结果为空，再set
-一个新的键值，回到Redis窗口发现出现<code>Background saving started</code>字段即表示成功！</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282221596.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291318662.png"></p>
-<h3 id="aof">AOF</h3>
-<blockquote>
-<p>AOF全称为Append Only File
-(追加文件)。Redis处理的每一个写命令都会记录在AOF文件，可以看做是命令日志文件。</p>
-</blockquote>
-<p>开启AOF需要在Redis的配置文件中修改配置，AOF记录命令的频率有三种:<code>always</code>
-、<code>everysec</code>和<code>no</code></p>
-<p>always配置胜在能记录每一次Redis执行的写命令，几乎不会丢失数据，但对性能会有很大的影响</p>
-<p>everysec配置每隔一秒将缓冲区里的数据写入到AOF文件，避免直接对AOF文件操作而性能上有了提升，但是在数据间隔的一秒内如果出现服务宕机的情况会丢失最多一秒的数据</p>
-<p>no配置执行频率最低，性能最好，但是可靠性很低，不推荐使用</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301559763.png"></p>
-<h3 id="aof演示">AOF演示</h3>
-<p>先使用 cd 命令进入到Redis的安装路径下</p>
-<p>使用<code>vi redis.conf</code>命令修改redis配置文件</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301615021.png"></p>
-<p>将之前的save 5 1注释掉，写入save ""，表示禁用RDB</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301617321.png"></p>
-<p>将appendonly修改为yes，开启AOF</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301618239.png"></p>
-<p>AOF执行频率的命令配置默认为<code>appendfsync everysec</code>，不需要修改</p>
-<p>修改完毕后回到终端，使用<code>rm -rf *.rdb</code>删除之前的RDB文件</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301622298.png"></p>
-<p>可以看到当前目录下rdb文件已删除</p>
-<p>使用<code>redis-server redis.conf</code>命令重启Redis</p>
-<p>发现日志中出现没有对RDB的读取，修改成功</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301626879.png"></p>
-<p>在另一终端打开命令行，输入如下指令</p>
-<p>返回空集合，说明所有数据已被清除</p>
-<figure>
-<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301703747.png" alt="img">
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>set一个键值对</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301630032.png"></p>
-<p>这时我们打开文件夹进入本机的Redis的安装路径下，发现AOF文件已经被创建成功，打开AOF文件，set命令已经被写入成功，说明<strong>AOF已经生效了</strong></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301633106.png"></p>
-<p>接下来验证AOF的重启恢复，先重启Redis服务，红框内的日志表示数据已经从AOF文件加载完毕</p>
-<p><img src="/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/Users\86130\AppData\Roaming\Tencent\Users\2484792357\QQ\WinTemp\RichOle\LBDM52Q%5BBMBTK%7DPKDK~HB2V.png"></p>
-<p>这时候我们回到命令行使用<code>keys *</code>命令，返回num，依然有数据，说明AOF重启能保证数据的恢复，证明完毕</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301640485.png"></p>
-<h3 id="rdb和aof的比较">RDB和AOF的比较</h3>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301647804.png"></p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-      <tags>
-        <tag>学习笔记</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Redis持久化问题排查</title>
     <url>/2022/10/29/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/</url>
     <content><![CDATA[<h2 id="redis持久化问题排查">Redis持久化问题排查</h2>
@@ -237,79 +126,114 @@ R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又
       </tags>
   </entry>
   <entry>
-    <title>【IDEA结合Git实现项目管理实战】一、配置篇</title>
-    <url>/2023/12/07/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/</url>
-    <content><![CDATA[<h2 id="前言">前言</h2>
+    <title>VMWare演示Redis持久化</title>
+    <url>/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/</url>
+    <content><![CDATA[<h2 id="vmware演示redis持久化">VMware演示Redis持久化</h2>
+<h3 id="redis持久化的作用">Redis持久化的作用</h3>
+<p>Redis是内存存储，如果出现服务器宕机、服务重启等情况可能会丢失数据，利用Redis持久化可以将数据写入磁盘中，这样Redis就可以利用持久化的文件进行数据恢复，数据安全性得以大大提升。<br></p>
+<h3 id="rdb">RDB</h3>
 <blockquote>
-<p>本系列将结合我个人参与团队协作开发项目的经验来介绍如何使用IDEA结合Git实现项目管理，因此可能与真正的企业开发协作存在差异，且文章所涉及的解析可能存在个人理解与实际的偏差。</p>
-<p>本系列主讲如何具体操作，因此对于Git内部的原理将<strong>不会过多深究</strong>。</p>
-<p>本文严禁任何形式的转载、搬运！</p>
+<p>RDB全称为Redis Database Backup
+file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就是把内存重的所有数据都记录道磁盘中。当Redis实例故障重启后，从磁盘读取快照文件，恢复数据。</p>
 </blockquote>
-<p>本文作为该系列的<strong>配置篇</strong>，将介绍如何<strong>使用IDEA整合git</strong>，从而实现项目管理。</p>
-<p>本文将使用<strong>Gitee</strong>作为项目管理工具。</p>
-<p>注意：本文假定你已经拥有了一个Gitee账号并已经配置了密钥。</p>
-<h2 id="下载插件">下载插件</h2>
-<p>打开设置</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101052093.png"></p>
-<p>在插件中搜索<strong>Gitee</strong>并下载安装，安装完毕后IDEA会提醒重启IDE，重启后插件才会生效！</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101052329.png"></p>
-<h2 id="添加账号">添加账号</h2>
-<p>IDEA重启后，再次打开设置，在版本控制中可以看到Gitee这一栏，点击加号添加账号</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101055207.png"></p>
-<p>点击加号后我们选择<strong>Log in via Gitee</strong></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101056039.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101057087.png"></p>
-<p>授权完毕后点击应用。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101058578.png"></p>
-<h2 id="项目管理">项目管理</h2>
-<p>最后一个步骤就是正式的实现项目的版本控制了，实现这一步骤有两种操作。</p>
-<p>第一种是<strong>将IDEA本地的项目上传到gitee中</strong></p>
-<p>第二种是<strong>从远程clone一个仓库到IDEA本地中</strong></p>
-<p>下面我们来逐个介绍这两种操作，并简述这两者之间的区别和使用场景。</p>
-<h3 id="将idea本地的下面上传到gitee中">1.将IDEA本地的下面上传到Gitee中</h3>
-<p>现在我们打开你想要托管给Gitee的项目，打开工具栏的VCS，点击<strong>Share
-Project on Gitee</strong></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101106369.png"></p>
-<p>这里我们可以设置仓库名（Repository
-name），Remote是远程分支名，可以不用修改，Description是这个仓库的描述，这里自己填写即可。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101108667.png"></p>
-<p>填写完毕后点击share，弹出这个窗口。</p>
-<p>我们需要在本窗口中添加需要进行版本管理的文件以进行初始化，可以看到，本项目的所有文件都是<strong>理论篇</strong>提到的红色文件名的文件，这是因为这个项目还没有上传到远程仓库，也就不存在被Git跟踪的文件，所以都是红色文件名。</p>
-<p>这里我们填写下提交信息并点击添加按钮，就可以上传成功了。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101111093.png"></p>
-<p>上传完毕后，我们可以观察到IDEA中出现了这三个功能块，至于这些功能块有何具体作用，我们将在基础篇详细介绍，这里不过多解释了。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101114291.png"></p>
-<p>这时候我们可以打开gitee的网站，点击顶部工具栏的头像，选择我的仓库，就可以看到刚刚创建的仓库了!</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101117539.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101118688.png"></p>
-<h3 id="从远程clone一个仓库到idea本地中">2.从远程clone一个仓库到IDEA本地中</h3>
-<p>这一步我们将从远程仓库中clone一个项目到本地中。</p>
-<p>我们在gitee中选择一个想要clone的远程仓库，这里我使用的是我自己的远程仓库：</p>
-<p><a href="https://gitee.com/moduokesi_admin/work-space">https://gitee.com/moduokesi_admin/work-space</a></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101122842.png"></p>
-<p>点击VCS，选择从版本控制中获取。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101127137.png"></p>
-<p>在仓库URL中，在URL中粘贴我们刚才复制的HTTPS地址，在目录中选择我们想要放置远程仓库代码的本地地址，填写完毕后点击克隆。</p>
-<p>注意：目录必须是一个空目录</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101128513.png"></p>
-<p>等待克隆完成后项目会自动跳转到你选择的目录。</p>
-<h2 id="总结">总结</h2>
-<p>通过以上的介绍，我们了解到实现版本控制有两种操作：</p>
-<p>第一种操作适用于以下场景：</p>
+<p>RDB实现数据持久化有两种命令：<code>save</code>和<code>bgsave</code></p>
+<p>save命令适合用于准备将Redis停机的情况。</p>
+<p>在执行save命令时会占用Redis的主进程，阻塞所有命令，因此不适用于Redis正在运行的情况。</p>
+<p>而bgsave命令会执行fork操作开启一个子进程，避免主进程收到影响。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282119328.png"></p>
+<p>此外，当Redis停机时会执行一次RDB操作进行数据备份。</p>
+<p>下面将对该情况进行验证</p>
+<h3 id="rdb演示">RDB演示</h3>
+<p>使用<code>redis-server redis.conf</code>指令在任意路径下运行Redis</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291303145.png"></p>
+<p>接下来创建一个新的终端创建连接，存入键值对</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301657349.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301708367.png"></p>
+<p>接着回到上一个终端使用<code>ctrl + c</code>关闭Redis，可以看到<code>DB saved on disk</code>表示文件正常保存</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282139525.png"></p>
+<p>在当前路径下使用ll查看所有文件，看到dump.rdb快照文件已经生成<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282141216.png"></p>
+<p>接着再次在当前终端使用<code>redis-server redis.conf</code>启动Redis，此时数据会自动恢复，回到另一个终端窗口</p>
+<p>此时将使用<code>ctrl + c</code>关闭当前命令行客户端，重新使用<code>redis-cli</code>开启一个新的命令行</p>
+<p>这时使用get num命令发现数据返回为789，（如果get
+num返回错误<strong>Error：Server closed the
+connection</strong>要将redis.conf的<strong>protected-mode</strong>设置为No关闭保护模式）表明数据备份成功</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301704159.png"></p>
+<p><strong>Redis停机自动执行RDB证明完毕！</strong></p>
+<h3 id="实现rdb的相关配置">实现RDB的相关配置</h3>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282152250.png"></p>
+<p>这里需要 cd 到redis的安装目录下，我的安装目录在
+/usr/local/src/redis-6.2.6下</p>
+<p>这里老师用的MobaXterm可以直接使用第三方文件打开配置文件进行修改，因为我用的是VMware所以只能使用Linux命令进行修改配置</p>
+<p>使用 <code>vi redis.conf</code>修改配置文件</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282159322.png"></p>
+<p>这里有一些小技巧：</p>
 <ul>
-<li>本地你已经开发好了项目，需要将项目托管给远程仓库。</li>
+<li>按下INSERT键进入修改状态，此时才可以对文件进行修改</li>
+<li>按下ESC键可以使用一些命令：<code>/xxx</code>可以查找跳跃到当前文件中的xxx名称，<code>:wq</code>保存当前文件并退出，<code>:q</code>不保存并退出当前文件，<code>:q!</code>不保存并强制退出当前文件</li>
 </ul>
-<p>第二种操作适用于以下场景：</p>
-<ul>
-<li>团队已经有了远程仓库（有人已经将远程仓库创建好了），这时候我们直接clone即可。</li>
-<li>在gitee或github中看到了优质项目，我们clone本地进行学习</li>
-</ul>
+<p>下面就可以对配置文件进行修改了！</p>
+<p>修改为五秒内执行一次操作就出发RDB备份</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282209053.png"></p>
+<p>接着</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282211172.png"></p>
+<p>再查找rdbcompression后修改为yes即可</p>
+<p>使用:wq保存并退出</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282214630.png"></p>
+<p>rdb文件名修改后使用终端再次运行Redis，发现此时没有DB文件录入消息，之前的dump.rdb文件已不能被读取</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291316731.png"></p>
+<p>到另一个终端重新使用redis-cli开启命令行，使用get
+num命令发现结果为空，再set
+一个新的键值，回到Redis窗口发现出现<code>Background saving started</code>字段即表示成功！</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282221596.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291318662.png"></p>
+<h3 id="aof">AOF</h3>
+<blockquote>
+<p>AOF全称为Append Only File
+(追加文件)。Redis处理的每一个写命令都会记录在AOF文件，可以看做是命令日志文件。</p>
+</blockquote>
+<p>开启AOF需要在Redis的配置文件中修改配置，AOF记录命令的频率有三种:<code>always</code>
+、<code>everysec</code>和<code>no</code></p>
+<p>always配置胜在能记录每一次Redis执行的写命令，几乎不会丢失数据，但对性能会有很大的影响</p>
+<p>everysec配置每隔一秒将缓冲区里的数据写入到AOF文件，避免直接对AOF文件操作而性能上有了提升，但是在数据间隔的一秒内如果出现服务宕机的情况会丢失最多一秒的数据</p>
+<p>no配置执行频率最低，性能最好，但是可靠性很低，不推荐使用</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301559763.png"></p>
+<h3 id="aof演示">AOF演示</h3>
+<p>先使用 cd 命令进入到Redis的安装路径下</p>
+<p>使用<code>vi redis.conf</code>命令修改redis配置文件</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301615021.png"></p>
+<p>将之前的save 5 1注释掉，写入save ""，表示禁用RDB</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301617321.png"></p>
+<p>将appendonly修改为yes，开启AOF</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301618239.png"></p>
+<p>AOF执行频率的命令配置默认为<code>appendfsync everysec</code>，不需要修改</p>
+<p>修改完毕后回到终端，使用<code>rm -rf *.rdb</code>删除之前的RDB文件</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301622298.png"></p>
+<p>可以看到当前目录下rdb文件已删除</p>
+<p>使用<code>redis-server redis.conf</code>命令重启Redis</p>
+<p>发现日志中出现没有对RDB的读取，修改成功</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301626879.png"></p>
+<p>在另一终端打开命令行，输入如下指令</p>
+<p>返回空集合，说明所有数据已被清除</p>
+<figure>
+<img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301703747.png" alt="img">
+<figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>set一个键值对</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301630032.png"></p>
+<p>这时我们打开文件夹进入本机的Redis的安装路径下，发现AOF文件已经被创建成功，打开AOF文件，set命令已经被写入成功，说明<strong>AOF已经生效了</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301633106.png"></p>
+<p>接下来验证AOF的重启恢复，先重启Redis服务，红框内的日志表示数据已经从AOF文件加载完毕</p>
+<p><img src="/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/Users\86130\AppData\Roaming\Tencent\Users\2484792357\QQ\WinTemp\RichOle\LBDM52Q%5BBMBTK%7DPKDK~HB2V.png"></p>
+<p>这时候我们回到命令行使用<code>keys *</code>命令，返回num，依然有数据，说明AOF重启能保证数据的恢复，证明完毕</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301640485.png"></p>
+<h3 id="rdb和aof的比较">RDB和AOF的比较</h3>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301647804.png"></p>
 ]]></content>
       <categories>
-        <category>Git</category>
+        <category>Linux</category>
       </categories>
       <tags>
-        <tag>项目管理</tag>
+        <tag>学习笔记</tag>
       </tags>
   </entry>
   <entry>
@@ -802,6 +726,82 @@ dev也就代表目标分支的方向（在右侧）</p>
 <p>在变基操作时，冲突可能发生在<strong>当前分支的提交记录和目标分支的提交记录之间的每个提交记录</strong>上。这是因为变基是将一系列提交应用到另一个分支上，而不仅仅是最新的提交。如果两个分支都修改了相同的文件，冲突可能会在每个提交记录上发生，而不仅仅是最新的提交。</p>
 <p>总的来说，冲突是由于两个分支都对同一文件进行了修改，而 Git
 无法自动解决冲突的情况下发生的。在合并操作中，冲突通常发生在最新的提交记录上；在变基操作中，冲突可能发生在多个提交记录上。</p>
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>项目管理</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【IDEA结合Git实现项目管理实战】一、配置篇</title>
+    <url>/2023/12/07/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/</url>
+    <content><![CDATA[<h2 id="前言">前言</h2>
+<blockquote>
+<p>本系列将结合我个人参与团队协作开发项目的经验来介绍如何使用IDEA结合Git实现项目管理，因此可能与真正的企业开发协作存在差异，且文章所涉及的解析可能存在个人理解与实际的偏差。</p>
+<p>本系列主讲如何具体操作，因此对于Git内部的原理将<strong>不会过多深究</strong>。</p>
+<p>本文严禁任何形式的转载、搬运！</p>
+</blockquote>
+<p>本文作为该系列的<strong>配置篇</strong>，将介绍如何<strong>使用IDEA整合git</strong>，从而实现项目管理。</p>
+<p>本文将使用<strong>Gitee</strong>作为项目管理工具。</p>
+<p>注意：本文假定你已经拥有了一个Gitee账号并已经配置了密钥。</p>
+<h2 id="下载插件">下载插件</h2>
+<p>打开设置</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101052093.png"></p>
+<p>在插件中搜索<strong>Gitee</strong>并下载安装，安装完毕后IDEA会提醒重启IDE，重启后插件才会生效！</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101052329.png"></p>
+<h2 id="添加账号">添加账号</h2>
+<p>IDEA重启后，再次打开设置，在版本控制中可以看到Gitee这一栏，点击加号添加账号</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101055207.png"></p>
+<p>点击加号后我们选择<strong>Log in via Gitee</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101056039.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101057087.png"></p>
+<p>授权完毕后点击应用。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101058578.png"></p>
+<h2 id="项目管理">项目管理</h2>
+<p>最后一个步骤就是正式的实现项目的版本控制了，实现这一步骤有两种操作。</p>
+<p>第一种是<strong>将IDEA本地的项目上传到gitee中</strong></p>
+<p>第二种是<strong>从远程clone一个仓库到IDEA本地中</strong></p>
+<p>下面我们来逐个介绍这两种操作，并简述这两者之间的区别和使用场景。</p>
+<h3 id="将idea本地的下面上传到gitee中">1.将IDEA本地的下面上传到Gitee中</h3>
+<p>现在我们打开你想要托管给Gitee的项目，打开工具栏的VCS，点击<strong>Share
+Project on Gitee</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101106369.png"></p>
+<p>这里我们可以设置仓库名（Repository
+name），Remote是远程分支名，可以不用修改，Description是这个仓库的描述，这里自己填写即可。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101108667.png"></p>
+<p>填写完毕后点击share，弹出这个窗口。</p>
+<p>我们需要在本窗口中添加需要进行版本管理的文件以进行初始化，可以看到，本项目的所有文件都是<strong>理论篇</strong>提到的红色文件名的文件，这是因为这个项目还没有上传到远程仓库，也就不存在被Git跟踪的文件，所以都是红色文件名。</p>
+<p>这里我们填写下提交信息并点击添加按钮，就可以上传成功了。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101111093.png"></p>
+<p>上传完毕后，我们可以观察到IDEA中出现了这三个功能块，至于这些功能块有何具体作用，我们将在基础篇详细介绍，这里不过多解释了。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101114291.png"></p>
+<p>这时候我们可以打开gitee的网站，点击顶部工具栏的头像，选择我的仓库，就可以看到刚刚创建的仓库了!</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101117539.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101118688.png"></p>
+<h3 id="从远程clone一个仓库到idea本地中">2.从远程clone一个仓库到IDEA本地中</h3>
+<p>这一步我们将从远程仓库中clone一个项目到本地中。</p>
+<p>我们在gitee中选择一个想要clone的远程仓库，这里我使用的是我自己的远程仓库：</p>
+<p><a href="https://gitee.com/moduokesi_admin/work-space">https://gitee.com/moduokesi_admin/work-space</a></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101122842.png"></p>
+<p>点击VCS，选择从版本控制中获取。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101127137.png"></p>
+<p>在仓库URL中，在URL中粘贴我们刚才复制的HTTPS地址，在目录中选择我们想要放置远程仓库代码的本地地址，填写完毕后点击克隆。</p>
+<p>注意：目录必须是一个空目录</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312101128513.png"></p>
+<p>等待克隆完成后项目会自动跳转到你选择的目录。</p>
+<h2 id="总结">总结</h2>
+<p>通过以上的介绍，我们了解到实现版本控制有两种操作：</p>
+<p>第一种操作适用于以下场景：</p>
+<ul>
+<li>本地你已经开发好了项目，需要将项目托管给远程仓库。</li>
+</ul>
+<p>第二种操作适用于以下场景：</p>
+<ul>
+<li>团队已经有了远程仓库（有人已经将远程仓库创建好了），这时候我们直接clone即可。</li>
+<li>在gitee或github中看到了优质项目，我们clone本地进行学习</li>
+</ul>
 ]]></content>
       <categories>
         <category>Git</category>
