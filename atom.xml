@@ -6,7 +6,7 @@
   <link href="https://moduokesi.top/atom.xml" rel="self"/>
   
   <link href="https://moduokesi.top/"/>
-  <updated>2024-01-07T06:39:23.816Z</updated>
+  <updated>2024-01-08T03:13:33.275Z</updated>
   <id>https://moduokesi.top/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>【IDEA结合Git实现项目管理实战】四、git冲突篇</title>
+    <link href="https://moduokesi.top/2024/01/04/%E5%9B%9B%E3%80%81%E8%A7%A3%E5%86%B3%E4%BB%A3%E7%A0%81%E5%86%B2%E7%AA%81/"/>
+    <id>https://moduokesi.top/2024/01/04/%E5%9B%9B%E3%80%81%E8%A7%A3%E5%86%B3%E4%BB%A3%E7%A0%81%E5%86%B2%E7%AA%81/</id>
+    <published>2024-01-04T10:21:22.000Z</published>
+    <updated>2024-01-08T03:13:33.275Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="Git" scheme="https://moduokesi.top/categories/Git/"/>
+    
+    
+    <category term="项目管理" scheme="https://moduokesi.top/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/"/>
+    
+  </entry>
   
   <entry>
     <title>【IDEA结合Git实现项目管理实战】三、实战篇</title>
@@ -72,31 +97,6 @@
     <id>https://moduokesi.top/2023/12/07/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/</id>
     <published>2023-12-07T02:30:29.000Z</published>
     <updated>2024-01-07T06:39:11.541Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2</summary>
-        
-      
-    
-    
-    
-    <category term="Git" scheme="https://moduokesi.top/categories/Git/"/>
-    
-    
-    <category term="项目管理" scheme="https://moduokesi.top/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【IDEA结合Git实现项目管理实战】四、git冲突篇</title>
-    <link href="https://moduokesi.top/2023/01/04/%E5%9B%9B%E3%80%81%E8%A7%A3%E5%86%B3%E4%BB%A3%E7%A0%81%E5%86%B2%E7%AA%81/"/>
-    <id>https://moduokesi.top/2023/01/04/%E5%9B%9B%E3%80%81%E8%A7%A3%E5%86%B3%E4%BB%A3%E7%A0%81%E5%86%B2%E7%AA%81/</id>
-    <published>2023-01-04T10:21:22.000Z</published>
-    <updated>2024-01-07T06:39:04.197Z</updated>
     
     
       
