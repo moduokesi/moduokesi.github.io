@@ -55,6 +55,77 @@
       </tags>
   </entry>
   <entry>
+    <title>VMware软件安装及问题解决</title>
+    <url>/2022/10/08/VMware%E5%AE%89%E8%A3%85/</url>
+    <content><![CDATA[<h2 id="vmware软件安装">VMware软件安装</h2>
+<blockquote>
+<p>前言：最近学习Redis时需要使用Linux系统，导致不得不去安装一个虚拟机了，在准备安装VMware软件时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用</p>
+</blockquote>
+<h3 id="准备工作">准备工作</h3>
+<blockquote>
+<p>本文将在Windows系统下使用VMware软件配置Linux虚拟机，下文将会详解VMware软件的安装步骤</p>
+</blockquote>
+<p>VMware软件下载地址：<a href="https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html">https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html</a><br>
+Linux CentOS 7版本下载映像文件地址：<a href="http://mirrors.aliyun.com/centos/7/isos/x86_64/">http://mirrors.aliyun.com/centos/7/isos/x86_64/</a><br></p>
+<p>按图片所示下载即可</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262109879.png"></p>
+<p>这里我选择的是CentOS-7.0-x86_64-DVD-2009.iso 版本</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262106973.png"></p>
+<p>在下载路径下右键以管理员身份运行</p>
+<p><strong>在这里要敲重点！！！如果你没有以管理员身份运行这个选项，那么就看接下来的问题解决部分，如果你有这个选项请点击<a href="#1">跳转</a>自行无视。</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262117313.png"></p>
+<h3 id="问题解决">问题解决</h3>
+<blockquote>
+<p>按住快捷键Win+R打开运行窗口，输入“regedit”，</p>
+<p>这样就打开了注册表编辑器</p>
+<p>在编辑器左侧依次找到HKEY_CURRENT_USER</p>
+<p>然后将RestrictToPermittedSnapins的值设置为0</p>
+</blockquote>
+<p>上面的方法如果输入路径后发现MMC不存在，那么下面这个方法就派上用场了！</p>
+<p>按下Win +
+R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又会惊讶的发现，gpedit.msc打不开了！别着急，下面还有解决方案。当然，如果你能打开组策略编辑器的话可以点击<a href="#2">这里</a>继续往下看</p>
+<p>对于无法打开组策略编辑器的情况，win + r
+键打开运行后，输入notepad打开记事本，复制粘贴以下内容</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">@<span class="built_in">echo</span> off</span><br><span class="line"></span><br><span class="line"><span class="built_in">pushd</span> <span class="string">&quot;%~dp0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~3*.mum &gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~3*.mum &gt;&gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> /f %%i <span class="keyword">in</span> (<span class="string">&#x27;findstr /i . List.txt 2^&gt;nul&#x27;</span>) <span class="keyword">do</span> dism /online /norestart /add-package:<span class="string">&quot;C:\Windows\servicing\Packages\%%i&quot;</span></span><br><span class="line"></span><br><span class="line">pause</span><br></pre></td></tr></table></figure>
+<p>记事本左上角文件另存为到任意路径下</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262129654.png"></p>
+<p>文件名写为gpedit.cmd，保存类型选择所有文件，编码选择ANSI</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262131529.png"></p>
+<p>点击保存后在你保存的路径下右键以管理员身份运行</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262132085.png"></p>
+<p>等待运行结束后发现win + R键打开的gpedit.msc可以正常打开了<br></p>
+<p><span id="2"></span></p>
+<p>接下来进入组策略编辑器，双击计算机配置 --&gt; Windows设置 --&gt;
+安全设置<br></p>
+<p>双击本地策略</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262139507.png"></p>
+<p>进入安全选项找到下面两项选择已启用</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262141895.png"></p>
+<p><strong>大功告成！！！</strong></p>
+<p><span id="1"></span></p>
+<h3 id="安装vmware">安装VMware</h3>
+<p>当解决上述问题后开始准备下载VM软件了，右键以管理员身份运行后等待片刻来到安装界面</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262147272.png"></p>
+<p>一路下一步来到这个界面，安装路径自己选择，我选择安装在D盘下的目录里</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262148344.png"></p>
+<p>勾选取消“启动时检查产品更新”</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262149952.png"></p>
+<p>一路下一步，点击安装</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262151352.png"></p>
+<p>点击许可证</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262153587.png"></p>
+<p>这里要输入许可证密钥（这里大家自行网络上获取），然后点击输入，安装结束，注意不要误点到跳过了。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262155195.png"></p>
+<p>输入密钥确认安装后就可以使用VMware了！</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>问题解决</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>VMWare演示Redis持久化</title>
     <url>/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/</url>
     <content><![CDATA[<h2 id="vmware演示redis持久化">VMware演示Redis持久化</h2>
@@ -166,184 +237,6 @@ num命令发现结果为空，再set
       </tags>
   </entry>
   <entry>
-    <title>SpringSecurity+Redis+Jwt实战运用</title>
-    <url>/2024/01/18/SpringSecurity%E5%AE%9E%E6%88%98%E8%BF%90%E7%94%A8/</url>
-    <content><![CDATA[<h2 id="介绍">介绍</h2>
-<p>Spring
-Security是一个强大且灵活的身份验证和访问控制框架，用于Java应用程序。它是基于Spring框架的一个子项目，旨在为应用程序提供安全性。</p>
-<p>Spring
-Security致力于为Java应用程序提供<strong>认证</strong>和<strong>授权</strong>功能。开发者可以轻松地为应用程序添加强大的安全性，以满足各种复杂的安全需求。</p>
-<h2 id="springsecurity完整流程">SpringSecurity完整流程</h2>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202401181741086.png"></p>
-<p><strong>JwtAuthenticationTokenFilter：</strong>这里是我们自己定义的过滤器，主要负责放行不携带token的请求（如注册或登录请求），并对携带token的请求设置授权信息</p>
-<p><strong>UsernamePasswordAuthenticationFilter：</strong>负责处理我们在登陆页面填写了用户名密码后的登陆请求。入门案例的认证工作主要由它负责</p>
-<p><strong>ExceptionTranslationFilter：</strong>处理过滤器链中抛出的任何AccessDeniedException和AuthenticationException</p>
-<p><strong>FilterSecurityInterceptor：</strong>负责权限校验的过滤器。</p>
-<h2 id="一般认证工作流程">一般认证工作流程</h2>
-<blockquote>
-<p><strong>Authentication接口：</strong>它的实现类表示当前访问系统的用户，封装了用户相关信息。</p>
-<p><strong>AuthenticationManager接口：</strong>定义了认证Authentication的方法</p>
-<p><strong>UserDetailsService接口：</strong>加载用户特定数据的核心接口。里面定义了一个根据用户名查询用户信息的方法。</p>
-<p><strong>UserDetails接口：</strong>提供核心用户信息。通过UserDetailsService根据用户名获取处理的用户信息要封装成UserDetails对象返回。然后将这些信息封装到Authentication对象中。</p>
-</blockquote>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202401181713332.png"></p>
-<h2 id="数据库">数据库</h2>
-<p>数据库的采用<strong>RBAC权限模型（基于角色的权限控制）</strong>进行设计。</p>
-<p>RBAC至少需要三张表：用户表–角色表–权限表（多对多的关系比较合理）</p>
-<ul>
-<li>用户表（user）：存储用户名、密码等基础信息，进行登录校验</li>
-<li>角色表（role）：对用户的角色进行分配</li>
-<li>权限表（menu）：存储使用不同功能所需的权限</li>
-</ul>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202401182039664.png"></p>
-<h2 id="注册流程">注册流程</h2>
-<h3 id="配置匿名访问">配置匿名访问</h3>
-<p>在配置类中允许注册请求可以匿名访问</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202401182109765.png"></p>
-<h3 id="编写实现类">编写实现类</h3>
-<p>registerDTO中存在字符串roleId和实体类user，先取出user判断是否存在相同手机号。若该手机号没有注册过用户，对密码进行加密后即可将用户存入数据库。</p>
-<p>创建register方法映射，保存用户的同时也要将roleId一并存入关系表中，使用户获得对应角色。如下图。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202401182203732.png"></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="keyword">public</span> Result <span class="title function_">register</span><span class="params">(RegisterDTO registerDTO)</span> &#123;</span><br><span class="line">       <span class="comment">// 获取Map中的数据</span></span><br><span class="line">       <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> registerDTO.getUser();</span><br><span class="line">       <span class="type">String</span> <span class="variable">roleId</span> <span class="operator">=</span> registerDTO.getRoleId();</span><br><span class="line">       <span class="comment">// 判断是否存在相同手机号</span></span><br><span class="line">       <span class="type">User</span> <span class="variable">dataUser</span> <span class="operator">=</span> lambdaQuery()</span><br><span class="line">               .eq(User::getUserPhone, user.getUserPhone()).one();</span><br><span class="line">       <span class="keyword">if</span> (!Objects.isNull(dataUser)) &#123;</span><br><span class="line">           <span class="keyword">return</span> Result.fail(<span class="string">&quot;该手机号已注册过用户，请勿重复注册&quot;</span>);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="comment">// 密码加密</span></span><br><span class="line">       user.setUserPassword(passwordEncoder</span><br><span class="line">               .encode(user.getUserPassword()));</span><br><span class="line">       <span class="comment">// 将用户及对应角色存入数据库</span></span><br><span class="line">       save(user);</span><br><span class="line">       userMapper.register(user.getUserPhone(), roleId);</span><br><span class="line"></span><br><span class="line">       <span class="keyword">return</span> Result.ok(<span class="string">&quot;注册成功&quot;</span>);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="登录流程">登录流程</h2>
-<h3 id="配置匿名访问-1">配置匿名访问</h3>
-<p>在配置类中允许登录请求可以匿名访问</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202401182109765.png"></p>
-<h3 id="调用userdetailsserviceimpl">调用UserDetailsServiceImpl</h3>
-<p>登录流程一般对应<code>认证工作流程</code></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Resource</span></span><br><span class="line">   <span class="keyword">private</span> AuthenticationManager authenticationManager;</span><br><span class="line">   <span class="meta">@Resource</span></span><br><span class="line">   <span class="keyword">private</span> StringRedisTemplate stringRedisTemplate;</span><br><span class="line">   <span class="meta">@Resource</span></span><br><span class="line">   <span class="keyword">private</span> PasswordEncoder passwordEncoder;</span><br><span class="line">   <span class="meta">@Resource</span></span><br><span class="line">   <span class="keyword">private</span> UserMapper userMapper;</span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="keyword">public</span> Result <span class="title function_">login</span><span class="params">(User user)</span> &#123;</span><br><span class="line">       <span class="comment">//AuthenticationManager 进行用户认证，校验手机号和密码是否正确</span></span><br><span class="line">       <span class="type">UsernamePasswordAuthenticationToken</span> <span class="variable">authenticationToken</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UsernamePasswordAuthenticationToken</span>(user.getUserPhone(), user.getUserPassword());</span><br><span class="line">       <span class="type">Authentication</span> <span class="variable">authenticate</span> <span class="operator">=</span> authenticationManager.authenticate(authenticationToken);</span><br><span class="line">       <span class="comment">//认证失败给出提示</span></span><br><span class="line">       <span class="keyword">if</span> (Objects.isNull(authenticate)) &#123;</span><br><span class="line">           <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;用户名或密码错误&quot;</span>);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="comment">//认证通过，生成jwt并返回</span></span><br><span class="line">       <span class="type">LoginUser</span> <span class="variable">loginUser</span> <span class="operator">=</span> (LoginUser) authenticate.getPrincipal();</span><br><span class="line">       <span class="type">String</span> <span class="variable">userId</span> <span class="operator">=</span> loginUser.getUser().getUserId();</span><br><span class="line">       <span class="type">String</span> <span class="variable">jwtToken</span> <span class="operator">=</span> JwtUtil.createToken(userId);</span><br><span class="line">       Map&lt;String, String&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">       stringRedisTemplate.opsForValue()</span><br><span class="line">               .set(LOGIN_CODE_KEY + userId, JSONUtil.toJsonStr(loginUser));</span><br><span class="line">       map.put(<span class="string">&quot;token&quot;</span>, jwtToken);</span><br><span class="line"></span><br><span class="line">       <span class="keyword">return</span> Result.ok(map);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
-<p>先看这段代码：<code>UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUserPhone(), user.getUserPassword());</code>这里先用用户手机号和密码生成UsernamePasswordAuthenticationToken</p>
-<p>再看这段代码：<code>Authentication authenticate = authenticationManager.authenticate(authenticationToken);</code>利用authenticate<strong>调用自定义实现类UserDetailsServiceImpl</strong>，根据用户名判断用户是否存在（对应认证流程的1、2、3、4）</p>
-<h3 id="实现userdetailsserviceimpl">实现UserDetailsServiceImpl</h3>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202401182207049.png"></p>
-<p>由于试下的是UserDetailsService接口，所以必须实现其方法loadUserByUsername（根据用户名查询数据库是否存在）这里我传入的是手机号。数据库中若存在用户，则返回UserDetails对象（这里的权限信息暂且不看，对应认证流程的5、5.1、5.2、6）</p>
-<p>UserDetails对象返回后，authenticate方法会默认通过PasswordEncoder比对UserDetails与Authentication的密码是否相同。因为UserDetails是通过自定义实现类<strong>从数据库中查询出的user对象</strong>，而Authentication相当于是<strong>用户输入的用户名和密码</strong>，也就可以理解为通过前面自定义实现类利用用户名查询到用户后，再看这个用户的密码是否正确。如果用户名或密码不正确，authenticate将会为空，则抛出异常信息。（对应认证流程的7）</p>
-<p>由于这里的登录流程不涉及8，9，10，所以不再叙述。</p>
-<p>在剩下的代码中我们利用用userId生成了jwt的令牌token，将其存入Redis中并返回token给前端。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202401182230778.png"></p>
-<h2 id="登出流程">登出流程</h2>
-<h3 id="编写过滤器">编写过滤器</h3>
-<p>除login、register请求外的所有请求都需要携带token才能访问，因此需要设计token拦截器代码，如下。</p>
-<p>对于不携带token的请求（如登录/注册）直接放行；对于携带token的请求先判断该用户是否登录，即redis中是否存在相关信息，若存在，将用户授权信息存入SecurityContextHolder，方便用户授权，最后直接放行。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JwtAuthenticationTokenFilter</span> <span class="keyword">extends</span> <span class="title class_">OncePerRequestFilter</span> &#123;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> StringRedisTemplate stringRedisTemplate;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doFilterInternal</span><span class="params">(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)</span> <span class="keyword">throws</span> ServletException, IOException &#123;</span><br><span class="line">        <span class="comment">// 获取token</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">token</span> <span class="operator">=</span> request.getHeader(<span class="string">&quot;token&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (!StringUtils.hasText(token)) &#123;</span><br><span class="line">            <span class="comment">// 没有token，放行</span></span><br><span class="line">            filterChain.doFilter(request, response);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 解析token</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">userId</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            userId = JwtUtil.parseJwt(token);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            System.out.println(<span class="string">&quot;token非法：&quot;</span> + e);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 从redis中获取用户信息</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">userJson</span> <span class="operator">=</span> stringRedisTemplate</span><br><span class="line">                .opsForValue().get(LOGIN_CODE_KEY + userId);</span><br><span class="line">        <span class="type">LoginUser</span> <span class="variable">loginUser</span> <span class="operator">=</span> JSONUtil.toBean(userJson, LoginUser.class);</span><br><span class="line">        <span class="keyword">if</span> (Objects.isNull(loginUser)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;用户未登录&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 存入SecurityContextHolder，设置用户授权信息</span></span><br><span class="line">        <span class="type">UsernamePasswordAuthenticationToken</span> <span class="variable">authenticationToken</span> <span class="operator">=</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">UsernamePasswordAuthenticationToken</span>(loginUser, <span class="literal">null</span>, loginUser.getAuthorities());</span><br><span class="line">        SecurityContextHolder.getContext().setAuthentication(authenticationToken);</span><br><span class="line">        <span class="comment">// 放行</span></span><br><span class="line">        filterChain.doFilter(request, response);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>此外，还需将token拦截器设置在过滤器UsernamePasswordAuthenticationFilter的前面。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202401192329419.png"></p>
-<h3 id="编写实现类-1">编写实现类</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="keyword">public</span> Result <span class="title function_">logout</span><span class="params">()</span> &#123;</span><br><span class="line">       <span class="comment">// 获取SecurityContextHolder中的用户id</span></span><br><span class="line">       <span class="type">UsernamePasswordAuthenticationToken</span> <span class="variable">authentication</span> <span class="operator">=</span></span><br><span class="line">               (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();</span><br><span class="line">       <span class="type">LoginUser</span> <span class="variable">loginUser</span> <span class="operator">=</span> (LoginUser) authentication.getPrincipal();</span><br><span class="line">       <span class="type">String</span> <span class="variable">userId</span> <span class="operator">=</span> loginUser.getUser().getUserId();</span><br><span class="line"></span><br><span class="line">       <span class="comment">// 删除redis中的值</span></span><br><span class="line">       stringRedisTemplate</span><br><span class="line">               .delete(LOGIN_CODE_KEY + userId);</span><br><span class="line">       <span class="keyword">return</span> Result.ok(<span class="string">&quot;注销成功&quot;</span>);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
-<p>获取SecurityContextHolder中的用户id后，删除redis中存储的值，即登出成功。</p>
-<h2 id="授权流程">授权流程</h2>
-<p>确保实现类正确编写：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LoginUser</span> <span class="keyword">implements</span> <span class="title class_">UserDetails</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> User user;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; permissions;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">LoginUser</span><span class="params">(User user, List&lt;String&gt; permissions)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.user = user;</span><br><span class="line">        <span class="built_in">this</span>.permissions = permissions;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;SimpleGrantedAuthority&gt; authorities;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Collection&lt;? <span class="keyword">extends</span> <span class="title class_">GrantedAuthority</span>&gt; getAuthorities() &#123;</span><br><span class="line">        <span class="keyword">if</span> (authorities != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> authorities;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 把permissions中String类型的权限信息封装成SimpleGrantedAuthority对象</span></span><br><span class="line">        authorities = permissions.stream()</span><br><span class="line">                .map(SimpleGrantedAuthority::<span class="keyword">new</span>)</span><br><span class="line">                .collect(Collectors.toList());</span><br><span class="line">        <span class="keyword">return</span> authorities;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getPassword</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> user.getUserPassword();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getUsername</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> user.getUserName();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isAccountNonExpired</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isAccountNonLocked</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isCredentialsNonExpired</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isEnabled</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>在token拦截器中，我们添加了这段代码。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 存入SecurityContextHolder，设置用户授权信息</span></span><br><span class="line">        <span class="type">UsernamePasswordAuthenticationToken</span> <span class="variable">authenticationToken</span> <span class="operator">=</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">UsernamePasswordAuthenticationToken</span>(loginUser, <span class="literal">null</span>, loginUser.getAuthorities());</span><br><span class="line">        SecurityContextHolder.getContext().setAuthentication(authenticationToken);</span><br></pre></td></tr></table></figure>
-<p>这样非登录/注册请求都会被设置授权信息。</p>
-<p>为对应接口添加注解@PreAuthorize，就会检验该请求是否存在相关请求。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202401192332398.png"></p>
-<h2 id="完整代码">完整代码</h2>
-<h3 id="config类">config类</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableGlobalMethodSecurity(prePostEnabled = true)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SecurityConfig</span> &#123;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> AccessDeniedHandlerImpl accessDeniedHandler;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationEntryPointImpl authenticationEntryPoint;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> PasswordEncoder <span class="title function_">passwordEncoder</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 实例化PasswordEncoder</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">BCryptPasswordEncoder</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> SecurityFilterChain <span class="title function_">filterChain</span><span class="params">(HttpSecurity http)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        http</span><br><span class="line">                <span class="comment">//关闭csrf</span></span><br><span class="line">                .csrf().disable()</span><br><span class="line">                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span><br><span class="line">                .and()</span><br><span class="line">                .authorizeRequests()</span><br><span class="line">                .antMatchers(<span class="string">&quot;/user/login&quot;</span>, <span class="string">&quot;/user/register&quot;</span>).anonymous()</span><br><span class="line">                .anyRequest().authenticated();</span><br><span class="line">        <span class="comment">// 添加过滤器</span></span><br><span class="line">        http</span><br><span class="line">                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);</span><br><span class="line">        <span class="comment">// 配置异常处理器</span></span><br><span class="line">        http</span><br><span class="line">                .exceptionHandling()</span><br><span class="line">                .authenticationEntryPoint(authenticationEntryPoint)</span><br><span class="line">                .accessDeniedHandler(accessDeniedHandler);</span><br><span class="line">        <span class="comment">// 允许跨域</span></span><br><span class="line">        http.cors();</span><br><span class="line">        <span class="keyword">return</span> http.build();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> AuthenticationManager <span class="title function_">authenticationManager</span><span class="params">(AuthenticationConfiguration authenticationConfiguration)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 配置身份验证管理器</span></span><br><span class="line">        <span class="keyword">return</span> authenticationConfiguration.getAuthenticationManager();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="controller类">controller类</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/user&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserController</span> &#123;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> IUserService userService;</span><br><span class="line">    <span class="meta">@PostMapping(&quot;/login&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Result <span class="title function_">login</span><span class="params">(<span class="meta">@RequestBody</span> User user)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> userService.login(user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/logout&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Result <span class="title function_">logout</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> userService.logout();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/register&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Result <span class="title function_">register</span><span class="params">(<span class="meta">@RequestBody</span> RegisterDTO registerDTO)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> userService.register(registerDTO);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="dto类">dto类</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RegisterDTO</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> User user;</span><br><span class="line">    <span class="keyword">private</span> String roleId;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> modox</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2023年6月1日</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 封装结果后返回</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Result</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Integer</span> <span class="variable">SUCCESS_CODE</span> <span class="operator">=</span> <span class="number">200</span>;     <span class="comment">// 访问成功状态码</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Integer</span> <span class="variable">TOKEN_ERROR</span> <span class="operator">=</span> <span class="number">400</span>;      <span class="comment">// Token错误状态码</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Integer</span> <span class="variable">ERROR_CODE</span> <span class="operator">=</span> <span class="number">500</span>;       <span class="comment">// 访问失败状态码</span></span><br><span class="line">    <span class="keyword">private</span> Integer status;                               <span class="comment">// 状态码</span></span><br><span class="line">    <span class="keyword">private</span> String msg;                                 <span class="comment">// 提示消息</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">Object</span> <span class="variable">data</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Result</span><span class="params">(Integer status, String msg)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.status = status;</span><br><span class="line">        <span class="built_in">this</span>.msg = msg;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Result <span class="title function_">ok</span><span class="params">(Integer status,String msg,Object data)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Result</span>(status,msg,data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Result <span class="title function_">ok</span><span class="params">(String msg,Object data)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Result</span>(SUCCESS_CODE,msg,data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Result <span class="title function_">ok</span><span class="params">(Object data)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Result</span>(SUCCESS_CODE,<span class="string">&quot;操作成功&quot;</span>,data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Result <span class="title function_">ok</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Result</span>(SUCCESS_CODE,<span class="string">&quot;操作成功&quot;</span>,<span class="literal">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Result <span class="title function_">fail</span><span class="params">(Integer status,String msg)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Result</span>(status,msg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Result <span class="title function_">fail</span><span class="params">(String msg)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Result</span>(ERROR_CODE,msg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Result <span class="title function_">fail</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Result</span>(ERROR_CODE,<span class="string">&quot;操作失败&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Map&lt;String,Object&gt; <span class="title function_">ok</span><span class="params">(Map&lt;String,Object&gt; map)</span>&#123;</span><br><span class="line">        map.put(<span class="string">&quot;status&quot;</span>,SUCCESS_CODE);</span><br><span class="line">        map.put(<span class="string">&quot;msg&quot;</span>,<span class="string">&quot;查询成功&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> map;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Map&lt;String,Object&gt; <span class="title function_">ok</span><span class="params">(PageInfo pageInfo)</span>&#123;</span><br><span class="line">        Map&lt;String,Object&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        map.put(<span class="string">&quot;status&quot;</span>,SUCCESS_CODE);</span><br><span class="line">        map.put(<span class="string">&quot;msg&quot;</span>,<span class="string">&quot;查询成功&quot;</span>);</span><br><span class="line">        map.put(<span class="string">&quot;count&quot;</span>,pageInfo.getTotal());</span><br><span class="line">        map.put(<span class="string">&quot;data&quot;</span>,pageInfo.getList());</span><br><span class="line">        <span class="keyword">return</span> map;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="entity类">entity类</h3>
-<p>UserDetails的实现类</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LoginUser</span> <span class="keyword">implements</span> <span class="title class_">UserDetails</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> User user;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; permissions;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">LoginUser</span><span class="params">(User user, List&lt;String&gt; permissions)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.user = user;</span><br><span class="line">        <span class="built_in">this</span>.permissions = permissions;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;SimpleGrantedAuthority&gt; authorities;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Collection&lt;? <span class="keyword">extends</span> <span class="title class_">GrantedAuthority</span>&gt; getAuthorities() &#123;</span><br><span class="line">        <span class="keyword">if</span> (authorities != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> authorities;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 把permissions中String类型的权限信息封装成SimpleGrantedAuthority对象</span></span><br><span class="line">        authorities = permissions.stream()</span><br><span class="line">                .map(SimpleGrantedAuthority::<span class="keyword">new</span>)</span><br><span class="line">                .collect(Collectors.toList());</span><br><span class="line">        <span class="keyword">return</span> authorities;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getPassword</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> user.getUserPassword();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getUsername</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> user.getUserName();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isAccountNonExpired</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isAccountNonLocked</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isCredentialsNonExpired</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isEnabled</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@TableName(value = &quot;grd_menu&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Menu</span> &#123;</span><br><span class="line">    <span class="meta">@TableId</span></span><br><span class="line">    <span class="keyword">private</span> String menuId;</span><br><span class="line">    <span class="keyword">private</span> String menuName;</span><br><span class="line">    <span class="keyword">private</span> String menuPerms;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@TableName(value = &quot;grd_user&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="meta">@TableId(type = IdType.ASSIGN_ID)</span></span><br><span class="line">    <span class="keyword">private</span> String userId;</span><br><span class="line">    <span class="keyword">private</span> String userName;</span><br><span class="line">    <span class="keyword">private</span> Integer userSex;</span><br><span class="line">    <span class="keyword">private</span> String userPhone;</span><br><span class="line">    <span class="keyword">private</span> String userPassword;</span><br><span class="line">    <span class="keyword">private</span> String userSchool;</span><br><span class="line">    <span class="keyword">private</span> Byte[] userImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="filter类">filter类</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JwtAuthenticationTokenFilter</span> <span class="keyword">extends</span> <span class="title class_">OncePerRequestFilter</span> &#123;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> StringRedisTemplate stringRedisTemplate;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doFilterInternal</span><span class="params">(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)</span> <span class="keyword">throws</span> ServletException, IOException &#123;</span><br><span class="line">        <span class="comment">// 获取token</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">token</span> <span class="operator">=</span> request.getHeader(<span class="string">&quot;token&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (!StringUtils.hasText(token)) &#123;</span><br><span class="line">            <span class="comment">// 没有token，放行</span></span><br><span class="line">            filterChain.doFilter(request, response);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 解析token</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">userId</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            userId = JwtUtil.parseJwt(token);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            System.out.println(<span class="string">&quot;token非法：&quot;</span> + e);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 从redis中获取用户信息</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">userJson</span> <span class="operator">=</span> stringRedisTemplate</span><br><span class="line">                .opsForValue().get(LOGIN_CODE_KEY + userId);</span><br><span class="line">        <span class="type">LoginUser</span> <span class="variable">loginUser</span> <span class="operator">=</span> JSONUtil.toBean(userJson, LoginUser.class);</span><br><span class="line">        <span class="keyword">if</span> (Objects.isNull(loginUser)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;用户未登录&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 存入SecurityContextHolder，设置用户授权信息</span></span><br><span class="line">        <span class="type">UsernamePasswordAuthenticationToken</span> <span class="variable">authenticationToken</span> <span class="operator">=</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">UsernamePasswordAuthenticationToken</span>(loginUser, <span class="literal">null</span>, loginUser.getAuthorities());</span><br><span class="line">        SecurityContextHolder.getContext().setAuthentication(authenticationToken);</span><br><span class="line">        <span class="comment">// 放行</span></span><br><span class="line">        filterChain.doFilter(request, response);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="handler类">handler类</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AccessDeniedHandlerImpl</span> <span class="keyword">implements</span> <span class="title class_">AccessDeniedHandler</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handle</span><span class="params">(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)</span> <span class="keyword">throws</span> IOException, ServletException &#123;</span><br><span class="line">        <span class="type">Result</span> <span class="variable">result</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Result</span>(HttpStatus.FORBIDDEN.value(), <span class="string">&quot;您的权限不足&quot;</span>);</span><br><span class="line">        <span class="type">String</span> <span class="variable">json</span> <span class="operator">=</span> JSONUtil.toJsonStr(result);</span><br><span class="line">        <span class="comment">// 处理异常</span></span><br><span class="line">        WebUtils.renderString(response, json);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AuthenticationEntryPointImpl</span> <span class="keyword">implements</span> <span class="title class_">AuthenticationEntryPoint</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">commence</span><span class="params">(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)</span> <span class="keyword">throws</span> IOException, ServletException &#123;</span><br><span class="line">        <span class="type">Result</span> <span class="variable">result</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Result</span>(HttpStatus.UNAUTHORIZED.value(), <span class="string">&quot;用户认证失败&quot;</span>);</span><br><span class="line">        <span class="type">String</span> <span class="variable">json</span> <span class="operator">=</span> JSONUtil.toJsonStr(result);</span><br><span class="line">        <span class="comment">// 处理异常</span></span><br><span class="line">        WebUtils.renderString(response, json);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="service实现类">service实现类</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserDetailsServiceImpl</span> <span class="keyword">extends</span> <span class="title class_">ServiceImpl</span>&lt;UserMapper, User&gt;  <span class="keyword">implements</span> <span class="title class_">UserDetailsService</span> &#123;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> MenuMapper menuMapper;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> UserDetails <span class="title function_">loadUserByUsername</span><span class="params">(String userPhone)</span> <span class="keyword">throws</span> UsernameNotFoundException &#123;</span><br><span class="line">        <span class="comment">//根据用户名查询用户信息</span></span><br><span class="line">        QueryWrapper&lt;User&gt; wrapper = <span class="keyword">new</span> <span class="title class_">QueryWrapper</span>&lt;&gt;();</span><br><span class="line">        wrapper.eq(<span class="string">&quot;user_phone&quot;</span>, userPhone);</span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> getOne(wrapper);</span><br><span class="line">        <span class="comment">//若数据库中不存在用户</span></span><br><span class="line">        <span class="keyword">if</span> (Objects.isNull(user)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;该手机号未注册&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 根据用户查询权限信息 添加到LoginUser中</span></span><br><span class="line">        List&lt;String&gt; list = menuMapper.selectPermsByUserPhone(user.getUserPhone());</span><br><span class="line">        <span class="comment">// 封装成UserDetails对象返回</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">LoginUser</span>(user, list);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserServiceImpl</span> <span class="keyword">extends</span> <span class="title class_">ServiceImpl</span>&lt;UserMapper, User&gt; <span class="keyword">implements</span> <span class="title class_">IUserService</span> &#123;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationManager authenticationManager;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> StringRedisTemplate stringRedisTemplate;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> PasswordEncoder passwordEncoder;</span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> UserMapper userMapper;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Result <span class="title function_">login</span><span class="params">(User user)</span> &#123;</span><br><span class="line">        <span class="comment">//AuthenticationManager 进行用户认证，校验手机号和密码是否正确</span></span><br><span class="line">        <span class="type">UsernamePasswordAuthenticationToken</span> <span class="variable">authenticationToken</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UsernamePasswordAuthenticationToken</span>(user.getUserPhone(), user.getUserPassword());</span><br><span class="line">        <span class="type">Authentication</span> <span class="variable">authenticate</span> <span class="operator">=</span> authenticationManager.authenticate(authenticationToken);</span><br><span class="line">        <span class="comment">//认证失败给出提示</span></span><br><span class="line">        <span class="keyword">if</span> (Objects.isNull(authenticate)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;用户名或密码错误&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//认证通过，生成jwt并返回</span></span><br><span class="line">        <span class="type">LoginUser</span> <span class="variable">loginUser</span> <span class="operator">=</span> (LoginUser) authenticate.getPrincipal();</span><br><span class="line">        <span class="type">String</span> <span class="variable">userId</span> <span class="operator">=</span> loginUser.getUser().getUserId();</span><br><span class="line">        <span class="type">String</span> <span class="variable">jwtToken</span> <span class="operator">=</span> JwtUtil.createToken(userId);</span><br><span class="line">        Map&lt;String, String&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">        stringRedisTemplate.opsForValue()</span><br><span class="line">                .set(LOGIN_CODE_KEY + userId, JSONUtil.toJsonStr(loginUser));</span><br><span class="line">        map.put(<span class="string">&quot;token&quot;</span>, jwtToken);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> Result.ok(map);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Result <span class="title function_">logout</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 获取SecurityContextHolder中的用户id</span></span><br><span class="line">        <span class="type">UsernamePasswordAuthenticationToken</span> <span class="variable">authentication</span> <span class="operator">=</span></span><br><span class="line">                (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();</span><br><span class="line">        <span class="type">LoginUser</span> <span class="variable">loginUser</span> <span class="operator">=</span> (LoginUser) authentication.getPrincipal();</span><br><span class="line">        <span class="type">String</span> <span class="variable">userId</span> <span class="operator">=</span> loginUser.getUser().getUserId();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 删除redis中的值</span></span><br><span class="line">        stringRedisTemplate</span><br><span class="line">                .delete(LOGIN_CODE_KEY + userId);</span><br><span class="line">        <span class="keyword">return</span> Result.ok(<span class="string">&quot;注销成功&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Result <span class="title function_">register</span><span class="params">(RegisterDTO registerDTO)</span> &#123;</span><br><span class="line">        <span class="comment">// 获取Map中的数据</span></span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> registerDTO.getUser();</span><br><span class="line">        <span class="type">String</span> <span class="variable">roleId</span> <span class="operator">=</span> registerDTO.getRoleId();</span><br><span class="line">        <span class="comment">// 判断是否存在相同手机号</span></span><br><span class="line">        <span class="type">User</span> <span class="variable">dataUser</span> <span class="operator">=</span> lambdaQuery()</span><br><span class="line">                .eq(User::getUserPhone, user.getUserPhone()).one();</span><br><span class="line">        <span class="keyword">if</span> (!Objects.isNull(dataUser)) &#123;</span><br><span class="line">            <span class="keyword">return</span> Result.fail(<span class="string">&quot;该手机号已注册过用户，请勿重复注册&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 密码加密</span></span><br><span class="line">        user.setUserPassword(passwordEncoder</span><br><span class="line">                .encode(user.getUserPassword()));</span><br><span class="line">        <span class="comment">// 将用户及对应角色存入数据库</span></span><br><span class="line">        save(user);</span><br><span class="line">        userMapper.register(user.getUserPhone(), roleId);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> Result.ok(<span class="string">&quot;注册成功&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="utils类">utils类</h3>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JwtUtil</span> &#123;</span><br><span class="line">    <span class="comment">// token失效：24小时</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">token</span> <span class="operator">=</span> <span class="string">&quot;token&quot;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">EXPIPE</span> <span class="operator">=</span> <span class="number">1000</span> * <span class="number">60</span> * <span class="number">60</span> * <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">APP_SECRET</span> <span class="operator">=</span> <span class="string">&quot;modox@ukc8BDbRigUDaY6pZFfWus2jZWLPHO&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据传入的用户Id生成token</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> userId</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> JWT规则生成的token</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">createToken</span><span class="params">(String userId)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">JwtToken</span> <span class="operator">=</span> Jwts.builder()</span><br><span class="line">                .setHeaderParam(<span class="string">&quot;typ&quot;</span>, <span class="string">&quot;JWT&quot;</span>)</span><br><span class="line">                .setHeaderParam(<span class="string">&quot;alg&quot;</span>, <span class="string">&quot;HS256&quot;</span>)</span><br><span class="line">                .setSubject(<span class="string">&quot;grd_user&quot;</span>)</span><br><span class="line">                .setIssuedAt(<span class="keyword">new</span> <span class="title class_">Date</span>())</span><br><span class="line">                .setExpiration(<span class="keyword">new</span> <span class="title class_">Date</span>(System.currentTimeMillis() + EXPIPE))</span><br><span class="line">                .claim(<span class="string">&quot;userId&quot;</span>, userId)</span><br><span class="line">                .signWith(SignatureAlgorithm.HS256, APP_SECRET)</span><br><span class="line">                .compact();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> JwtToken;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 验证token是否有效</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jwtToken token字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 如果token有效返回true，否则false</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">boolean</span> <span class="title function_">checkToken</span><span class="params">(String jwtToken)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!StringUtils.hasText(jwtToken))</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            Jwts.parser().setSigningKey(APP_SECRET).parseClaimsJws(jwtToken);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据token获取User信息</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jwtToken token字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 解析token获得的user对象</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">parseJwt</span><span class="params">(String jwtToken)</span> &#123;</span><br><span class="line">        <span class="comment">//验证token</span></span><br><span class="line">        <span class="keyword">if</span> (checkToken(jwtToken)) &#123;</span><br><span class="line">            <span class="type">Claims</span> <span class="variable">claims</span> <span class="operator">=</span> Jwts.parser().setSigningKey(APP_SECRET).parseClaimsJws(jwtToken).getBody();</span><br><span class="line">            <span class="keyword">return</span> claims.get(<span class="string">&quot;userId&quot;</span>).toString();</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;超时或不合法token&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RedisConstants</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">LOGIN_CODE_KEY</span> <span class="operator">=</span> <span class="string">&quot;login:code:&quot;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Long</span> <span class="variable">LOGIN_CODE_TTL</span> <span class="operator">=</span> <span class="number">2L</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">LOGIN_USER_KEY</span> <span class="operator">=</span> <span class="string">&quot;login:token:&quot;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Long</span> <span class="variable">LOGIN_USER_TTL</span> <span class="operator">=</span> <span class="number">36000L</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class WebUtils &#123;</span><br><span class="line">    /**</span><br><span class="line">     * 将字符串渲染到客户端</span><br><span class="line">     * @param response</span><br><span class="line">     * @param string</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public static String renderString(HttpServletResponse response, String string) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            response.setStatus(200);</span><br><span class="line">            response.setContentType(&quot;application/json&quot;);</span><br><span class="line">            response.setCharacterEncoding(&quot;utf-8&quot;);</span><br><span class="line">            response.getWriter().print(string);</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>Spring</category>
-      </categories>
-      <tags>
-        <tag>身份校验</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>VMware软件安装及问题解决</title>
-    <url>/2022/10/08/VMware%E5%AE%89%E8%A3%85/</url>
-    <content><![CDATA[<h2 id="vmware软件安装">VMware软件安装</h2>
-<blockquote>
-<p>前言：最近学习Redis时需要使用Linux系统，导致不得不去安装一个虚拟机了，在准备安装VMware软件时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用</p>
-</blockquote>
-<h3 id="准备工作">准备工作</h3>
-<blockquote>
-<p>本文将在Windows系统下使用VMware软件配置Linux虚拟机，下文将会详解VMware软件的安装步骤</p>
-</blockquote>
-<p>VMware软件下载地址：<a href="https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html">https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html</a><br>
-Linux CentOS 7版本下载映像文件地址：<a href="http://mirrors.aliyun.com/centos/7/isos/x86_64/">http://mirrors.aliyun.com/centos/7/isos/x86_64/</a><br></p>
-<p>按图片所示下载即可</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262109879.png"></p>
-<p>这里我选择的是CentOS-7.0-x86_64-DVD-2009.iso 版本</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262106973.png"></p>
-<p>在下载路径下右键以管理员身份运行</p>
-<p><strong>在这里要敲重点！！！如果你没有以管理员身份运行这个选项，那么就看接下来的问题解决部分，如果你有这个选项请点击<a href="#1">跳转</a>自行无视。</strong></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262117313.png"></p>
-<h3 id="问题解决">问题解决</h3>
-<blockquote>
-<p>按住快捷键Win+R打开运行窗口，输入“regedit”，</p>
-<p>这样就打开了注册表编辑器</p>
-<p>在编辑器左侧依次找到HKEY_CURRENT_USER</p>
-<p>然后将RestrictToPermittedSnapins的值设置为0</p>
-</blockquote>
-<p>上面的方法如果输入路径后发现MMC不存在，那么下面这个方法就派上用场了！</p>
-<p>按下Win +
-R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又会惊讶的发现，gpedit.msc打不开了！别着急，下面还有解决方案。当然，如果你能打开组策略编辑器的话可以点击<a href="#2">这里</a>继续往下看</p>
-<p>对于无法打开组策略编辑器的情况，win + r
-键打开运行后，输入notepad打开记事本，复制粘贴以下内容</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">@<span class="built_in">echo</span> off</span><br><span class="line"></span><br><span class="line"><span class="built_in">pushd</span> <span class="string">&quot;%~dp0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~3*.mum &gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~3*.mum &gt;&gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> /f %%i <span class="keyword">in</span> (<span class="string">&#x27;findstr /i . List.txt 2^&gt;nul&#x27;</span>) <span class="keyword">do</span> dism /online /norestart /add-package:<span class="string">&quot;C:\Windows\servicing\Packages\%%i&quot;</span></span><br><span class="line"></span><br><span class="line">pause</span><br></pre></td></tr></table></figure>
-<p>记事本左上角文件另存为到任意路径下</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262129654.png"></p>
-<p>文件名写为gpedit.cmd，保存类型选择所有文件，编码选择ANSI</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262131529.png"></p>
-<p>点击保存后在你保存的路径下右键以管理员身份运行</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262132085.png"></p>
-<p>等待运行结束后发现win + R键打开的gpedit.msc可以正常打开了<br></p>
-<p><span id="2"></span></p>
-<p>接下来进入组策略编辑器，双击计算机配置 --&gt; Windows设置 --&gt;
-安全设置<br></p>
-<p>双击本地策略</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262139507.png"></p>
-<p>进入安全选项找到下面两项选择已启用</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262141895.png"></p>
-<p><strong>大功告成！！！</strong></p>
-<p><span id="1"></span></p>
-<h3 id="安装vmware">安装VMware</h3>
-<p>当解决上述问题后开始准备下载VM软件了，右键以管理员身份运行后等待片刻来到安装界面</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262147272.png"></p>
-<p>一路下一步来到这个界面，安装路径自己选择，我选择安装在D盘下的目录里</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262148344.png"></p>
-<p>勾选取消“启动时检查产品更新”</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262149952.png"></p>
-<p>一路下一步，点击安装</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262151352.png"></p>
-<p>点击许可证</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262153587.png"></p>
-<p>这里要输入许可证密钥（这里大家自行网络上获取），然后点击输入，安装结束，注意不要误点到跳过了。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262155195.png"></p>
-<p>输入密钥确认安装后就可以使用VMware了！</p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-      <tags>
-        <tag>问题解决</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【IDEA结合Git实现项目管理实战】一、配置篇</title>
     <url>/2023/12/07/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/</url>
     <content><![CDATA[<h2 id="前言">前言</h2>
@@ -420,119 +313,179 @@ name），Remote是远程分支名，可以不用修改，Description是这个�
       </tags>
   </entry>
   <entry>
-    <title>【IDEA结合Git实现项目管理实战】二、基础篇</title>
-    <url>/2023/12/10/%E4%BA%8C%E3%80%81Git%E7%9A%84%E5%9B%9B%E4%B8%AA%E5%8C%BA%E5%9F%9F/</url>
+    <title>【IDEA结合Git实现项目管理实战】三、实战篇</title>
+    <url>/2023/12/15/%E4%B8%89%E3%80%81%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E5%AE%9E%E6%88%98/</url>
     <content><![CDATA[<h2 id="前言">前言</h2>
 <blockquote>
 <p>本系列将结合我个人参与团队协作开发项目的经验来介绍如何使用IDEA结合Git实现项目管理，因此可能与真正的企业开发协作存在差异，且文章所涉及的解析可能存在个人理解与实际的偏差。</p>
 <p>本系列主讲如何具体操作，因此对于Git内部的原理将<strong>不会过多深究</strong>。</p>
 <p>本文严禁任何形式的转载、搬运！</p>
 </blockquote>
-<p>本文作为该系列的<strong>基础篇</strong>，将简要介绍使用Git所应该知道的<strong>最基本</strong>的知识，因此不算深究原理，哈哈。</p>
+<p>本文作为该系列的<strong>实战篇</strong>，将正式介绍如何使用IDEA结合Git进行项目管理。</p>
 <p>注意：本文假设你已经成功在IDEA中配置了git</p>
-<h2 id="git的四个工作区域">Git的四个工作区域</h2>
-<h3 id="基本概念">基本概念</h3>
-<p>Git本地有三个工作区域，分别是<strong>工作区</strong>、<strong>暂存区</strong>、<strong>本地仓库</strong></p>
-<p>Git远程有一个工作区域，叫做<strong>远程仓库</strong></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072037674.png"></p>
-<ul>
-<li><p>工作区：开发者当前工作的目录，主要包含项目的实际文件，其中可能包括<strong>未进行版本管理</strong>的新文件和<strong>已修改</strong>的文件。</p></li>
-<li><p>暂存区：作为一个临时存储区域，用于存放工作区中已经修改的文件的<strong>快照</strong>，以便将它们作为一个逻辑单元提交到本地仓库。</p></li>
-<li><p>本地库：包含了项目的<strong>提交历史</strong>，开发者可以对其进行各种操作，如分支合并、变基、签出等。本地库是在开发者本地计算机上的存储库。</p></li>
-<li><p>远程库：
-存放在<strong>代码托管平台</strong>（如Gitee、GitHub）上的仓库，包含了已推送的代码版本、分支、标签等信息。开发者可以通过推送和拉取操作与远程库进行交互，以保持代码同步。</p></li>
-</ul>
-<h3 id="概念解释">概念解释</h3>
-<h4 id="工作区">工作区</h4>
-<p>一下子引入了这么多概念，可能大家会有点接受不了，那么这里对以上概念进行详细解释。</p>
-<p>具体来说，工作区可以看做你在IDEA中打开的项目目录，如下图：</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072100334.png"></p>
-<p>这里的项目目录就可以看作是工作区，但是在这个工作区中，既存在正常颜色（白色）的文件名，也存在红色、绿色和蓝色的文件名，那么这些文件分别代表什么含义？这里的文件的颜色，其实也就对应着上文所谓<strong>未进行版本管理</strong>的新文件和<strong>已修改</strong>的文件。如下表：</p>
-<table>
-<colgroup>
-<col style="width: 6%">
-<col style="width: 93%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>颜色</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>白色</td>
-<td>在当前提交历史未改动或者已经提交到本地库的文件</td>
-</tr>
-<tr class="even">
-<td>红色</td>
-<td>未进行版本管理的新文件，也被称为未跟踪的文件</td>
-</tr>
-<tr class="odd">
-<td>绿色</td>
-<td>已经进行版本管理的新文件，该文件已被添加到暂存区中</td>
-</tr>
-<tr class="even">
-<td>蓝色</td>
-<td>当前工作区中被修改的文件，该文件已被添加到暂存区中，与绿色相似</td>
-</tr>
-</tbody>
-</table>
+<p>在配置篇中，当我们已经在本地推送/克隆了一个项目后，我们能看到如下两个功能块。</p>
+<p>在本文中，我们称红色箭头所指为<strong>git日志</strong>，蓝色箭头所指为<strong>git工具栏</strong>。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102051273.png"></p>
+<h2 id="设置默认添加文件">设置默认添加文件</h2>
+<p>还记得<strong>基础篇</strong>我们提到的四个工作区域吗？如果我们想要将变更的文件推送到远程仓库，我们首先需要<strong>先保证变更的文件在暂存区中</strong>。</p>
+<p>在<strong>基础篇</strong>中，我们提到每当创建一个文件时，idea都会询问我们是否将文件添加到git，即是否添加到暂存区中。为了避免这种麻烦，我们打开设置，按以下流程选择<strong>无提示添加</strong>，这样idea就会默认将我们创建的文件自动添加到git了。</p>
+<p>配置完该设置后，相当于每次创建文件都会默认执行git命令<code>git add</code>，作用是将文件添加到暂存区中。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102106887.png"></p>
+<h2 id="推送更改的文件到本地库">推送更改的文件到本地库</h2>
 <blockquote>
-<p>红色文件名、绿色文件名实例</p>
+<p>当我们在本地完成了我们的工作后，我们可以先将变更的文件提交到本地库中保存。</p>
 </blockquote>
-<p>大家可以自行测试下，如果你直接在项目目录中创建一个文件的话，IDEA会做出提醒：</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072113939.png"></p>
-<p>这时如果你选择添加的话，该文件就会变成绿色文件从而<strong>被Git进行版本管理</strong>，如果选择取消的话，说明你不希望该文件被Git管理，那么该文件就是红色文件而<strong>不能被提交到暂存区</strong>。</p>
-<p>总结：</p>
+<p>这里我们点击蓝色箭头所指git工具栏的第二个按钮，即提交按钮。</p>
+<p>该按钮对应git命令<code>git commit</code>，作用是将文件提交到本地库中。</p>
+<p>这里我简单的修改了下我自己的更改，填写完提交信息后点击提交。</p>
+<blockquote>
+<p>如果点击提交并推送的话，就可以直接将变更推送到远程仓库，省去了一个步骤。</p>
+<p>提交并推送按钮对应git命令<code>git commit &amp; git push</code>，作用是将暂存区的变更直接推送到远程仓库</p>
+</blockquote>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102104592.png"></p>
+<p>提交完毕后，我们打开git日志，能在当前的本地分支中看到我们刚才提交记录：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102115556.png"></p>
+<h2 id="将本地库的提交记录推送到远程库中">将本地库的提交记录推送到远程库中</h2>
+<blockquote>
+<p>当我们已经确定本地库的工作已经结束后，我们就可以将本地库的记录推送到远程库中。</p>
+</blockquote>
+<p>我们点击git工具栏的第三个按钮，即推送按钮。</p>
+<p>该按钮对应git命令<code>git push</code>，作用是将本地的提交记录推送到远程库中。</p>
+<p>这里我准备了两个提交记录，按<code>ctrl + 鼠标左键</code>可以多选提交记录。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102123171.png"></p>
+<p>点击推送按钮后，我们可以在git日志中看到远程仓库中出现了我们刚才推送的提交记录。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102124929.png"></p>
+<p>此时我们打开gitee，可以发现提交记录同样生效于gitee中。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102126723.png"></p>
+<h2 id="拉取远程分支的变更">拉取远程分支的变更</h2>
+<blockquote>
+<p>当你的远程仓库发生改变时（你的队友推送了提交记录到远程仓库中），而你自己的远程分支不会自动拉取别人的提交记录，也就是说你的远程分支不具备别人的提交历史。</p>
+</blockquote>
+<p>此时我们需要点击提取所有远程按钮，这时候就可以把远程仓库的所有本更拉取到自己的远程分支中。</p>
+<p>提取所有远程按钮对应git命令<code>git fetch</code>，作用是将远程仓库的变更拉取到远程分支中。</p>
+<p>这里我在gitee中手动添加了一个README.md文件。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102135718.png"></p>
+<p>点击按钮后，可以看到远程分支中增加了这条记录，同时，我们可以注意到本地分支名后出现了向下的蓝色箭头，这代表着当前远程分支已经更新了，本地分支也应该进行更新。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102138603.png"></p>
+<p>我们选中对应的本地分支，点击更新所选内容按钮，就可以把远程分支的提交记录添加到我们的本地分支中。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102152552.png"></p>
+<p>这里我们也可以选择git工具栏的第一个按钮，这样就可以指定方式传入变更。</p>
+<p>该按钮对应git命令<code>git merge</code>或<code>git rebase</code>，作用是传入变更到当前分支</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102154586.png"></p>
+<p>结果如下</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102152982.png"></p>
+<h2 id="新建分支">新建分支</h2>
+<blockquote>
+<p>正常来说我们开发项目肯定不可能只用一个本地分支，一般会在其他分支中开发完毕后再推送到主分支中，这时候就需要新建分支的操作了。</p>
+</blockquote>
+<p>分支可以简单的理解为<strong>我想基于这个提交以及它所有的父提交进行新的工作</strong>。当我们新建分支时，Git就会将<strong>HEAD指向的提交记录以及该提交记录之前的所有提交记录</strong>保存到新分支中。</p>
+<p>如果我们要新建分支，可以点击左侧工具栏的加号按钮，这样就得到了一个新的分支。</p>
+<p>该按钮对应git命令<code>git branch</code>，作用是基于当前提交历史创建新的分支。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312131915710.png"></p>
+<p>新建后我们得到了一个全新的分支dev，他包含了master的全部提交历史。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312131916579.png"></p>
+<p>当然，由于HEAD当前指向的是最后一个提交记录，所以新分支dev就包含了master的全部提交记录。如果我们要基于<code>测试1</code>这个提交历史创建分支的话，需要右键该提交历史，点击新建分支后再输入分支名并创建即可。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132014188.png"></p>
+<p>这样我们就得到了一个包含测试1之前所有提交记录的分支。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132015309.png"></p>
+<h2 id="回到指定的提交历史">回到指定的提交历史</h2>
+<blockquote>
+<p>假设你当前开发的代码出现了问题，如何找回之前的代码？这时候就可以通过<strong>签出</strong>这一git提供功能回到之前的提交历史。当你签出到一个提交历史时，你就获取到了这个提交历史的所有代码。</p>
+<p>注意：在签出前确保你当前的代码已经提交到了本地或者远程分支中，签出到其他提交记录时IDEA不会帮你自动保存当前的代码。</p>
+</blockquote>
+<p>在签出的操作中，我们必须要明白<code>HEAD</code>这一概念，<code>HEAD</code>
+是一个<strong>指向当前所在分支的指针</strong>，或者是<strong>指向当前所在提交记录的指针</strong>。在IDEA中，HEAD的位置可以通过黄色便签来看到，比如在下图master的提交历史中，HEAD指向的分支就是master，同时指向提交消息为<code>add README.md.</code>的提交记录。这里我们将下图称为图1。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312131935531.png"></p>
+<p>如果我们要切换到<code>测试1</code>的提交历史上，右键<code>测试1</code>，点击签出修订。</p>
+<p>签出修订按钮对应git命令<code>git checkout</code>，作用是将HEAD指针转移到当前分支/提交记录。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312131925168.png"></p>
+<p>可以看到黄色便签转移到了测试1上，证明我们当前在测试1的提交历史上，这时我们就可以基于测试1的代码进行修改了。这里我们将下图称为图2。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312131945582.png"></p>
+<p>但是这里有个问题，为什么图2在master分支上的黄色便签消失了？而在图1中黄色便签既指向了master又指向了最后一个提交记录<code>add README.md.</code></p>
+<p>这里要明白一个原理，那就是分支本身也能看作是一个指针，这个指针<strong>恒指向该分支的最后一个提交记录</strong>。</p>
+<p>那么在图1中，HEAD其实是通过指向分支<strong>进而</strong>指向了该分支的最后一个提交记录，即<code>HEAD-&gt;master-&gt;add README.md.</code>。而在图2中，HEAD被称作<code>游离的HEAD</code>，是因为它指向的并不是分支而是该分支的一个提交历史，自然就不会指向master分支了，即<code>HEAD-&gt;测试1</code>。</p>
+<h2 id="基于指定提交历史修改代码">基于指定提交历史修改代码</h2>
+<blockquote>
+<p>在上一个<code>回到指定的提交历史</code>的操作中，我们通过签出的操作获取到了指定的提交历史的代码，这时我们就能够基于这个提交历史的代码进行开发。</p>
+</blockquote>
+<p>举个例子，假设我们要回到之前刚添加md文件的提交历史上进行代码开发，给md文件进行修改。我们当前分支的最新提交为<code>博文3</code>，如何回到提交历史<code>add README.md.</code>上？</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262003659.png"></p>
+<p>第一步我们肯定要签出到<code>add README.md.</code>上，签出后可以发现项目文件回到了刚开始提交md文件的时候。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262003012.png"></p>
+<p>这时我们对md文件进行修改，这里我删除了一些段落。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262007614.png"></p>
+<p>然后点击提交按钮，将这个修改历史<code>666</code>提交到本地分支中。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262007485.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262008726.png"></p>
+<p>此时Git给出了警告。如果我们无视警告，仍然点击提交按钮，就会发现原本存在于<code>add README.md.</code>提交记录的指针消失了，而且我们修改后的提交记录<code>666</code>也并没有被提交到本地分支中。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262012288.png"></p>
+<p>还记得之前我们提到的<strong>游离的HEAD</strong>吗？如果直接在特定提交上修改代码并运行
+<code>git commit</code>，这实际上会在游离的 HEAD
+状态下创建一个新的提交，而不会创建分支。这样的操作可能会导致出现一个<strong>游离的提交</strong>，Git
+的垃圾回收机制可能会删除这些提交。</p>
+<h3 id="解决方法1">解决方法1</h3>
+<p>一种方法是：我们在<strong>指定提交历史上创建一个分支</strong>，然后<strong>在新分支上开发完毕后进行提交</strong>。这两步操作前文已经详细介绍了，不再赘述，如图所示。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262020744.png"></p>
+<h3 id="解决方法2">解决方法2</h3>
+<p>第二种方法则是：对指定提交记录执行<code>git revert</code>命令，该命令会基于指定提交记录创建一个新的提交历史</p>
+<p>我们可以右键一个提交记录，选择还原提交选项。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262038451.png"></p>
+<p>如果当前分支的提交记录和还原的提交记录的文件存在差异的话会出现代码冲突。这里因为我当前分支的第一个提交记录<code>博文3</code>和<code>add README.md.</code>在md文件上存在差异，所以出现了冲突。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262041894.png"></p>
+<p>由于我们当前的目标是回到<code>add README.md.</code>这个提交记录的代码中，所以我们选择忽略来自其他提交的变更，保留<code>add README.md.</code>提交记录的原本代码即可。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262042823.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262044196.png"></p>
+<p>写好提交消息后点击提交</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262045900.png"></p>
+<p>可以发现我们这样就创建了一个和<code>add README.md.</code>一模一样的提交记录了。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262046939.png"></p>
+<p>接着我们可以基于这个提交记录的代码进行开发，这里前文已经详细介绍了，不再赘述。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262053876.png"></p>
+<h2 id="将远程分支拉取到本地">将远程分支拉取到本地</h2>
+<blockquote>
+<p>设想这样一个场景：你的同事创建了一个新的远程分支并做了一个新的功能，而这个分支是你本地没有的，你现在的工作要基于这个新的功能才能进行下去，那么我们就需要把这个远程分支拉取到本地来。</p>
+</blockquote>
+<p>在这个例子中，你的同事创建了远程分支<code>origin/dev</code>，而我们本地并没有与其对应的分支。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132128177.png"></p>
+<p>我们只需要右键该分支，点击签出，即可将该远程分支拉取到本地。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132131971.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132131639.png"></p>
+<h2 id="代码整合">代码整合</h2>
+<blockquote>
+<p>在项目合作中，将其他人的代码整合到自己的代码中是经常用到的操作，这时就需要利用到Git的合并或变基功能。</p>
+</blockquote>
+<p>一般来说代码整合会遇到以下几种情况：</p>
 <ol type="1">
-<li><p>当你创建一个新文件时，它就是红色的，表示这是一个未跟踪的文件。通过运行
-<code>git add</code>
-命令，将文件添加到暂存区，此时文件变为绿色，表示它已经被 Git
-管理并准备提交。</p></li>
-<li><p>如果你不想将一个未跟踪的文件或已修改的文件纳入版本管理，你可以选择不使用
-<code>git add</code> 命令，或者使用 <code>git reset</code>
-命令来取消已经添加到暂存区的文件。取消后，文件会回到红色状态，表示它未被跟踪或未被修改。</p></li>
-<li><p>但是对于我们日常开发来说，我们创建一个文件肯定是有用意的，一般都希望该文件被提交上去，所以我们一般都选择添加文件，这样才能通过添加到暂存区，再到本地库最终推送到远程仓库中。</p></li>
+<li>当前分支正好比其他分支少了几条记录</li>
 </ol>
-<blockquote>
-<p>白色、蓝色文件名实例</p>
-</blockquote>
-<p>比如这里我删除了md文件中的其中一行，md文件的文件名由白色转为了蓝色</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072130777.png"></p>
-<p>该文件一般在该项目已经<strong>提交到本地库</strong>中后，我们准备开发新的功能时才会出现，也就是我们修改了当前已经存在于本地库中的文件，该文件就会被转化成蓝色文件。因为该文件已经被<strong>Git版本管理过了</strong>，所以可以直接提交到本地库。</p>
-<p>总结：</p>
-<ol type="1">
-<li>蓝色文件可以直接提交到本地库中，因为其已经被Git版本管理了</li>
-<li>蓝色文件可以简单认为就是白色文件被修改后的文件</li>
+<p>如图，当前我们自己的代码在dev1分支中，我们要整合来自dev的代码，当前dev1中没有dev中的<code>add README.md.</code>的修改记录。首先确保我们当前分支在dev1分支上。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132149480.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132150655.png"></p>
+<p>我们右键dev分支，选择变基或合并均可。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132152900.png"></p>
+<p>可以看到dev的提交记录整合到了dev1中。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132154892.png"></p>
+<ol start="2" type="1">
+<li>当前分支和其他分支都修改了几条记录</li>
 </ol>
-<h4 id="暂存区">暂存区</h4>
-<p>经过前面的内容，大家多少应该可以感觉到，暂存区其实是我们看不见、摸不着的存在，在暂存区中存在的文件一般是绿色和蓝色文件，也就是我们已经使用<code>git add</code>命令添加的文件。</p>
-<p>当我们开发完毕一个新的功能后，我们就会准备将这次修改记录提交到<strong>本地仓库</strong>，这时候使用<code>git commit</code>命令就可以将暂存区中的文件提交到本地仓库中。</p>
+<p>如图，当前我们自己的代码在dev1分支中，我们要整合来自dev的代码，dev1中我写的md文件的内容较少。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132200024.png"></p>
+<p>在dev中我的队友写的md文件的内容较多。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132201457.png"></p>
+<p>现在一样要确保当前分支在dev1中，并且右键dev分支选择合并/变基来整合代码。这个时候就出现了<code>冲突</code>，大家应该很容易就想明白了，因为我当前分支和我队友的分支都同时存在文件名相同、内容不同的文件，这个问题不解决的话自然无法整合。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132206002.png"></p>
+<p>解决冲突的话就需要你和队友进行协商。比如这里我的分支dev1就比较少，队友的分支dev写的比我详细，所以我可以进行"妥协"，直接用队友的md文件即可，点击<code>接受他们的</code>这个按钮就可以使用队友的md文件了。</p>
+<p>当然，我们也可以不进行妥协，IDEA提供了强大的修订功能，通过点击<code>合并</code>按钮，我们可以选择整合该文件的特定部分。具体如何操作，大家自行练习吧~</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132211620.png"></p>
+<h2 id="删除提交">删除提交</h2>
 <blockquote>
-<p>提交实例</p>
+<p>我们在实际开发中难免会提交一些无用的提交记录，这时需要利用删除提交的操作。</p>
 </blockquote>
-<p>在该实例中，我们删除了md文件的其中一行（可以看到changes一栏中是蓝色文件，如果你把一个新的文件也添加到暂存区的话就是前文提到的绿色文件），这里我们要在下方框中填写相关介绍，以便帮助其他团队成员或日后的自己知道这次的提交做了什么。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072141103.png"></p>
-<h4 id="本地库">本地库</h4>
-<p>具体来说，本地库包含了开发者本地完整的提交历史和所有的本地分支，本地库中的提交记录是暂存区通过执行<code>git commit</code>后得来的。</p>
-<p>这里要注意<strong>本地分支</strong>和<strong>本地库</strong>的区别，<strong>本地分支</strong>只是本地库众多分支的<strong>其中一个分支</strong>，当然本地库也可以只包含一个本地分支（但是一般来说开发者不会这么做）。</p>
-<blockquote>
-<p>本地分支实例</p>
-</blockquote>
-<p>这里展示了本地库中的master分支，在这个分支中存在着该分支的提交历史和各种信息。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072150426.png"></p>
-<h4 id="远程库">远程库</h4>
-<p>远程库是存放在<strong>代码托管平台</strong>（如Gitee、GitHub）上的仓库，本地库执行<code>git push</code>命令可将本地的提交记录推送到远程仓库中。</p>
-<p><strong>远程分支</strong>和<strong>远程库</strong>的区别同<strong>本地分支</strong>与<strong>本地库</strong>的区别一样</p>
-<blockquote>
-<p>远程分支实例</p>
-</blockquote>
-<p>同上本地分支实例。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072201594.png"></p>
-<p>需要注意的是，由于我们在团队开发中涉及到多人的共同协作，因此每个人都可以向远程仓库中推送自己的代码，也就意味在当你在开发新的代码时，远程仓库可能已经发生了变动，那么远程分支也就不能实时和远程仓库的提交记录保持同步了，这时我们需要使用<code>git fetch</code>命令，将远程仓库的提交记录拉取到的远程分支中。</p>
-<h2 id="总结">总结</h2>
-<p>通过对于工作区域的认识，大家想必已经了解了一个文件如何从工作区一步步提交到远程仓库中，当然这里存在着很多操作中的细节，如切换分支，合并来自其他分支的结果等，而我们是使用IDEA结合Git实现版本管理，同样存在着如何具体使用的问题。由于本篇只讲理论，就不过多介绍了，本系列将会继续更新下去，大家敬请期待~</p>
+<p>右键一个提交记录，选择删除提交选项，即可删除。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262055354.png"></p>
+<p>很简单吧？但要注意已经推送到远程分支的提交是<strong>不可删除</strong>的。</p>
+<p>这里的绿色提交记录代表还<strong>未推送到远程分支的提交记录</strong>，棕色代表<strong>已经推送到远程分支的提交记录</strong>。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262057344.png"></p>
 ]]></content>
       <categories>
         <category>Git</category>
@@ -736,6 +689,128 @@ dev也就代表目标分支的方向（在右侧）</p>
       </tags>
   </entry>
   <entry>
+    <title>【IDEA结合Git实现项目管理实战】二、基础篇</title>
+    <url>/2023/12/10/%E4%BA%8C%E3%80%81Git%E7%9A%84%E5%9B%9B%E4%B8%AA%E5%8C%BA%E5%9F%9F/</url>
+    <content><![CDATA[<h2 id="前言">前言</h2>
+<blockquote>
+<p>本系列将结合我个人参与团队协作开发项目的经验来介绍如何使用IDEA结合Git实现项目管理，因此可能与真正的企业开发协作存在差异，且文章所涉及的解析可能存在个人理解与实际的偏差。</p>
+<p>本系列主讲如何具体操作，因此对于Git内部的原理将<strong>不会过多深究</strong>。</p>
+<p>本文严禁任何形式的转载、搬运！</p>
+</blockquote>
+<p>本文作为该系列的<strong>基础篇</strong>，将简要介绍使用Git所应该知道的<strong>最基本</strong>的知识，因此不算深究原理，哈哈。</p>
+<p>注意：本文假设你已经成功在IDEA中配置了git</p>
+<h2 id="git的四个工作区域">Git的四个工作区域</h2>
+<h3 id="基本概念">基本概念</h3>
+<p>Git本地有三个工作区域，分别是<strong>工作区</strong>、<strong>暂存区</strong>、<strong>本地仓库</strong></p>
+<p>Git远程有一个工作区域，叫做<strong>远程仓库</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072037674.png"></p>
+<ul>
+<li><p>工作区：开发者当前工作的目录，主要包含项目的实际文件，其中可能包括<strong>未进行版本管理</strong>的新文件和<strong>已修改</strong>的文件。</p></li>
+<li><p>暂存区：作为一个临时存储区域，用于存放工作区中已经修改的文件的<strong>快照</strong>，以便将它们作为一个逻辑单元提交到本地仓库。</p></li>
+<li><p>本地库：包含了项目的<strong>提交历史</strong>，开发者可以对其进行各种操作，如分支合并、变基、签出等。本地库是在开发者本地计算机上的存储库。</p></li>
+<li><p>远程库：
+存放在<strong>代码托管平台</strong>（如Gitee、GitHub）上的仓库，包含了已推送的代码版本、分支、标签等信息。开发者可以通过推送和拉取操作与远程库进行交互，以保持代码同步。</p></li>
+</ul>
+<h3 id="概念解释">概念解释</h3>
+<h4 id="工作区">工作区</h4>
+<p>一下子引入了这么多概念，可能大家会有点接受不了，那么这里对以上概念进行详细解释。</p>
+<p>具体来说，工作区可以看做你在IDEA中打开的项目目录，如下图：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072100334.png"></p>
+<p>这里的项目目录就可以看作是工作区，但是在这个工作区中，既存在正常颜色（白色）的文件名，也存在红色、绿色和蓝色的文件名，那么这些文件分别代表什么含义？这里的文件的颜色，其实也就对应着上文所谓<strong>未进行版本管理</strong>的新文件和<strong>已修改</strong>的文件。如下表：</p>
+<table>
+<colgroup>
+<col style="width: 6%">
+<col style="width: 93%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>颜色</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>白色</td>
+<td>在当前提交历史未改动或者已经提交到本地库的文件</td>
+</tr>
+<tr class="even">
+<td>红色</td>
+<td>未进行版本管理的新文件，也被称为未跟踪的文件</td>
+</tr>
+<tr class="odd">
+<td>绿色</td>
+<td>已经进行版本管理的新文件，该文件已被添加到暂存区中</td>
+</tr>
+<tr class="even">
+<td>蓝色</td>
+<td>当前工作区中被修改的文件，该文件已被添加到暂存区中，与绿色相似</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>红色文件名、绿色文件名实例</p>
+</blockquote>
+<p>大家可以自行测试下，如果你直接在项目目录中创建一个文件的话，IDEA会做出提醒：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072113939.png"></p>
+<p>这时如果你选择添加的话，该文件就会变成绿色文件从而<strong>被Git进行版本管理</strong>，如果选择取消的话，说明你不希望该文件被Git管理，那么该文件就是红色文件而<strong>不能被提交到暂存区</strong>。</p>
+<p>总结：</p>
+<ol type="1">
+<li><p>当你创建一个新文件时，它就是红色的，表示这是一个未跟踪的文件。通过运行
+<code>git add</code>
+命令，将文件添加到暂存区，此时文件变为绿色，表示它已经被 Git
+管理并准备提交。</p></li>
+<li><p>如果你不想将一个未跟踪的文件或已修改的文件纳入版本管理，你可以选择不使用
+<code>git add</code> 命令，或者使用 <code>git reset</code>
+命令来取消已经添加到暂存区的文件。取消后，文件会回到红色状态，表示它未被跟踪或未被修改。</p></li>
+<li><p>但是对于我们日常开发来说，我们创建一个文件肯定是有用意的，一般都希望该文件被提交上去，所以我们一般都选择添加文件，这样才能通过添加到暂存区，再到本地库最终推送到远程仓库中。</p></li>
+</ol>
+<blockquote>
+<p>白色、蓝色文件名实例</p>
+</blockquote>
+<p>比如这里我删除了md文件中的其中一行，md文件的文件名由白色转为了蓝色</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072130777.png"></p>
+<p>该文件一般在该项目已经<strong>提交到本地库</strong>中后，我们准备开发新的功能时才会出现，也就是我们修改了当前已经存在于本地库中的文件，该文件就会被转化成蓝色文件。因为该文件已经被<strong>Git版本管理过了</strong>，所以可以直接提交到本地库。</p>
+<p>总结：</p>
+<ol type="1">
+<li>蓝色文件可以直接提交到本地库中，因为其已经被Git版本管理了</li>
+<li>蓝色文件可以简单认为就是白色文件被修改后的文件</li>
+</ol>
+<h4 id="暂存区">暂存区</h4>
+<p>经过前面的内容，大家多少应该可以感觉到，暂存区其实是我们看不见、摸不着的存在，在暂存区中存在的文件一般是绿色和蓝色文件，也就是我们已经使用<code>git add</code>命令添加的文件。</p>
+<p>当我们开发完毕一个新的功能后，我们就会准备将这次修改记录提交到<strong>本地仓库</strong>，这时候使用<code>git commit</code>命令就可以将暂存区中的文件提交到本地仓库中。</p>
+<blockquote>
+<p>提交实例</p>
+</blockquote>
+<p>在该实例中，我们删除了md文件的其中一行（可以看到changes一栏中是蓝色文件，如果你把一个新的文件也添加到暂存区的话就是前文提到的绿色文件），这里我们要在下方框中填写相关介绍，以便帮助其他团队成员或日后的自己知道这次的提交做了什么。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072141103.png"></p>
+<h4 id="本地库">本地库</h4>
+<p>具体来说，本地库包含了开发者本地完整的提交历史和所有的本地分支，本地库中的提交记录是暂存区通过执行<code>git commit</code>后得来的。</p>
+<p>这里要注意<strong>本地分支</strong>和<strong>本地库</strong>的区别，<strong>本地分支</strong>只是本地库众多分支的<strong>其中一个分支</strong>，当然本地库也可以只包含一个本地分支（但是一般来说开发者不会这么做）。</p>
+<blockquote>
+<p>本地分支实例</p>
+</blockquote>
+<p>这里展示了本地库中的master分支，在这个分支中存在着该分支的提交历史和各种信息。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072150426.png"></p>
+<h4 id="远程库">远程库</h4>
+<p>远程库是存放在<strong>代码托管平台</strong>（如Gitee、GitHub）上的仓库，本地库执行<code>git push</code>命令可将本地的提交记录推送到远程仓库中。</p>
+<p><strong>远程分支</strong>和<strong>远程库</strong>的区别同<strong>本地分支</strong>与<strong>本地库</strong>的区别一样</p>
+<blockquote>
+<p>远程分支实例</p>
+</blockquote>
+<p>同上本地分支实例。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072201594.png"></p>
+<p>需要注意的是，由于我们在团队开发中涉及到多人的共同协作，因此每个人都可以向远程仓库中推送自己的代码，也就意味在当你在开发新的代码时，远程仓库可能已经发生了变动，那么远程分支也就不能实时和远程仓库的提交记录保持同步了，这时我们需要使用<code>git fetch</code>命令，将远程仓库的提交记录拉取到的远程分支中。</p>
+<h2 id="总结">总结</h2>
+<p>通过对于工作区域的认识，大家想必已经了解了一个文件如何从工作区一步步提交到远程仓库中，当然这里存在着很多操作中的细节，如切换分支，合并来自其他分支的结果等，而我们是使用IDEA结合Git实现版本管理，同样存在着如何具体使用的问题。由于本篇只讲理论，就不过多介绍了，本系列将会继续更新下去，大家敬请期待~</p>
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>项目管理</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>中国大学生服务外包创新创业大赛赛题分析</title>
     <url>/2024/01/08/%E8%B5%9B%E9%A2%98/</url>
     <content><![CDATA[<h2 id="a01-基于文心大模型的智能阅卷平台设计与开发">【A01】
@@ -904,188 +979,6 @@ dev也就代表目标分支的方向（在右侧）</p>
       </categories>
       <tags>
         <tag>赛题分析</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【IDEA结合Git实现项目管理实战】三、实战篇</title>
-    <url>/2023/12/15/%E4%B8%89%E3%80%81%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E5%AE%9E%E6%88%98/</url>
-    <content><![CDATA[<h2 id="前言">前言</h2>
-<blockquote>
-<p>本系列将结合我个人参与团队协作开发项目的经验来介绍如何使用IDEA结合Git实现项目管理，因此可能与真正的企业开发协作存在差异，且文章所涉及的解析可能存在个人理解与实际的偏差。</p>
-<p>本系列主讲如何具体操作，因此对于Git内部的原理将<strong>不会过多深究</strong>。</p>
-<p>本文严禁任何形式的转载、搬运！</p>
-</blockquote>
-<p>本文作为该系列的<strong>实战篇</strong>，将正式介绍如何使用IDEA结合Git进行项目管理。</p>
-<p>注意：本文假设你已经成功在IDEA中配置了git</p>
-<p>在配置篇中，当我们已经在本地推送/克隆了一个项目后，我们能看到如下两个功能块。</p>
-<p>在本文中，我们称红色箭头所指为<strong>git日志</strong>，蓝色箭头所指为<strong>git工具栏</strong>。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102051273.png"></p>
-<h2 id="设置默认添加文件">设置默认添加文件</h2>
-<p>还记得<strong>基础篇</strong>我们提到的四个工作区域吗？如果我们想要将变更的文件推送到远程仓库，我们首先需要<strong>先保证变更的文件在暂存区中</strong>。</p>
-<p>在<strong>基础篇</strong>中，我们提到每当创建一个文件时，idea都会询问我们是否将文件添加到git，即是否添加到暂存区中。为了避免这种麻烦，我们打开设置，按以下流程选择<strong>无提示添加</strong>，这样idea就会默认将我们创建的文件自动添加到git了。</p>
-<p>配置完该设置后，相当于每次创建文件都会默认执行git命令<code>git add</code>，作用是将文件添加到暂存区中。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102106887.png"></p>
-<h2 id="推送更改的文件到本地库">推送更改的文件到本地库</h2>
-<blockquote>
-<p>当我们在本地完成了我们的工作后，我们可以先将变更的文件提交到本地库中保存。</p>
-</blockquote>
-<p>这里我们点击蓝色箭头所指git工具栏的第二个按钮，即提交按钮。</p>
-<p>该按钮对应git命令<code>git commit</code>，作用是将文件提交到本地库中。</p>
-<p>这里我简单的修改了下我自己的更改，填写完提交信息后点击提交。</p>
-<blockquote>
-<p>如果点击提交并推送的话，就可以直接将变更推送到远程仓库，省去了一个步骤。</p>
-<p>提交并推送按钮对应git命令<code>git commit &amp; git push</code>，作用是将暂存区的变更直接推送到远程仓库</p>
-</blockquote>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102104592.png"></p>
-<p>提交完毕后，我们打开git日志，能在当前的本地分支中看到我们刚才提交记录：</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102115556.png"></p>
-<h2 id="将本地库的提交记录推送到远程库中">将本地库的提交记录推送到远程库中</h2>
-<blockquote>
-<p>当我们已经确定本地库的工作已经结束后，我们就可以将本地库的记录推送到远程库中。</p>
-</blockquote>
-<p>我们点击git工具栏的第三个按钮，即推送按钮。</p>
-<p>该按钮对应git命令<code>git push</code>，作用是将本地的提交记录推送到远程库中。</p>
-<p>这里我准备了两个提交记录，按<code>ctrl + 鼠标左键</code>可以多选提交记录。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102123171.png"></p>
-<p>点击推送按钮后，我们可以在git日志中看到远程仓库中出现了我们刚才推送的提交记录。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102124929.png"></p>
-<p>此时我们打开gitee，可以发现提交记录同样生效于gitee中。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102126723.png"></p>
-<h2 id="拉取远程分支的变更">拉取远程分支的变更</h2>
-<blockquote>
-<p>当你的远程仓库发生改变时（你的队友推送了提交记录到远程仓库中），而你自己的远程分支不会自动拉取别人的提交记录，也就是说你的远程分支不具备别人的提交历史。</p>
-</blockquote>
-<p>此时我们需要点击提取所有远程按钮，这时候就可以把远程仓库的所有本更拉取到自己的远程分支中。</p>
-<p>提取所有远程按钮对应git命令<code>git fetch</code>，作用是将远程仓库的变更拉取到远程分支中。</p>
-<p>这里我在gitee中手动添加了一个README.md文件。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102135718.png"></p>
-<p>点击按钮后，可以看到远程分支中增加了这条记录，同时，我们可以注意到本地分支名后出现了向下的蓝色箭头，这代表着当前远程分支已经更新了，本地分支也应该进行更新。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102138603.png"></p>
-<p>我们选中对应的本地分支，点击更新所选内容按钮，就可以把远程分支的提交记录添加到我们的本地分支中。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102152552.png"></p>
-<p>这里我们也可以选择git工具栏的第一个按钮，这样就可以指定方式传入变更。</p>
-<p>该按钮对应git命令<code>git merge</code>或<code>git rebase</code>，作用是传入变更到当前分支</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102154586.png"></p>
-<p>结果如下</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312102152982.png"></p>
-<h2 id="新建分支">新建分支</h2>
-<blockquote>
-<p>正常来说我们开发项目肯定不可能只用一个本地分支，一般会在其他分支中开发完毕后再推送到主分支中，这时候就需要新建分支的操作了。</p>
-</blockquote>
-<p>分支可以简单的理解为<strong>我想基于这个提交以及它所有的父提交进行新的工作</strong>。当我们新建分支时，Git就会将<strong>HEAD指向的提交记录以及该提交记录之前的所有提交记录</strong>保存到新分支中。</p>
-<p>如果我们要新建分支，可以点击左侧工具栏的加号按钮，这样就得到了一个新的分支。</p>
-<p>该按钮对应git命令<code>git branch</code>，作用是基于当前提交历史创建新的分支。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312131915710.png"></p>
-<p>新建后我们得到了一个全新的分支dev，他包含了master的全部提交历史。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312131916579.png"></p>
-<p>当然，由于HEAD当前指向的是最后一个提交记录，所以新分支dev就包含了master的全部提交记录。如果我们要基于<code>测试1</code>这个提交历史创建分支的话，需要右键该提交历史，点击新建分支后再输入分支名并创建即可。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132014188.png"></p>
-<p>这样我们就得到了一个包含测试1之前所有提交记录的分支。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132015309.png"></p>
-<h2 id="回到指定的提交历史">回到指定的提交历史</h2>
-<blockquote>
-<p>假设你当前开发的代码出现了问题，如何找回之前的代码？这时候就可以通过<strong>签出</strong>这一git提供功能回到之前的提交历史。当你签出到一个提交历史时，你就获取到了这个提交历史的所有代码。</p>
-<p>注意：在签出前确保你当前的代码已经提交到了本地或者远程分支中，签出到其他提交记录时IDEA不会帮你自动保存当前的代码。</p>
-</blockquote>
-<p>在签出的操作中，我们必须要明白<code>HEAD</code>这一概念，<code>HEAD</code>
-是一个<strong>指向当前所在分支的指针</strong>，或者是<strong>指向当前所在提交记录的指针</strong>。在IDEA中，HEAD的位置可以通过黄色便签来看到，比如在下图master的提交历史中，HEAD指向的分支就是master，同时指向提交消息为<code>add README.md.</code>的提交记录。这里我们将下图称为图1。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312131935531.png"></p>
-<p>如果我们要切换到<code>测试1</code>的提交历史上，右键<code>测试1</code>，点击签出修订。</p>
-<p>签出修订按钮对应git命令<code>git checkout</code>，作用是将HEAD指针转移到当前分支/提交记录。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312131925168.png"></p>
-<p>可以看到黄色便签转移到了测试1上，证明我们当前在测试1的提交历史上，这时我们就可以基于测试1的代码进行修改了。这里我们将下图称为图2。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312131945582.png"></p>
-<p>但是这里有个问题，为什么图2在master分支上的黄色便签消失了？而在图1中黄色便签既指向了master又指向了最后一个提交记录<code>add README.md.</code></p>
-<p>这里要明白一个原理，那就是分支本身也能看作是一个指针，这个指针<strong>恒指向该分支的最后一个提交记录</strong>。</p>
-<p>那么在图1中，HEAD其实是通过指向分支<strong>进而</strong>指向了该分支的最后一个提交记录，即<code>HEAD-&gt;master-&gt;add README.md.</code>。而在图2中，HEAD被称作<code>游离的HEAD</code>，是因为它指向的并不是分支而是该分支的一个提交历史，自然就不会指向master分支了，即<code>HEAD-&gt;测试1</code>。</p>
-<h2 id="基于指定提交历史修改代码">基于指定提交历史修改代码</h2>
-<blockquote>
-<p>在上一个<code>回到指定的提交历史</code>的操作中，我们通过签出的操作获取到了指定的提交历史的代码，这时我们就能够基于这个提交历史的代码进行开发。</p>
-</blockquote>
-<p>举个例子，假设我们要回到之前刚添加md文件的提交历史上进行代码开发，给md文件进行修改。我们当前分支的最新提交为<code>博文3</code>，如何回到提交历史<code>add README.md.</code>上？</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262003659.png"></p>
-<p>第一步我们肯定要签出到<code>add README.md.</code>上，签出后可以发现项目文件回到了刚开始提交md文件的时候。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262003012.png"></p>
-<p>这时我们对md文件进行修改，这里我删除了一些段落。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262007614.png"></p>
-<p>然后点击提交按钮，将这个修改历史<code>666</code>提交到本地分支中。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262007485.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262008726.png"></p>
-<p>此时Git给出了警告。如果我们无视警告，仍然点击提交按钮，就会发现原本存在于<code>add README.md.</code>提交记录的指针消失了，而且我们修改后的提交记录<code>666</code>也并没有被提交到本地分支中。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262012288.png"></p>
-<p>还记得之前我们提到的<strong>游离的HEAD</strong>吗？如果直接在特定提交上修改代码并运行
-<code>git commit</code>，这实际上会在游离的 HEAD
-状态下创建一个新的提交，而不会创建分支。这样的操作可能会导致出现一个<strong>游离的提交</strong>，Git
-的垃圾回收机制可能会删除这些提交。</p>
-<h3 id="解决方法1">解决方法1</h3>
-<p>一种方法是：我们在<strong>指定提交历史上创建一个分支</strong>，然后<strong>在新分支上开发完毕后进行提交</strong>。这两步操作前文已经详细介绍了，不再赘述，如图所示。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262020744.png"></p>
-<h3 id="解决方法2">解决方法2</h3>
-<p>第二种方法则是：对指定提交记录执行<code>git revert</code>命令，该命令会基于指定提交记录创建一个新的提交历史</p>
-<p>我们可以右键一个提交记录，选择还原提交选项。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262038451.png"></p>
-<p>如果当前分支的提交记录和还原的提交记录的文件存在差异的话会出现代码冲突。这里因为我当前分支的第一个提交记录<code>博文3</code>和<code>add README.md.</code>在md文件上存在差异，所以出现了冲突。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262041894.png"></p>
-<p>由于我们当前的目标是回到<code>add README.md.</code>这个提交记录的代码中，所以我们选择忽略来自其他提交的变更，保留<code>add README.md.</code>提交记录的原本代码即可。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262042823.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262044196.png"></p>
-<p>写好提交消息后点击提交</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262045900.png"></p>
-<p>可以发现我们这样就创建了一个和<code>add README.md.</code>一模一样的提交记录了。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262046939.png"></p>
-<p>接着我们可以基于这个提交记录的代码进行开发，这里前文已经详细介绍了，不再赘述。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262053876.png"></p>
-<h2 id="将远程分支拉取到本地">将远程分支拉取到本地</h2>
-<blockquote>
-<p>设想这样一个场景：你的同事创建了一个新的远程分支并做了一个新的功能，而这个分支是你本地没有的，你现在的工作要基于这个新的功能才能进行下去，那么我们就需要把这个远程分支拉取到本地来。</p>
-</blockquote>
-<p>在这个例子中，你的同事创建了远程分支<code>origin/dev</code>，而我们本地并没有与其对应的分支。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132128177.png"></p>
-<p>我们只需要右键该分支，点击签出，即可将该远程分支拉取到本地。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132131971.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132131639.png"></p>
-<h2 id="代码整合">代码整合</h2>
-<blockquote>
-<p>在项目合作中，将其他人的代码整合到自己的代码中是经常用到的操作，这时就需要利用到Git的合并或变基功能。</p>
-</blockquote>
-<p>一般来说代码整合会遇到以下几种情况：</p>
-<ol type="1">
-<li>当前分支正好比其他分支少了几条记录</li>
-</ol>
-<p>如图，当前我们自己的代码在dev1分支中，我们要整合来自dev的代码，当前dev1中没有dev中的<code>add README.md.</code>的修改记录。首先确保我们当前分支在dev1分支上。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132149480.png"></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132150655.png"></p>
-<p>我们右键dev分支，选择变基或合并均可。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132152900.png"></p>
-<p>可以看到dev的提交记录整合到了dev1中。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132154892.png"></p>
-<ol start="2" type="1">
-<li>当前分支和其他分支都修改了几条记录</li>
-</ol>
-<p>如图，当前我们自己的代码在dev1分支中，我们要整合来自dev的代码，dev1中我写的md文件的内容较少。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132200024.png"></p>
-<p>在dev中我的队友写的md文件的内容较多。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132201457.png"></p>
-<p>现在一样要确保当前分支在dev1中，并且右键dev分支选择合并/变基来整合代码。这个时候就出现了<code>冲突</code>，大家应该很容易就想明白了，因为我当前分支和我队友的分支都同时存在文件名相同、内容不同的文件，这个问题不解决的话自然无法整合。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132206002.png"></p>
-<p>解决冲突的话就需要你和队友进行协商。比如这里我的分支dev1就比较少，队友的分支dev写的比我详细，所以我可以进行"妥协"，直接用队友的md文件即可，点击<code>接受他们的</code>这个按钮就可以使用队友的md文件了。</p>
-<p>当然，我们也可以不进行妥协，IDEA提供了强大的修订功能，通过点击<code>合并</code>按钮，我们可以选择整合该文件的特定部分。具体如何操作，大家自行练习吧~</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312132211620.png"></p>
-<h2 id="删除提交">删除提交</h2>
-<blockquote>
-<p>我们在实际开发中难免会提交一些无用的提交记录，这时需要利用删除提交的操作。</p>
-</blockquote>
-<p>右键一个提交记录，选择删除提交选项，即可删除。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262055354.png"></p>
-<p>很简单吧？但要注意已经推送到远程分支的提交是<strong>不可删除</strong>的。</p>
-<p>这里的绿色提交记录代表还<strong>未推送到远程分支的提交记录</strong>，棕色代表<strong>已经推送到远程分支的提交记录</strong>。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262057344.png"></p>
-]]></content>
-      <categories>
-        <category>Git</category>
-      </categories>
-      <tags>
-        <tag>项目管理</tag>
       </tags>
   </entry>
 </search>
