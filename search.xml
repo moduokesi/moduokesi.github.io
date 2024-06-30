@@ -162,77 +162,6 @@ Security致力于为Java应用程序提供<strong>认证</strong>和<strong>授�
       </tags>
   </entry>
   <entry>
-    <title>VMware软件安装及问题解决</title>
-    <url>/2022/10/08/VMware%E5%AE%89%E8%A3%85/</url>
-    <content><![CDATA[<h2 id="vmware软件安装">VMware软件安装</h2>
-<blockquote>
-<p>前言：最近学习Redis时需要使用Linux系统，导致不得不去安装一个虚拟机了，在准备安装VMware软件时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用</p>
-</blockquote>
-<h3 id="准备工作">准备工作</h3>
-<blockquote>
-<p>本文将在Windows系统下使用VMware软件配置Linux虚拟机，下文将会详解VMware软件的安装步骤</p>
-</blockquote>
-<p>VMware软件下载地址：<a href="https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html">https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html</a><br>
-Linux CentOS 7版本下载映像文件地址：<a href="http://mirrors.aliyun.com/centos/7/isos/x86_64/">http://mirrors.aliyun.com/centos/7/isos/x86_64/</a><br></p>
-<p>按图片所示下载即可</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262109879.png"></p>
-<p>这里我选择的是CentOS-7.0-x86_64-DVD-2009.iso 版本</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262106973.png"></p>
-<p>在下载路径下右键以管理员身份运行</p>
-<p><strong>在这里要敲重点！！！如果你没有以管理员身份运行这个选项，那么就看接下来的问题解决部分，如果你有这个选项请点击<a href="#1">跳转</a>自行无视。</strong></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262117313.png"></p>
-<h3 id="问题解决">问题解决</h3>
-<blockquote>
-<p>按住快捷键Win+R打开运行窗口，输入“regedit”，</p>
-<p>这样就打开了注册表编辑器</p>
-<p>在编辑器左侧依次找到HKEY_CURRENT_USER</p>
-<p>然后将RestrictToPermittedSnapins的值设置为0</p>
-</blockquote>
-<p>上面的方法如果输入路径后发现MMC不存在，那么下面这个方法就派上用场了！</p>
-<p>按下Win +
-R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又会惊讶的发现，gpedit.msc打不开了！别着急，下面还有解决方案。当然，如果你能打开组策略编辑器的话可以点击<a href="#2">这里</a>继续往下看</p>
-<p>对于无法打开组策略编辑器的情况，win + r
-键打开运行后，输入notepad打开记事本，复制粘贴以下内容</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">@<span class="built_in">echo</span> off</span><br><span class="line"></span><br><span class="line"><span class="built_in">pushd</span> <span class="string">&quot;%~dp0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~3*.mum &gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~3*.mum &gt;&gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> /f %%i <span class="keyword">in</span> (<span class="string">&#x27;findstr /i . List.txt 2^&gt;nul&#x27;</span>) <span class="keyword">do</span> dism /online /norestart /add-package:<span class="string">&quot;C:\Windows\servicing\Packages\%%i&quot;</span></span><br><span class="line"></span><br><span class="line">pause</span><br></pre></td></tr></table></figure>
-<p>记事本左上角文件另存为到任意路径下</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262129654.png"></p>
-<p>文件名写为gpedit.cmd，保存类型选择所有文件，编码选择ANSI</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262131529.png"></p>
-<p>点击保存后在你保存的路径下右键以管理员身份运行</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262132085.png"></p>
-<p>等待运行结束后发现win + R键打开的gpedit.msc可以正常打开了<br></p>
-<p><span id="2"></span></p>
-<p>接下来进入组策略编辑器，双击计算机配置 --&gt; Windows设置 --&gt;
-安全设置<br></p>
-<p>双击本地策略</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262139507.png"></p>
-<p>进入安全选项找到下面两项选择已启用</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262141895.png"></p>
-<p><strong>大功告成！！！</strong></p>
-<p><span id="1"></span></p>
-<h3 id="安装vmware">安装VMware</h3>
-<p>当解决上述问题后开始准备下载VM软件了，右键以管理员身份运行后等待片刻来到安装界面</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262147272.png"></p>
-<p>一路下一步来到这个界面，安装路径自己选择，我选择安装在D盘下的目录里</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262148344.png"></p>
-<p>勾选取消“启动时检查产品更新”</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262149952.png"></p>
-<p>一路下一步，点击安装</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262151352.png"></p>
-<p>点击许可证</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262153587.png"></p>
-<p>这里要输入许可证密钥（这里大家自行网络上获取），然后点击输入，安装结束，注意不要误点到跳过了。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262155195.png"></p>
-<p>输入密钥确认安装后就可以使用VMware了！</p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-      <tags>
-        <tag>问题解决</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>VMWare演示Redis持久化</title>
     <url>/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/</url>
     <content><![CDATA[<h2 id="vmware演示redis持久化">VMware演示Redis持久化</h2>
@@ -341,6 +270,77 @@ num命令发现结果为空，再set
       </categories>
       <tags>
         <tag>学习笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>VMware软件安装及问题解决</title>
+    <url>/2022/10/08/VMware%E5%AE%89%E8%A3%85/</url>
+    <content><![CDATA[<h2 id="vmware软件安装">VMware软件安装</h2>
+<blockquote>
+<p>前言：最近学习Redis时需要使用Linux系统，导致不得不去安装一个虚拟机了，在准备安装VMware软件时遇到了一些问题，这里给出记录和解决方案，以做参考学习使用</p>
+</blockquote>
+<h3 id="准备工作">准备工作</h3>
+<blockquote>
+<p>本文将在Windows系统下使用VMware软件配置Linux虚拟机，下文将会详解VMware软件的安装步骤</p>
+</blockquote>
+<p>VMware软件下载地址：<a href="https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html">https://www.vmware.com/cn/products/workstation-pro/workstation-pro-evaluation.html</a><br>
+Linux CentOS 7版本下载映像文件地址：<a href="http://mirrors.aliyun.com/centos/7/isos/x86_64/">http://mirrors.aliyun.com/centos/7/isos/x86_64/</a><br></p>
+<p>按图片所示下载即可</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262109879.png"></p>
+<p>这里我选择的是CentOS-7.0-x86_64-DVD-2009.iso 版本</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262106973.png"></p>
+<p>在下载路径下右键以管理员身份运行</p>
+<p><strong>在这里要敲重点！！！如果你没有以管理员身份运行这个选项，那么就看接下来的问题解决部分，如果你有这个选项请点击<a href="#1">跳转</a>自行无视。</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262117313.png"></p>
+<h3 id="问题解决">问题解决</h3>
+<blockquote>
+<p>按住快捷键Win+R打开运行窗口，输入“regedit”，</p>
+<p>这样就打开了注册表编辑器</p>
+<p>在编辑器左侧依次找到HKEY_CURRENT_USER</p>
+<p>然后将RestrictToPermittedSnapins的值设置为0</p>
+</blockquote>
+<p>上面的方法如果输入路径后发现MMC不存在，那么下面这个方法就派上用场了！</p>
+<p>按下Win +
+R键打开运行，输入gpedit.msc打开组策略编辑器，这里可能你又会惊讶的发现，gpedit.msc打不开了！别着急，下面还有解决方案。当然，如果你能打开组策略编辑器的话可以点击<a href="#2">这里</a>继续往下看</p>
+<p>对于无法打开组策略编辑器的情况，win + r
+键打开运行后，输入notepad打开记事本，复制粘贴以下内容</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">@<span class="built_in">echo</span> off</span><br><span class="line"></span><br><span class="line"><span class="built_in">pushd</span> <span class="string">&quot;%~dp0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~3*.mum &gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="built_in">dir</span> /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~3*.mum &gt;&gt;List.txt</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> /f %%i <span class="keyword">in</span> (<span class="string">&#x27;findstr /i . List.txt 2^&gt;nul&#x27;</span>) <span class="keyword">do</span> dism /online /norestart /add-package:<span class="string">&quot;C:\Windows\servicing\Packages\%%i&quot;</span></span><br><span class="line"></span><br><span class="line">pause</span><br></pre></td></tr></table></figure>
+<p>记事本左上角文件另存为到任意路径下</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262129654.png"></p>
+<p>文件名写为gpedit.cmd，保存类型选择所有文件，编码选择ANSI</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262131529.png"></p>
+<p>点击保存后在你保存的路径下右键以管理员身份运行</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262132085.png"></p>
+<p>等待运行结束后发现win + R键打开的gpedit.msc可以正常打开了<br></p>
+<p><span id="2"></span></p>
+<p>接下来进入组策略编辑器，双击计算机配置 --&gt; Windows设置 --&gt;
+安全设置<br></p>
+<p>双击本地策略</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262139507.png"></p>
+<p>进入安全选项找到下面两项选择已启用</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262141895.png"></p>
+<p><strong>大功告成！！！</strong></p>
+<p><span id="1"></span></p>
+<h3 id="安装vmware">安装VMware</h3>
+<p>当解决上述问题后开始准备下载VM软件了，右键以管理员身份运行后等待片刻来到安装界面</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262147272.png"></p>
+<p>一路下一步来到这个界面，安装路径自己选择，我选择安装在D盘下的目录里</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262148344.png"></p>
+<p>勾选取消“启动时检查产品更新”</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262149952.png"></p>
+<p>一路下一步，点击安装</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262151352.png"></p>
+<p>点击许可证</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262153587.png"></p>
+<p>这里要输入许可证密钥（这里大家自行网络上获取），然后点击输入，安装结束，注意不要误点到跳过了。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202209262155195.png"></p>
+<p>输入密钥确认安装后就可以使用VMware了！</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>问题解决</tag>
       </tags>
   </entry>
   <entry>
@@ -498,6 +498,126 @@ num命令发现结果为空，再set
       </tags>
   </entry>
   <entry>
+    <title>【并发编程】线程池参数及创建方法</title>
+    <url>/2024/05/27/%E3%80%90%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E3%80%91%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8F%82%E6%95%B0%E5%8F%8A%E5%88%9B%E5%BB%BA%E6%96%B9%E6%B3%95/</url>
+    <content><![CDATA[<h2 id="目录"><strong>目录：</strong></h2>
+<p><a href="#why">1.什么是线程池</a></p>
+<p><a href="#param">2.线程池七大参数</a></p>
+<p><a href="#set">3.如何设定线程池参数</a></p>
+<p><a href="#create">4.如何创建线程池</a></p>
+<h2 id="什么是线程池">1.什么是线程池<a id="why"></a></h2>
+<p><strong>线程池就是管理一系列线程的资源池</strong>。当有任务要处理时，直接从线程池中获取线程来处理，处理完之后线程并不会立即被销毁，而是等待下一个任务。</p>
+<blockquote>
+<p><strong>为什么要使用线程池？</strong></p>
+</blockquote>
+<p><strong>使用线程池的好处</strong>：</p>
+<ul>
+<li><strong>降低资源消耗</strong>。通过重复利用已创建的线程降低线程创建和销毁造成的消耗。</li>
+<li><strong>提高响应速度</strong>。当任务到达时，任务可以不需要等到线程创建就能立即执行。</li>
+<li><strong>提高线程的可管理性</strong>。线程是稀缺资源，如果无限制的创建，不仅会消耗系统资源，还会降低系统的稳定性，使用线程池可以进行统一的分配，调优和监控</li>
+</ul>
+<h2 id="线程池七大参数">2.线程池七大参数<a id="param"></a></h2>
+<h3 id="核心线程数">2.1.核心线程数</h3>
+<p><strong><code>corePoolSize</code></strong>：线程池中会维护一个最小的线程数量，即使这些线程处理空闲状态，他们也不会被销毁，除非设置了allowCoreThreadTimeOut。当提交一个新任务时，如果线程池中的线程数小于<code>corePoolSize</code>，那么就会创建一个新线程来执行任务。</p>
+<h3 id="最大线程数">2.2.最大线程数</h3>
+<p><strong><code>maximumPoolSize</code></strong>：线程池中允许的最大线程数。在当前线程数达到corePoolSize后，如果继续有任务被提交到线程池，会将任务存放到工作队列中。如果队列也已满，则会去创建一个新线程处理任务。</p>
+<h3 id="空闲线程存活时间">2.3.空闲线程存活时间</h3>
+<p><strong><code>keepAliveTime</code></strong>：非核心线程的空闲存活时间。当线程数大于<code>corePoolSize</code>时，空闲时间超过<code>keepAliveTime</code>的线程将被终止。</p>
+<p>这个参数在设置了<code>allowCoreThreadTimeOut=true</code>时对核心线程同样有效。</p>
+<h3 id="空闲线程存活时间单位">2.4.空闲线程存活时间单位</h3>
+<p><strong><code>unit</code></strong>：keepAliveTime的计量单位。例如，<code>TimeUnit.SECONDS</code>、<code>TimeUnit.MILLISECONDS</code>等。</p>
+<h3 id="工作队列">2.5.工作队列</h3>
+<p><strong><code>workQueue</code></strong>：新任务被提交后，会先进入到此工作队列中，任务调度时再从队列中取出任务。jdk中提供了四种工作队列：</p>
+<p>①ArrayBlockingQueue</p>
+<p>基于数组的有界阻塞队列，按FIFO排序。新任务进来后，会放到该队列的队尾，有界的数组可以防止资源耗尽问题。当线程池中线程数量达到corePoolSize后，再有新任务进来，则会将任务放入该队列的队尾，等待被调度。如果队列已经是满的，则创建一个新线程，如果线程数量已经达到maxPoolSize，则会执行拒绝策略。</p>
+<p>②LinkedBlockingQuene</p>
+<p>基于链表的无界阻塞队列（其实最大容量为Interger.MAX），按照FIFO排序。由于该队列的近似无界性，当线程池中线程数量达到corePoolSize后，再有新任务进来，会一直存入该队列，而基本不会去创建新线程直到maxPoolSize（很难达到Interger.MAX这个数），因此使用该工作队列时，参数maxPoolSize其实是不起作用的。</p>
+<p>③SynchronousQuene</p>
+<p>一个不缓存任务的阻塞队列，生产者放入一个任务必须等到消费者取出这个任务。也就是说新任务进来时，不会缓存，而是直接被调度执行该任务，如果没有可用线程，则创建新线程，如果线程数量达到maxPoolSize，则执行拒绝策略。</p>
+<p>④PriorityBlockingQueue</p>
+<p>具有优先级的无界阻塞队列，优先级通过参数Comparator实现。</p>
+<h3 id="线程工厂">2.6.线程工厂</h3>
+<p><strong><code>threadFactory</code></strong>：创建一个新线程时使用的工厂，可以用来设定线程名、是否为daemon线程等等</p>
+<h3 id="拒绝策略">2.7.拒绝策略</h3>
+<p><strong><code>handler</code></strong>：当工作队列中的任务已到达最大限制，并且线程池中的线程数量也达到最大限制，线程池会执行拒绝策略。JDK中提供了4中拒绝策略：</p>
+<p>①CallerRunsPolicy</p>
+<p>该策略下，在调用者线程中直接执行被拒绝任务的run方法，除非线程池已经shutdown，则直接抛弃任务。</p>
+<p>②AbortPolicy</p>
+<p>该策略下，直接丢弃任务，并抛出RejectedExecutionException异常。</p>
+<p>③DiscardPolicy</p>
+<p>该策略下，直接丢弃任务，什么都不做。</p>
+<p>④DiscardOldestPolicy</p>
+<p>该策略下，抛弃进入队列最早的那个任务，然后尝试把这次拒绝的任务放入队列</p>
+<h2 id="如何设定线程池大小">3.如何设定线程池大小<a id="set"></a></h2>
+<p>一般来说，有两种类型的线程：<strong>CPU 密集型</strong>和 <strong>IO
+密集型</strong>。</p>
+<ul>
+<li>CPU
+密集型的线程<strong>主要进行计算和逻辑处理</strong>，需要占用大量的 CPU
+资源。</li>
+<li>IO
+密集型的线程<strong>主要进行输入输出操作</strong>，如读写文件、网络通信等，需要等待
+IO 设备的响应，而不占用太多的 CPU 资源。</li>
+</ul>
+<p>常见且简单的公式：</p>
+<ul>
+<li><p><strong>CPU 密集型任务(N+1)：</strong> 这种任务消耗的主要是 CPU
+资源，可以将线程数设置为 N（CPU 核心数）+1。比 CPU
+核心数多出来的一个线程是为了防止线程偶发的缺页中断，或者其它原因导致的任务暂停而带来的影响。一旦任务暂停，CPU
+就会处于空闲状态，而在这种情况下多出来的一个线程就可以充分利用 CPU
+的空闲时间。</p></li>
+<li><p><strong>I/O 密集型任务(2N)：</strong>
+这种任务应用起来，系统会用大部分的时间来处理 I/O 交互，而线程在处理 I/O
+的时间段内不会占用 CPU 来处理，这时就可以将 CPU
+交出给其它线程使用。因此在 I/O
+密集型任务的应用中，我们可以多配置一些线程，具体的计算方法是
+2N。</p></li>
+</ul>
+<h2 id="如何创建线程池">4.如何创建线程池<a id="create"></a></h2>
+<p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造函数来创建（推荐）。</strong></p>
+<p>通过这种方式可以根据服务器硬件配置，灵活设定线程池参数。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/f057153326a8f01a3a3caeaad3a8ad2c.png"></p>
+<p><strong>方式二：通过 <code>Executor</code> 框架的工具类
+<code>Executors</code> 来创建（不推荐）。</strong></p>
+<ul>
+<li><strong><code>FixedThreadPool</code></strong>：该方法返回一个<strong>固定线程数量的线程池</strong>。该线程池中的线程数量始终不变。当有一个新的任务提交时，线程池中若有空闲线程，则立即执行。若没有，则新的任务会被暂存在一个任务队列中，待有线程空闲时，便处理在任务队列中的任务。</li>
+<li><strong><code>SingleThreadExecutor</code>：</strong>
+该方法返回一个<strong>只有一个线程的线程池</strong>。若多余一个任务被提交到该线程池，任务会被保存在一个任务队列中，待线程空闲，按先入先出的顺序执行队列中的任务。</li>
+<li><strong><code>CachedThreadPool</code>：</strong>
+该方法返回一个<strong>可根据实际情况调整线程数量的线程池</strong>。初始大小为
+0。当有新任务提交时，如果当前线程池中没有线程可用，它会创建一个新的线程来处理该任务。如果在一段时间内（默认为
+60
+秒）没有新任务提交，核心线程会超时并被销毁，从而缩小线程池的大小。</li>
+<li><strong><code>ScheduledThreadPool</code></strong>：该方法返回一个<strong>用来在给定的延迟后运行任务或者定期执行任务的线程池</strong>。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/37586365930865f8219693dce9c35e87.png"></p>
+<blockquote>
+<p><strong><code>Executors</code> 返回线程池对象的弊端</strong></p>
+</blockquote>
+<ul>
+<li><strong><code>FixedThreadPool</code> 和
+<code>SingleThreadExecutor</code></strong>：使用的是无界的
+<code>LinkedBlockingQueue</code>，<strong>任务队列最大长度</strong>为
+<code>Integer.MAX_VALUE</code>,可能堆积大量的请求，从而导致 OOM。</li>
+<li><strong><code>CachedThreadPool</code></strong>：使用的是同步队列
+<code>SynchronousQueue</code>, 允许<strong>创建的线程数量</strong>为
+<code>Integer.MAX_VALUE</code>
+，如果任务数量过多且执行速度较慢，可能会创建大量的线程，从而导致
+OOM。</li>
+<li><strong><code>ScheduledThreadPool</code> 和
+<code>SingleThreadScheduledExecutor</code></strong> :
+使用的无界的延迟阻塞队列<code>DelayedWorkQueue</code>，<strong>任务队列最大长度</strong>为
+<code>Integer.MAX_VALUE</code>,可能堆积大量的请求，从而导致 OOM。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>项目开发</category>
+      </categories>
+      <tags>
+        <tag>多线程</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【IDEA结合Git实现项目管理实战】一、配置篇</title>
     <url>/2023/12/07/%E4%B8%80%E3%80%81IDEA%E9%85%8D%E7%BD%AE/</url>
     <content><![CDATA[<h2 id="前言">前言</h2>
@@ -571,137 +691,6 @@ name），Remote是远程分支名，可以不用修改，Description是这个�
       </categories>
       <tags>
         <tag>项目管理</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【项目开发】Java调用Python方法一文详解</title>
-    <url>/2024/04/26/%E3%80%90%E9%A1%B9%E7%9B%AE%E5%BC%80%E5%8F%91%E3%80%91Java%E8%B0%83%E7%94%A8Python%E6%96%B9%E6%B3%95/</url>
-    <content><![CDATA[<h2 id="前言">前言</h2>
-<p>在这个人工智能技术迅速发展的时代，对于我们学生而言，参加软件竞赛已不再是单纯的技术比拼。传统的纯Java编写项目，虽然有其稳定与高效的优势，但在面对日益复杂的算法需求时，其竞争力已逐渐减弱。因此，将Java与Python这两种编程语言的优势相结合，实现<strong>算法与软件</strong>的完美融合，已成为提升项目竞争力的关键。</p>
-<p>本文将详细讲解使用Java调用Python的三大方法，并分析各个方法的优势。</p>
-<h2 id="jython库不推荐">1.jython库（不推荐）</h2>
-<p>首先在pom.xml中导入jython对应依赖</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.python<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jython-standalone<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--指定Python的版本--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="手动编写python语句">1.1.手动编写Python语句</h3>
-<p>这里我们编写一个简单的a + b函数的实现样例。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="comment">// 创建Python解释器</span></span><br><span class="line">    <span class="type">PythonInterpreter</span> <span class="variable">interpreter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PythonInterpreter</span>();</span><br><span class="line">    <span class="comment">// 编写函数</span></span><br><span class="line">    interpreter.exec(<span class="string">&quot;def add(a, b):\n    return a + b\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 传入参数</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 调用 Python 函数</span></span><br><span class="line">    <span class="type">PyObject</span> <span class="variable">eval</span> <span class="operator">=</span> interpreter.eval(<span class="string">&quot;add(&quot;</span> + a + <span class="string">&quot;, &quot;</span> + b + <span class="string">&quot;)&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取结果并打印</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">result</span> <span class="operator">=</span> Py.tojava(eval, <span class="type">int</span>.class);</span><br><span class="line">    System.out.println(<span class="string">&quot;Result: &quot;</span> + result);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这样就可以得到返回结果</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Result: <span class="number">15</span></span><br></pre></td></tr></table></figure>
-<h3 id="读取python文件进行调用">1.2.读取Python文件进行调用</h3>
-<p>编写一个jythonTest.py文件</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">a, b</span>):</span><br><span class="line">    <span class="keyword">return</span> a + b</span><br></pre></td></tr></table></figure>
-<p>使用PythonInterpreter.execfile方法调用py文件</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">PythonInterpreter</span> <span class="variable">interpreter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PythonInterpreter</span>();</span><br><span class="line">    interpreter.execfile(<span class="string">&quot;D:\\Workspaces\\Project\\intelpython\\jythonTest.py&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 调用jythonTest.py中的add方法</span></span><br><span class="line">    <span class="type">PyFunction</span> <span class="variable">func</span> <span class="operator">=</span> interpreter.get(<span class="string">&quot;add&quot;</span>,PyFunction.class);</span><br><span class="line">    <span class="type">Integer</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line">    <span class="type">Integer</span> <span class="variable">b</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">    <span class="type">PyObject</span> <span class="variable">pyobj</span> <span class="operator">=</span> func.__call__(<span class="keyword">new</span> <span class="title class_">PyInteger</span>(a), <span class="keyword">new</span> <span class="title class_">PyInteger</span>(b));</span><br><span class="line">    System.out.println(<span class="string">&quot;获得方法的返回值 = &quot;</span> + pyobj.toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><strong>总结：</strong></p>
-</blockquote>
-<p>上述两个方法的优点是其集成性，Jython允许你在Java中直接执行Python代码，使得Java和Python代码可以直接进行交互。</p>
-<p>缺点也是明显的，首先，Jython说到底是Java的库，可能无法完全支持Python的所有库和功能，其次，Python工程师的工作高度耦合在Java代码中，如果你和你的Python同事不能够忍受这种开发方式，那么就不要用这种方法。</p>
-<h2 id="java调用命令行推荐">2.Java调用命令行（推荐）</h2>
-<p>这种方法的原理是通过Java代码调用操作系统的命令行接口，然后在命令行中执行Python脚本。</p>
-<p>Java程序可以通过<code>Runtime.getRuntime().exec()</code>方法或者更高级的<code>ProcessBuilder</code>类来实现这一功能。执行Python脚本后，Java程序可以通过<code>InputStream</code>流来捕获并处理Python脚本的输出结果。</p>
-<h3 id="runtime.getruntime.exec方法调用">2.1.Runtime.getRuntime().exec()方法调用</h3>
-<ol type="1">
-<li>首先需要编写执行Python脚本的命令行语句</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 编写要执行的命令，注意路径中的转义字符</span></span><br><span class="line"><span class="type">String</span> <span class="variable">command</span> <span class="operator">=</span> <span class="string">&quot;python D:\\demo1.py agrs1&quot;</span>;</span><br></pre></td></tr></table></figure>
-<ol start="2" type="1">
-<li>使用Runtime.getRuntime().exec()方法执行命令</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 执行命令  </span></span><br><span class="line"><span class="type">Process</span> <span class="variable">process</span> <span class="operator">=</span> Runtime.getRuntime().exec(command);</span><br></pre></td></tr></table></figure>
-<ol start="3" type="1">
-<li>使用process.getInputStream()捕获InputStream流，从而获取执行结果</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 读取标准输出  </span></span><br><span class="line"><span class="type">BufferedReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getInputStream()));</span><br><span class="line">String line;</span><br><span class="line"><span class="keyword">while</span> ((line = reader.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">	System.out.println(line);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 关闭读取器  </span></span><br><span class="line">reader.close();</span><br></pre></td></tr></table></figure>
-<ol start="4" type="1">
-<li>使用process.getErrorStream()捕获标准错误流（可选），如果Python语句报错会打印报错信息</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 读取标准错误输出（可选）  </span><br><span class="line">BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));</span><br><span class="line">while ((line = errorReader.readLine()) != null) &#123;</span><br><span class="line">	System.err.println(line);</span><br><span class="line">&#125;</span><br><span class="line">// 关闭错误读取器  </span><br><span class="line">errorReader.close();</span><br></pre></td></tr></table></figure>
-<ol start="5" type="1">
-<li>等待进程结束 ，使用process.waitFor()方法获取返回码</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="comment">// 等待进程结束  </span></span><br><span class="line"><span class="type">int</span> <span class="variable">exitCode</span> <span class="operator">=</span> process.waitFor();</span><br><span class="line">System.out.println(<span class="string">&quot;返回码: &quot;</span> + exitCode);</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><strong>完整代码为：</strong></p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 编写要执行的命令，注意路径中的转义字符</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">command</span> <span class="operator">=</span> <span class="string">&quot;python D:\\demo1.py agrs1&quot;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 执行命令  </span></span><br><span class="line">        <span class="type">Process</span> <span class="variable">process</span> <span class="operator">=</span> Runtime.getRuntime().exec(command);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 读取标准输出  </span></span><br><span class="line">        <span class="type">BufferedReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getInputStream()));</span><br><span class="line">        String line;</span><br><span class="line">        <span class="keyword">while</span> ((line = reader.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">            System.out.println(line);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 关闭读取器  </span></span><br><span class="line">        reader.close();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 读取标准错误输出（可选）  </span></span><br><span class="line">        <span class="type">BufferedReader</span> <span class="variable">errorReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getErrorStream()));</span><br><span class="line">        <span class="keyword">while</span> ((line = errorReader.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">            System.err.println(line);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 关闭错误读取器  </span></span><br><span class="line">        errorReader.close();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 等待进程结束  </span></span><br><span class="line">        <span class="type">int</span> <span class="variable">exitCode</span> <span class="operator">=</span> process.waitFor();</span><br><span class="line">        System.out.println(<span class="string">&quot;Python script exited with code: &quot;</span> + exitCode);</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="processbuilder类调用最推荐">2.2.ProcessBuilder类调用（最推荐）</h3>
-<ol type="1">
-<li>编写命令</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 配置Python脚本的路径和要传递的参数  </span></span><br><span class="line"><span class="type">String</span> <span class="variable">pythonScriptPath</span> <span class="operator">=</span> <span class="string">&quot;/path/to/your/python/script.py&quot;</span>;  </span><br><span class="line">String[] command = &#123;<span class="string">&quot;python&quot;</span>, pythonScriptPath, <span class="string">&quot;arg1&quot;</span>, <span class="string">&quot;arg2&quot;</span>&#125;; <span class="comment">// 根据需要调整命令和参数  </span></span><br></pre></td></tr></table></figure>
-<ol start="2" type="1">
-<li>使用ProcessBuilder启动进程</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 使用ProcessBuilder启动进程  </span></span><br><span class="line"><span class="type">ProcessBuilder</span> <span class="variable">pb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ProcessBuilder</span>(command);  </span><br><span class="line"><span class="type">Process</span> <span class="variable">process</span> <span class="operator">=</span> pb.start();  </span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><strong>完整代码：</strong></p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JavaCallPython</span> &#123;  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;  </span><br><span class="line">        <span class="keyword">try</span> &#123;  </span><br><span class="line">            <span class="comment">// 配置Python脚本的路径和要传递的参数  </span></span><br><span class="line">            <span class="type">String</span> <span class="variable">pythonScriptPath</span> <span class="operator">=</span> <span class="string">&quot;/path/to/your/python/script.py&quot;</span>;  </span><br><span class="line">            String[] command = &#123;<span class="string">&quot;python&quot;</span>, pythonScriptPath, <span class="string">&quot;arg1&quot;</span>, <span class="string">&quot;arg2&quot;</span>&#125;; <span class="comment">// 根据需要调整命令和参数  </span></span><br><span class="line">  </span><br><span class="line">            <span class="comment">// 使用ProcessBuilder启动进程  </span></span><br><span class="line">            <span class="type">ProcessBuilder</span> <span class="variable">pb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ProcessBuilder</span>(command);  </span><br><span class="line">            <span class="type">Process</span> <span class="variable">process</span> <span class="operator">=</span> pb.start();  </span><br><span class="line">  </span><br><span class="line">            <span class="comment">// 读取标准输出  </span></span><br><span class="line">            <span class="type">BufferedReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getInputStream()));  </span><br><span class="line">            String line;  </span><br><span class="line">            <span class="keyword">while</span> ((line = reader.readLine()) != <span class="literal">null</span>) &#123;  </span><br><span class="line">                System.out.println(line);  </span><br><span class="line">            &#125;  </span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 读取标准错误输出（可选）  </span></span><br><span class="line">            <span class="type">BufferedReader</span> <span class="variable">errorReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getErrorStream()));</span><br><span class="line">            <span class="keyword">while</span> ((line = errorReader.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">                System.err.println(line);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 关闭读取器  </span></span><br><span class="line">            reader.close();</span><br><span class="line">            errorReader.close();</span><br><span class="line">  </span><br><span class="line">            <span class="comment">// 等待进程结束并获取退出值  </span></span><br><span class="line">            <span class="type">int</span> <span class="variable">exitCode</span> <span class="operator">=</span> process.waitFor();  </span><br><span class="line">            System.out.println(<span class="string">&quot;\nExited with error code : &quot;</span> + exitCode);  </span><br><span class="line">  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><strong>总结：</strong></p>
-</blockquote>
-<p>两种方法都是通过创建一个Process进程调用命令行获取Python脚本的执行结果。主要区别为第二种方法需要额外创建一个ProcessBuilder类，ProcessBuilder类接收的是String数组，相较于Runtime只接收一个String字符串，ProcessBuilder类编写命令更加灵活。</p>
-<h2 id="调用云端模型最推荐">3.调用云端模型（最推荐）</h2>
-<p>这种方法需要Python工程师在百度云、腾讯云等云平台上开启接口，然后通过Hutool的工具类发送HTTP请求调用云端接口。</p>
-<p>首先需要导入Hutool库</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--hutool--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>cn.hutool<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hutool-all<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.7.17<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<ol type="1">
-<li>填写接口地址，使用Map作为表单数据（一般使用表单，比较灵活，文件和文本都可以传输）</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> <span class="string">&quot;https://xxx.com/&quot;</span>;</span><br><span class="line">HashMap&lt;String, Object&gt; paramMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">paramMap.put(<span class="string">&quot;student&quot;</span>, student);</span><br><span class="line">paramMap.put(<span class="string">&quot;answer&quot;</span>, answer);</span><br></pre></td></tr></table></figure>
-<ol start="2" type="1">
-<li>使用HttpRequest发送请求</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">HttpResponse</span> <span class="variable">execute</span> <span class="operator">=</span> HttpRequest.post(url)</span><br><span class="line">    .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)</span><br><span class="line">    .form(paramMap)</span><br><span class="line">    .execute();</span><br></pre></td></tr></table></figure>
-<ol start="3" type="1">
-<li>判断返回结果合法性，进行相关处理</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 判断返回结果是否为空</span></span><br><span class="line"><span class="keyword">if</span> (ObjectUtil.isNull(execute)) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;调用结果为空&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断接口是否调用成功</span></span><br><span class="line"><span class="type">int</span> <span class="variable">status</span> <span class="operator">=</span> execute.getStatus();</span><br><span class="line"><span class="keyword">if</span> (status != <span class="number">200</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;执行失败，错误码：&quot;</span> + status);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ol start="4" type="1">
-<li>获取返回结果</li>
-</ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 打印响应结果</span></span><br><span class="line">System.out.println(execute.body());</span><br></pre></td></tr></table></figure>
-<p><strong>完整代码：</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 利用hutool工具的HttpRequest类发送请求调用python接口</span></span><br><span class="line"><span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">HashMap&lt;String, Object&gt; paramMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">paramMap.put(<span class="string">&quot;student&quot;</span>, student);</span><br><span class="line">paramMap.put(<span class="string">&quot;answer&quot;</span>, answer);</span><br><span class="line"><span class="type">HttpResponse</span> <span class="variable">execute</span> <span class="operator">=</span> HttpRequest.post(url)</span><br><span class="line">    .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)</span><br><span class="line">    .form(paramMap)</span><br><span class="line">    .execute();</span><br><span class="line"><span class="comment">// 判断返回结果是否为空</span></span><br><span class="line"><span class="keyword">if</span> (ObjectUtil.isNull(execute)) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;调用结果为空&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断接口是否调用成功</span></span><br><span class="line"><span class="type">int</span> <span class="variable">status</span> <span class="operator">=</span> execute.getStatus();</span><br><span class="line"><span class="keyword">if</span> (status != <span class="number">200</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> Result.fail(<span class="string">&quot;执行失败，错误码：&quot;</span> + status);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 打印响应结果</span></span><br><span class="line">System.out.println(execute.body());</span><br></pre></td></tr></table></figure>
-<h2 id="总结">4.总结</h2>
-<h3 id="jython库">jython库</h3>
-<p>优点：</p>
-<ul>
-<li>直接在Java程序中执行，可以直接利用Java虚拟机（JVM）的性能优势，减少进程间通信的开销。</li>
-</ul>
-<p>缺点：</p>
-<ul>
-<li>Jython可能无法完全支持Python的所有库和功能。</li>
-</ul>
-<h3 id="java调用命令行">Java调用命令行</h3>
-<p>优点：</p>
-<ul>
-<li>Java和Python进程是独立的，这使得它们可以更容易地并行运行，而不会影响彼此的性能。</li>
-<li>对于对硬件要求比较高的Python模型， 本地部署可能存在一定的困难。</li>
-<li>对于开发人员比较友好，两者的开发工作分离。</li>
-</ul>
-<p>缺点：</p>
-<ul>
-<li>进程间通讯可能会引入额外的开销和复杂性。</li>
-</ul>
-<h3 id="调用云端模型">调用云端模型</h3>
-<p>优点：</p>
-<ul>
-<li>对于开发人员比较友好，两者的开发工作分离。</li>
-<li>利于构建大型算法模型，如百度云等云端平台对于Python模型支持度很高，比起本地更容易部署。</li>
-</ul>
-<p>缺点：</p>
-<ul>
-<li>需要Java和Python工程师对HTTP请求有一定了解。</li>
-<li>云端接口需要支付一定的费用。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>项目开发</category>
-      </categories>
-      <tags>
-        <tag>项目开发</tag>
       </tags>
   </entry>
   <entry>
@@ -878,6 +867,259 @@ name），Remote是远程分支名，可以不用修改，Description是这个�
 <p>很简单吧？但要注意已经推送到远程分支的提交是<strong>不可删除</strong>的。</p>
 <p>这里的绿色提交记录代表还<strong>未推送到远程分支的提交记录</strong>，棕色代表<strong>已经推送到远程分支的提交记录</strong>。</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312262057344.png"></p>
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>项目管理</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【项目开发】Java调用Python方法一文详解</title>
+    <url>/2024/04/26/%E3%80%90%E9%A1%B9%E7%9B%AE%E5%BC%80%E5%8F%91%E3%80%91Java%E8%B0%83%E7%94%A8Python%E6%96%B9%E6%B3%95/</url>
+    <content><![CDATA[<h2 id="前言">前言</h2>
+<p>在这个人工智能技术迅速发展的时代，对于我们学生而言，参加软件竞赛已不再是单纯的技术比拼。传统的纯Java编写项目，虽然有其稳定与高效的优势，但在面对日益复杂的算法需求时，其竞争力已逐渐减弱。因此，将Java与Python这两种编程语言的优势相结合，实现<strong>算法与软件</strong>的完美融合，已成为提升项目竞争力的关键。</p>
+<p>本文将详细讲解使用Java调用Python的三大方法，并分析各个方法的优势。</p>
+<h2 id="jython库不推荐">1.jython库（不推荐）</h2>
+<p>首先在pom.xml中导入jython对应依赖</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.python<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jython-standalone<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--指定Python的版本--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="手动编写python语句">1.1.手动编写Python语句</h3>
+<p>这里我们编写一个简单的a + b函数的实现样例。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="comment">// 创建Python解释器</span></span><br><span class="line">    <span class="type">PythonInterpreter</span> <span class="variable">interpreter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PythonInterpreter</span>();</span><br><span class="line">    <span class="comment">// 编写函数</span></span><br><span class="line">    interpreter.exec(<span class="string">&quot;def add(a, b):\n    return a + b\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 传入参数</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 调用 Python 函数</span></span><br><span class="line">    <span class="type">PyObject</span> <span class="variable">eval</span> <span class="operator">=</span> interpreter.eval(<span class="string">&quot;add(&quot;</span> + a + <span class="string">&quot;, &quot;</span> + b + <span class="string">&quot;)&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取结果并打印</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">result</span> <span class="operator">=</span> Py.tojava(eval, <span class="type">int</span>.class);</span><br><span class="line">    System.out.println(<span class="string">&quot;Result: &quot;</span> + result);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样就可以得到返回结果</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Result: <span class="number">15</span></span><br></pre></td></tr></table></figure>
+<h3 id="读取python文件进行调用">1.2.读取Python文件进行调用</h3>
+<p>编写一个jythonTest.py文件</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">a, b</span>):</span><br><span class="line">    <span class="keyword">return</span> a + b</span><br></pre></td></tr></table></figure>
+<p>使用PythonInterpreter.execfile方法调用py文件</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">PythonInterpreter</span> <span class="variable">interpreter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PythonInterpreter</span>();</span><br><span class="line">    interpreter.execfile(<span class="string">&quot;D:\\Workspaces\\Project\\intelpython\\jythonTest.py&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 调用jythonTest.py中的add方法</span></span><br><span class="line">    <span class="type">PyFunction</span> <span class="variable">func</span> <span class="operator">=</span> interpreter.get(<span class="string">&quot;add&quot;</span>,PyFunction.class);</span><br><span class="line">    <span class="type">Integer</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line">    <span class="type">Integer</span> <span class="variable">b</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">    <span class="type">PyObject</span> <span class="variable">pyobj</span> <span class="operator">=</span> func.__call__(<span class="keyword">new</span> <span class="title class_">PyInteger</span>(a), <span class="keyword">new</span> <span class="title class_">PyInteger</span>(b));</span><br><span class="line">    System.out.println(<span class="string">&quot;获得方法的返回值 = &quot;</span> + pyobj.toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>总结：</strong></p>
+</blockquote>
+<p>上述两个方法的优点是其集成性，Jython允许你在Java中直接执行Python代码，使得Java和Python代码可以直接进行交互。</p>
+<p>缺点也是明显的，首先，Jython说到底是Java的库，可能无法完全支持Python的所有库和功能，其次，Python工程师的工作高度耦合在Java代码中，如果你和你的Python同事不能够忍受这种开发方式，那么就不要用这种方法。</p>
+<h2 id="java调用命令行推荐">2.Java调用命令行（推荐）</h2>
+<p>这种方法的原理是通过Java代码调用操作系统的命令行接口，然后在命令行中执行Python脚本。</p>
+<p>Java程序可以通过<code>Runtime.getRuntime().exec()</code>方法或者更高级的<code>ProcessBuilder</code>类来实现这一功能。执行Python脚本后，Java程序可以通过<code>InputStream</code>流来捕获并处理Python脚本的输出结果。</p>
+<h3 id="runtime.getruntime.exec方法调用">2.1.Runtime.getRuntime().exec()方法调用</h3>
+<ol type="1">
+<li>首先需要编写执行Python脚本的命令行语句</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 编写要执行的命令，注意路径中的转义字符</span></span><br><span class="line"><span class="type">String</span> <span class="variable">command</span> <span class="operator">=</span> <span class="string">&quot;python D:\\demo1.py agrs1&quot;</span>;</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>使用Runtime.getRuntime().exec()方法执行命令</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 执行命令  </span></span><br><span class="line"><span class="type">Process</span> <span class="variable">process</span> <span class="operator">=</span> Runtime.getRuntime().exec(command);</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>使用process.getInputStream()捕获InputStream流，从而获取执行结果</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 读取标准输出  </span></span><br><span class="line"><span class="type">BufferedReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getInputStream()));</span><br><span class="line">String line;</span><br><span class="line"><span class="keyword">while</span> ((line = reader.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">	System.out.println(line);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 关闭读取器  </span></span><br><span class="line">reader.close();</span><br></pre></td></tr></table></figure>
+<ol start="4" type="1">
+<li>使用process.getErrorStream()捕获标准错误流（可选），如果Python语句报错会打印报错信息</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 读取标准错误输出（可选）  </span><br><span class="line">BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));</span><br><span class="line">while ((line = errorReader.readLine()) != null) &#123;</span><br><span class="line">	System.err.println(line);</span><br><span class="line">&#125;</span><br><span class="line">// 关闭错误读取器  </span><br><span class="line">errorReader.close();</span><br></pre></td></tr></table></figure>
+<ol start="5" type="1">
+<li>等待进程结束 ，使用process.waitFor()方法获取返回码</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"> <span class="comment">// 等待进程结束  </span></span><br><span class="line"><span class="type">int</span> <span class="variable">exitCode</span> <span class="operator">=</span> process.waitFor();</span><br><span class="line">System.out.println(<span class="string">&quot;返回码: &quot;</span> + exitCode);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>完整代码为：</strong></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 编写要执行的命令，注意路径中的转义字符</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">command</span> <span class="operator">=</span> <span class="string">&quot;python D:\\demo1.py agrs1&quot;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 执行命令  </span></span><br><span class="line">        <span class="type">Process</span> <span class="variable">process</span> <span class="operator">=</span> Runtime.getRuntime().exec(command);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 读取标准输出  </span></span><br><span class="line">        <span class="type">BufferedReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getInputStream()));</span><br><span class="line">        String line;</span><br><span class="line">        <span class="keyword">while</span> ((line = reader.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">            System.out.println(line);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 关闭读取器  </span></span><br><span class="line">        reader.close();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 读取标准错误输出（可选）  </span></span><br><span class="line">        <span class="type">BufferedReader</span> <span class="variable">errorReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getErrorStream()));</span><br><span class="line">        <span class="keyword">while</span> ((line = errorReader.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">            System.err.println(line);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 关闭错误读取器  </span></span><br><span class="line">        errorReader.close();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 等待进程结束  </span></span><br><span class="line">        <span class="type">int</span> <span class="variable">exitCode</span> <span class="operator">=</span> process.waitFor();</span><br><span class="line">        System.out.println(<span class="string">&quot;Python script exited with code: &quot;</span> + exitCode);</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="processbuilder类调用最推荐">2.2.ProcessBuilder类调用（最推荐）</h3>
+<ol type="1">
+<li>编写命令</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 配置Python脚本的路径和要传递的参数  </span></span><br><span class="line"><span class="type">String</span> <span class="variable">pythonScriptPath</span> <span class="operator">=</span> <span class="string">&quot;/path/to/your/python/script.py&quot;</span>;  </span><br><span class="line">String[] command = &#123;<span class="string">&quot;python&quot;</span>, pythonScriptPath, <span class="string">&quot;arg1&quot;</span>, <span class="string">&quot;arg2&quot;</span>&#125;; <span class="comment">// 根据需要调整命令和参数  </span></span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>使用ProcessBuilder启动进程</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 使用ProcessBuilder启动进程  </span></span><br><span class="line"><span class="type">ProcessBuilder</span> <span class="variable">pb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ProcessBuilder</span>(command);  </span><br><span class="line"><span class="type">Process</span> <span class="variable">process</span> <span class="operator">=</span> pb.start();  </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>完整代码：</strong></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JavaCallPython</span> &#123;  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;  </span><br><span class="line">        <span class="keyword">try</span> &#123;  </span><br><span class="line">            <span class="comment">// 配置Python脚本的路径和要传递的参数  </span></span><br><span class="line">            <span class="type">String</span> <span class="variable">pythonScriptPath</span> <span class="operator">=</span> <span class="string">&quot;/path/to/your/python/script.py&quot;</span>;  </span><br><span class="line">            String[] command = &#123;<span class="string">&quot;python&quot;</span>, pythonScriptPath, <span class="string">&quot;arg1&quot;</span>, <span class="string">&quot;arg2&quot;</span>&#125;; <span class="comment">// 根据需要调整命令和参数  </span></span><br><span class="line">  </span><br><span class="line">            <span class="comment">// 使用ProcessBuilder启动进程  </span></span><br><span class="line">            <span class="type">ProcessBuilder</span> <span class="variable">pb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ProcessBuilder</span>(command);  </span><br><span class="line">            <span class="type">Process</span> <span class="variable">process</span> <span class="operator">=</span> pb.start();  </span><br><span class="line">  </span><br><span class="line">            <span class="comment">// 读取标准输出  </span></span><br><span class="line">            <span class="type">BufferedReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getInputStream()));  </span><br><span class="line">            String line;  </span><br><span class="line">            <span class="keyword">while</span> ((line = reader.readLine()) != <span class="literal">null</span>) &#123;  </span><br><span class="line">                System.out.println(line);  </span><br><span class="line">            &#125;  </span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 读取标准错误输出（可选）  </span></span><br><span class="line">            <span class="type">BufferedReader</span> <span class="variable">errorReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(process.getErrorStream()));</span><br><span class="line">            <span class="keyword">while</span> ((line = errorReader.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">                System.err.println(line);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 关闭读取器  </span></span><br><span class="line">            reader.close();</span><br><span class="line">            errorReader.close();</span><br><span class="line">  </span><br><span class="line">            <span class="comment">// 等待进程结束并获取退出值  </span></span><br><span class="line">            <span class="type">int</span> <span class="variable">exitCode</span> <span class="operator">=</span> process.waitFor();  </span><br><span class="line">            System.out.println(<span class="string">&quot;\nExited with error code : &quot;</span> + exitCode);  </span><br><span class="line">  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>总结：</strong></p>
+</blockquote>
+<p>两种方法都是通过创建一个Process进程调用命令行获取Python脚本的执行结果。主要区别为第二种方法需要额外创建一个ProcessBuilder类，ProcessBuilder类接收的是String数组，相较于Runtime只接收一个String字符串，ProcessBuilder类编写命令更加灵活。</p>
+<h2 id="调用云端模型最推荐">3.调用云端模型（最推荐）</h2>
+<p>这种方法需要Python工程师在百度云、腾讯云等云平台上开启接口，然后通过Hutool的工具类发送HTTP请求调用云端接口。</p>
+<p>首先需要导入Hutool库</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--hutool--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>cn.hutool<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hutool-all<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.7.17<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li>填写接口地址，使用Map作为表单数据（一般使用表单，比较灵活，文件和文本都可以传输）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> <span class="string">&quot;https://xxx.com/&quot;</span>;</span><br><span class="line">HashMap&lt;String, Object&gt; paramMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">paramMap.put(<span class="string">&quot;student&quot;</span>, student);</span><br><span class="line">paramMap.put(<span class="string">&quot;answer&quot;</span>, answer);</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>使用HttpRequest发送请求</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">HttpResponse</span> <span class="variable">execute</span> <span class="operator">=</span> HttpRequest.post(url)</span><br><span class="line">    .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)</span><br><span class="line">    .form(paramMap)</span><br><span class="line">    .execute();</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>判断返回结果合法性，进行相关处理</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 判断返回结果是否为空</span></span><br><span class="line"><span class="keyword">if</span> (ObjectUtil.isNull(execute)) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;调用结果为空&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断接口是否调用成功</span></span><br><span class="line"><span class="type">int</span> <span class="variable">status</span> <span class="operator">=</span> execute.getStatus();</span><br><span class="line"><span class="keyword">if</span> (status != <span class="number">200</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;执行失败，错误码：&quot;</span> + status);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="4" type="1">
+<li>获取返回结果</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 打印响应结果</span></span><br><span class="line">System.out.println(execute.body());</span><br></pre></td></tr></table></figure>
+<p><strong>完整代码：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 利用hutool工具的HttpRequest类发送请求调用python接口</span></span><br><span class="line"><span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">HashMap&lt;String, Object&gt; paramMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">paramMap.put(<span class="string">&quot;student&quot;</span>, student);</span><br><span class="line">paramMap.put(<span class="string">&quot;answer&quot;</span>, answer);</span><br><span class="line"><span class="type">HttpResponse</span> <span class="variable">execute</span> <span class="operator">=</span> HttpRequest.post(url)</span><br><span class="line">    .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)</span><br><span class="line">    .form(paramMap)</span><br><span class="line">    .execute();</span><br><span class="line"><span class="comment">// 判断返回结果是否为空</span></span><br><span class="line"><span class="keyword">if</span> (ObjectUtil.isNull(execute)) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;调用结果为空&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断接口是否调用成功</span></span><br><span class="line"><span class="type">int</span> <span class="variable">status</span> <span class="operator">=</span> execute.getStatus();</span><br><span class="line"><span class="keyword">if</span> (status != <span class="number">200</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> Result.fail(<span class="string">&quot;执行失败，错误码：&quot;</span> + status);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 打印响应结果</span></span><br><span class="line">System.out.println(execute.body());</span><br></pre></td></tr></table></figure>
+<h2 id="总结">4.总结</h2>
+<h3 id="jython库">jython库</h3>
+<p>优点：</p>
+<ul>
+<li>直接在Java程序中执行，可以直接利用Java虚拟机（JVM）的性能优势，减少进程间通信的开销。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>Jython可能无法完全支持Python的所有库和功能。</li>
+</ul>
+<h3 id="java调用命令行">Java调用命令行</h3>
+<p>优点：</p>
+<ul>
+<li>Java和Python进程是独立的，这使得它们可以更容易地并行运行，而不会影响彼此的性能。</li>
+<li>对于对硬件要求比较高的Python模型， 本地部署可能存在一定的困难。</li>
+<li>对于开发人员比较友好，两者的开发工作分离。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>进程间通讯可能会引入额外的开销和复杂性。</li>
+</ul>
+<h3 id="调用云端模型">调用云端模型</h3>
+<p>优点：</p>
+<ul>
+<li>对于开发人员比较友好，两者的开发工作分离。</li>
+<li>利于构建大型算法模型，如百度云等云端平台对于Python模型支持度很高，比起本地更容易部署。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>需要Java和Python工程师对HTTP请求有一定了解。</li>
+<li>云端接口需要支付一定的费用。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>项目开发</category>
+      </categories>
+      <tags>
+        <tag>项目开发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【IDEA结合Git实现项目管理实战】二、基础篇</title>
+    <url>/2023/12/10/%E4%BA%8C%E3%80%81Git%E7%9A%84%E5%9B%9B%E4%B8%AA%E5%8C%BA%E5%9F%9F/</url>
+    <content><![CDATA[<h2 id="前言">前言</h2>
+<blockquote>
+<p>本系列将结合我个人参与团队协作开发项目的经验来介绍如何使用IDEA结合Git实现项目管理，因此可能与真正的企业开发协作存在差异，且文章所涉及的解析可能存在个人理解与实际的偏差。</p>
+<p>本系列主讲如何具体操作，因此对于Git内部的原理将<strong>不会过多深究</strong>。</p>
+<p>本文严禁任何形式的转载、搬运！</p>
+</blockquote>
+<p>本文作为该系列的<strong>基础篇</strong>，将简要介绍使用Git所应该知道的<strong>最基本</strong>的知识，因此不算深究原理，哈哈。</p>
+<p>注意：本文假设你已经成功在IDEA中配置了git</p>
+<h2 id="git的四个工作区域">Git的四个工作区域</h2>
+<h3 id="基本概念">基本概念</h3>
+<p>Git本地有三个工作区域，分别是<strong>工作区</strong>、<strong>暂存区</strong>、<strong>本地仓库</strong></p>
+<p>Git远程有一个工作区域，叫做<strong>远程仓库</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072037674.png"></p>
+<ul>
+<li><p>工作区：开发者当前工作的目录，主要包含项目的实际文件，其中可能包括<strong>未进行版本管理</strong>的新文件和<strong>已修改</strong>的文件。</p></li>
+<li><p>暂存区：作为一个临时存储区域，用于存放工作区中已经修改的文件的<strong>快照</strong>，以便将它们作为一个逻辑单元提交到本地仓库。</p></li>
+<li><p>本地库：包含了项目的<strong>提交历史</strong>，开发者可以对其进行各种操作，如分支合并、变基、签出等。本地库是在开发者本地计算机上的存储库。</p></li>
+<li><p>远程库：
+存放在<strong>代码托管平台</strong>（如Gitee、GitHub）上的仓库，包含了已推送的代码版本、分支、标签等信息。开发者可以通过推送和拉取操作与远程库进行交互，以保持代码同步。</p></li>
+</ul>
+<h3 id="概念解释">概念解释</h3>
+<h4 id="工作区">工作区</h4>
+<p>一下子引入了这么多概念，可能大家会有点接受不了，那么这里对以上概念进行详细解释。</p>
+<p>具体来说，工作区可以看做你在IDEA中打开的项目目录，如下图：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072100334.png"></p>
+<p>这里的项目目录就可以看作是工作区，但是在这个工作区中，既存在正常颜色（白色）的文件名，也存在红色、绿色和蓝色的文件名，那么这些文件分别代表什么含义？这里的文件的颜色，其实也就对应着上文所谓<strong>未进行版本管理</strong>的新文件和<strong>已修改</strong>的文件。如下表：</p>
+<table>
+<colgroup>
+<col style="width: 6%">
+<col style="width: 93%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>颜色</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>白色</td>
+<td>在当前提交历史未改动或者已经提交到本地库的文件</td>
+</tr>
+<tr class="even">
+<td>红色</td>
+<td>未进行版本管理的新文件，也被称为未跟踪的文件</td>
+</tr>
+<tr class="odd">
+<td>绿色</td>
+<td>已经进行版本管理的新文件，该文件已被添加到暂存区中</td>
+</tr>
+<tr class="even">
+<td>蓝色</td>
+<td>当前工作区中被修改的文件，该文件已被添加到暂存区中，与绿色相似</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>红色文件名、绿色文件名实例</p>
+</blockquote>
+<p>大家可以自行测试下，如果你直接在项目目录中创建一个文件的话，IDEA会做出提醒：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072113939.png"></p>
+<p>这时如果你选择添加的话，该文件就会变成绿色文件从而<strong>被Git进行版本管理</strong>，如果选择取消的话，说明你不希望该文件被Git管理，那么该文件就是红色文件而<strong>不能被提交到暂存区</strong>。</p>
+<p>总结：</p>
+<ol type="1">
+<li><p>当你创建一个新文件时，它就是红色的，表示这是一个未跟踪的文件。通过运行
+<code>git add</code>
+命令，将文件添加到暂存区，此时文件变为绿色，表示它已经被 Git
+管理并准备提交。</p></li>
+<li><p>如果你不想将一个未跟踪的文件或已修改的文件纳入版本管理，你可以选择不使用
+<code>git add</code> 命令，或者使用 <code>git reset</code>
+命令来取消已经添加到暂存区的文件。取消后，文件会回到红色状态，表示它未被跟踪或未被修改。</p></li>
+<li><p>但是对于我们日常开发来说，我们创建一个文件肯定是有用意的，一般都希望该文件被提交上去，所以我们一般都选择添加文件，这样才能通过添加到暂存区，再到本地库最终推送到远程仓库中。</p></li>
+</ol>
+<blockquote>
+<p>白色、蓝色文件名实例</p>
+</blockquote>
+<p>比如这里我删除了md文件中的其中一行，md文件的文件名由白色转为了蓝色</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072130777.png"></p>
+<p>该文件一般在该项目已经<strong>提交到本地库</strong>中后，我们准备开发新的功能时才会出现，也就是我们修改了当前已经存在于本地库中的文件，该文件就会被转化成蓝色文件。因为该文件已经被<strong>Git版本管理过了</strong>，所以可以直接提交到本地库。</p>
+<p>总结：</p>
+<ol type="1">
+<li>蓝色文件可以直接提交到本地库中，因为其已经被Git版本管理了</li>
+<li>蓝色文件可以简单认为就是白色文件被修改后的文件</li>
+</ol>
+<h4 id="暂存区">暂存区</h4>
+<p>经过前面的内容，大家多少应该可以感觉到，暂存区其实是我们看不见、摸不着的存在，在暂存区中存在的文件一般是绿色和蓝色文件，也就是我们已经使用<code>git add</code>命令添加的文件。</p>
+<p>当我们开发完毕一个新的功能后，我们就会准备将这次修改记录提交到<strong>本地仓库</strong>，这时候使用<code>git commit</code>命令就可以将暂存区中的文件提交到本地仓库中。</p>
+<blockquote>
+<p>提交实例</p>
+</blockquote>
+<p>在该实例中，我们删除了md文件的其中一行（可以看到changes一栏中是蓝色文件，如果你把一个新的文件也添加到暂存区的话就是前文提到的绿色文件），这里我们要在下方框中填写相关介绍，以便帮助其他团队成员或日后的自己知道这次的提交做了什么。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072141103.png"></p>
+<h4 id="本地库">本地库</h4>
+<p>具体来说，本地库包含了开发者本地完整的提交历史和所有的本地分支，本地库中的提交记录是暂存区通过执行<code>git commit</code>后得来的。</p>
+<p>这里要注意<strong>本地分支</strong>和<strong>本地库</strong>的区别，<strong>本地分支</strong>只是本地库众多分支的<strong>其中一个分支</strong>，当然本地库也可以只包含一个本地分支（但是一般来说开发者不会这么做）。</p>
+<blockquote>
+<p>本地分支实例</p>
+</blockquote>
+<p>这里展示了本地库中的master分支，在这个分支中存在着该分支的提交历史和各种信息。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072150426.png"></p>
+<h4 id="远程库">远程库</h4>
+<p>远程库是存放在<strong>代码托管平台</strong>（如Gitee、GitHub）上的仓库，本地库执行<code>git push</code>命令可将本地的提交记录推送到远程仓库中。</p>
+<p><strong>远程分支</strong>和<strong>远程库</strong>的区别同<strong>本地分支</strong>与<strong>本地库</strong>的区别一样</p>
+<blockquote>
+<p>远程分支实例</p>
+</blockquote>
+<p>同上本地分支实例。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072201594.png"></p>
+<p>需要注意的是，由于我们在团队开发中涉及到多人的共同协作，因此每个人都可以向远程仓库中推送自己的代码，也就意味在当你在开发新的代码时，远程仓库可能已经发生了变动，那么远程分支也就不能实时和远程仓库的提交记录保持同步了，这时我们需要使用<code>git fetch</code>命令，将远程仓库的提交记录拉取到的远程分支中。</p>
+<h2 id="总结">总结</h2>
+<p>通过对于工作区域的认识，大家想必已经了解了一个文件如何从工作区一步步提交到远程仓库中，当然这里存在着很多操作中的细节，如切换分支，合并来自其他分支的结果等，而我们是使用IDEA结合Git实现版本管理，同样存在着如何具体使用的问题。由于本篇只讲理论，就不过多介绍了，本系列将会继续更新下去，大家敬请期待~</p>
 ]]></content>
       <categories>
         <category>Git</category>
@@ -1337,128 +1579,6 @@ if ... else ...，所以建议单独编写一个判断策略的类。</p>
       </categories>
       <tags>
         <tag>赛题分析</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【IDEA结合Git实现项目管理实战】二、基础篇</title>
-    <url>/2023/12/10/%E4%BA%8C%E3%80%81Git%E7%9A%84%E5%9B%9B%E4%B8%AA%E5%8C%BA%E5%9F%9F/</url>
-    <content><![CDATA[<h2 id="前言">前言</h2>
-<blockquote>
-<p>本系列将结合我个人参与团队协作开发项目的经验来介绍如何使用IDEA结合Git实现项目管理，因此可能与真正的企业开发协作存在差异，且文章所涉及的解析可能存在个人理解与实际的偏差。</p>
-<p>本系列主讲如何具体操作，因此对于Git内部的原理将<strong>不会过多深究</strong>。</p>
-<p>本文严禁任何形式的转载、搬运！</p>
-</blockquote>
-<p>本文作为该系列的<strong>基础篇</strong>，将简要介绍使用Git所应该知道的<strong>最基本</strong>的知识，因此不算深究原理，哈哈。</p>
-<p>注意：本文假设你已经成功在IDEA中配置了git</p>
-<h2 id="git的四个工作区域">Git的四个工作区域</h2>
-<h3 id="基本概念">基本概念</h3>
-<p>Git本地有三个工作区域，分别是<strong>工作区</strong>、<strong>暂存区</strong>、<strong>本地仓库</strong></p>
-<p>Git远程有一个工作区域，叫做<strong>远程仓库</strong></p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072037674.png"></p>
-<ul>
-<li><p>工作区：开发者当前工作的目录，主要包含项目的实际文件，其中可能包括<strong>未进行版本管理</strong>的新文件和<strong>已修改</strong>的文件。</p></li>
-<li><p>暂存区：作为一个临时存储区域，用于存放工作区中已经修改的文件的<strong>快照</strong>，以便将它们作为一个逻辑单元提交到本地仓库。</p></li>
-<li><p>本地库：包含了项目的<strong>提交历史</strong>，开发者可以对其进行各种操作，如分支合并、变基、签出等。本地库是在开发者本地计算机上的存储库。</p></li>
-<li><p>远程库：
-存放在<strong>代码托管平台</strong>（如Gitee、GitHub）上的仓库，包含了已推送的代码版本、分支、标签等信息。开发者可以通过推送和拉取操作与远程库进行交互，以保持代码同步。</p></li>
-</ul>
-<h3 id="概念解释">概念解释</h3>
-<h4 id="工作区">工作区</h4>
-<p>一下子引入了这么多概念，可能大家会有点接受不了，那么这里对以上概念进行详细解释。</p>
-<p>具体来说，工作区可以看做你在IDEA中打开的项目目录，如下图：</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072100334.png"></p>
-<p>这里的项目目录就可以看作是工作区，但是在这个工作区中，既存在正常颜色（白色）的文件名，也存在红色、绿色和蓝色的文件名，那么这些文件分别代表什么含义？这里的文件的颜色，其实也就对应着上文所谓<strong>未进行版本管理</strong>的新文件和<strong>已修改</strong>的文件。如下表：</p>
-<table>
-<colgroup>
-<col style="width: 6%">
-<col style="width: 93%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>颜色</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>白色</td>
-<td>在当前提交历史未改动或者已经提交到本地库的文件</td>
-</tr>
-<tr class="even">
-<td>红色</td>
-<td>未进行版本管理的新文件，也被称为未跟踪的文件</td>
-</tr>
-<tr class="odd">
-<td>绿色</td>
-<td>已经进行版本管理的新文件，该文件已被添加到暂存区中</td>
-</tr>
-<tr class="even">
-<td>蓝色</td>
-<td>当前工作区中被修改的文件，该文件已被添加到暂存区中，与绿色相似</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p>红色文件名、绿色文件名实例</p>
-</blockquote>
-<p>大家可以自行测试下，如果你直接在项目目录中创建一个文件的话，IDEA会做出提醒：</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072113939.png"></p>
-<p>这时如果你选择添加的话，该文件就会变成绿色文件从而<strong>被Git进行版本管理</strong>，如果选择取消的话，说明你不希望该文件被Git管理，那么该文件就是红色文件而<strong>不能被提交到暂存区</strong>。</p>
-<p>总结：</p>
-<ol type="1">
-<li><p>当你创建一个新文件时，它就是红色的，表示这是一个未跟踪的文件。通过运行
-<code>git add</code>
-命令，将文件添加到暂存区，此时文件变为绿色，表示它已经被 Git
-管理并准备提交。</p></li>
-<li><p>如果你不想将一个未跟踪的文件或已修改的文件纳入版本管理，你可以选择不使用
-<code>git add</code> 命令，或者使用 <code>git reset</code>
-命令来取消已经添加到暂存区的文件。取消后，文件会回到红色状态，表示它未被跟踪或未被修改。</p></li>
-<li><p>但是对于我们日常开发来说，我们创建一个文件肯定是有用意的，一般都希望该文件被提交上去，所以我们一般都选择添加文件，这样才能通过添加到暂存区，再到本地库最终推送到远程仓库中。</p></li>
-</ol>
-<blockquote>
-<p>白色、蓝色文件名实例</p>
-</blockquote>
-<p>比如这里我删除了md文件中的其中一行，md文件的文件名由白色转为了蓝色</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072130777.png"></p>
-<p>该文件一般在该项目已经<strong>提交到本地库</strong>中后，我们准备开发新的功能时才会出现，也就是我们修改了当前已经存在于本地库中的文件，该文件就会被转化成蓝色文件。因为该文件已经被<strong>Git版本管理过了</strong>，所以可以直接提交到本地库。</p>
-<p>总结：</p>
-<ol type="1">
-<li>蓝色文件可以直接提交到本地库中，因为其已经被Git版本管理了</li>
-<li>蓝色文件可以简单认为就是白色文件被修改后的文件</li>
-</ol>
-<h4 id="暂存区">暂存区</h4>
-<p>经过前面的内容，大家多少应该可以感觉到，暂存区其实是我们看不见、摸不着的存在，在暂存区中存在的文件一般是绿色和蓝色文件，也就是我们已经使用<code>git add</code>命令添加的文件。</p>
-<p>当我们开发完毕一个新的功能后，我们就会准备将这次修改记录提交到<strong>本地仓库</strong>，这时候使用<code>git commit</code>命令就可以将暂存区中的文件提交到本地仓库中。</p>
-<blockquote>
-<p>提交实例</p>
-</blockquote>
-<p>在该实例中，我们删除了md文件的其中一行（可以看到changes一栏中是蓝色文件，如果你把一个新的文件也添加到暂存区的话就是前文提到的绿色文件），这里我们要在下方框中填写相关介绍，以便帮助其他团队成员或日后的自己知道这次的提交做了什么。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072141103.png"></p>
-<h4 id="本地库">本地库</h4>
-<p>具体来说，本地库包含了开发者本地完整的提交历史和所有的本地分支，本地库中的提交记录是暂存区通过执行<code>git commit</code>后得来的。</p>
-<p>这里要注意<strong>本地分支</strong>和<strong>本地库</strong>的区别，<strong>本地分支</strong>只是本地库众多分支的<strong>其中一个分支</strong>，当然本地库也可以只包含一个本地分支（但是一般来说开发者不会这么做）。</p>
-<blockquote>
-<p>本地分支实例</p>
-</blockquote>
-<p>这里展示了本地库中的master分支，在这个分支中存在着该分支的提交历史和各种信息。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072150426.png"></p>
-<h4 id="远程库">远程库</h4>
-<p>远程库是存放在<strong>代码托管平台</strong>（如Gitee、GitHub）上的仓库，本地库执行<code>git push</code>命令可将本地的提交记录推送到远程仓库中。</p>
-<p><strong>远程分支</strong>和<strong>远程库</strong>的区别同<strong>本地分支</strong>与<strong>本地库</strong>的区别一样</p>
-<blockquote>
-<p>远程分支实例</p>
-</blockquote>
-<p>同上本地分支实例。</p>
-<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202312072201594.png"></p>
-<p>需要注意的是，由于我们在团队开发中涉及到多人的共同协作，因此每个人都可以向远程仓库中推送自己的代码，也就意味在当你在开发新的代码时，远程仓库可能已经发生了变动，那么远程分支也就不能实时和远程仓库的提交记录保持同步了，这时我们需要使用<code>git fetch</code>命令，将远程仓库的提交记录拉取到的远程分支中。</p>
-<h2 id="总结">总结</h2>
-<p>通过对于工作区域的认识，大家想必已经了解了一个文件如何从工作区一步步提交到远程仓库中，当然这里存在着很多操作中的细节，如切换分支，合并来自其他分支的结果等，而我们是使用IDEA结合Git实现版本管理，同样存在着如何具体使用的问题。由于本篇只讲理论，就不过多介绍了，本系列将会继续更新下去，大家敬请期待~</p>
-]]></content>
-      <categories>
-        <category>Git</category>
-      </categories>
-      <tags>
-        <tag>项目管理</tag>
       </tags>
   </entry>
 </search>

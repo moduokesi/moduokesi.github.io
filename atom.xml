@@ -6,7 +6,7 @@
   <link href="https://moduokesi.top/atom.xml" rel="self"/>
   
   <link href="https://moduokesi.top/"/>
-  <updated>2024-05-09T14:57:34.577Z</updated>
+  <updated>2024-06-30T15:43:28.860Z</updated>
   <id>https://moduokesi.top/</id>
   
   <author>
@@ -15,6 +15,34 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>【并发编程】线程池参数及创建方法</title>
+    <link href="https://moduokesi.top/2024/05/27/%E3%80%90%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E3%80%91%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8F%82%E6%95%B0%E5%8F%8A%E5%88%9B%E5%BB%BA%E6%96%B9%E6%B3%95/"/>
+    <id>https://moduokesi.top/2024/05/27/%E3%80%90%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E3%80%91%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8F%82%E6%95%B0%E5%8F%8A%E5%88%9B%E5%BB%BA%E6%96%B9%E6%B3%95/</id>
+    <published>2024-05-27T15:43:21.000Z</published>
+    <updated>2024-06-30T15:43:28.860Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;目录&quot;&gt;&lt;strong&gt;目录：&lt;/strong&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;#why&quot;&gt;1.什么是线程池&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;#param&quot;&gt;2.线程池七大参数&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="项目开发" scheme="https://moduokesi.top/categories/%E9%A1%B9%E7%9B%AE%E5%BC%80%E5%8F%91/"/>
+    
+    
+    <category term="多线程" scheme="https://moduokesi.top/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/"/>
+    
+  </entry>
   
   <entry>
     <title>【SpringBoot】MapStruct实现优雅的数据复制</title>
