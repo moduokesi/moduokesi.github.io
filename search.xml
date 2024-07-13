@@ -1578,11 +1578,7 @@ Erlang
   <entry>
     <title>【SpringBoot】随机盐值+双重SHA256加密实战</title>
     <url>/2024/07/08/%E3%80%90SpringBoot%E3%80%91%E9%9A%8F%E6%9C%BA%E7%9B%90%E5%80%BC+%E5%8F%8C%E9%87%8DSHA256%E5%8A%A0%E5%AF%86%E5%AE%9E%E6%88%98/</url>
-    <content><![CDATA[<h3 id="目录"><strong>目录：</strong></h3>
-<p><a href="#why">1.SHA-256和随机盐值</a></p>
-<p><a href="#front">2.前端实现</a></p>
-<p><a href="#how">3.后端实现</a></p>
-<h2 id="sha-256和salt">1.SHA-256和Salt<a id="why"></a></h2>
+    <content><![CDATA[<h2 id="sha-256和salt">1.SHA-256和Salt<a id="why"></a></h2>
 <h3 id="什么是sha-256">1.1.什么是SHA-256</h3>
 <blockquote>
 <p><strong>SHA-256</strong>是一种信息摘要算法，也是一种密码散列函数。对于任意长度的消息，SHA256都会产生一个256bit长的散列值（哈希值），用于确保信息传输完整一致，称作消息摘要。这个摘要相当于是个长度为32个字节的数组，通常用一个长度为64的<strong>十六进制字符串</strong>来表示。</p>
