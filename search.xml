@@ -1802,7 +1802,7 @@ Security致力于为Java应用程序提供<strong>认证</strong>和<strong>授�
   </entry>
   <entry>
     <title>【RabbitMQ】一文详解消息可靠性</title>
-    <url>/2024/07/12/%E3%80%90RabbitMQ%E3%80%91%E4%B8%80%E6%96%87%E8%AF%A6%E8%A7%A3%E6%B6%88%E6%81%AF%E5%8F%AF%E9%9D%A0%E6%80%A7/</url>
+    <url>/2024/07/13/%E3%80%90RabbitMQ%E3%80%91%E4%B8%80%E6%96%87%E8%AF%A6%E8%A7%A3%E6%B6%88%E6%81%AF%E5%8F%AF%E9%9D%A0%E6%80%A7/</url>
     <content><![CDATA[<h2 id="前言">1.前言<a id="front"></a></h2>
 <p>RabbitMQ
 是一款高性能、高可靠性的消息中间件，广泛应用于分布式系统中。它允许系统中的各个模块进行异步通信，提供了高度的灵活性和可伸缩性。然而，这种通信模式也带来了一些挑战，其中最重要的之一是<strong>确保消息的可靠性</strong>。</p>
