@@ -1956,4 +1956,361 @@ Letter Exchange，简称DLX）</p>
         <tag>消息可靠性</tag>
       </tags>
   </entry>
+  <entry>
+    <title>【SpringBoot】SpringCache轻松启用Redis缓存</title>
+    <url>/2024/07/15/%E3%80%90SpringBoot%E3%80%91SpringCache%E8%BD%BB%E6%9D%BE%E5%90%AF%E7%94%A8Redis%E7%BC%93%E5%AD%98/</url>
+    <content><![CDATA[<h2 id="前言">1.前言<a id="front"></a></h2>
+<p><code>Spring Cache</code>是Spring提供的一种缓存抽象机制，旨在通过简化缓存操作来提高系统性能和响应速度。<code>Spring Cache</code>可以将方法的返回值缓存起来，当下次调用方法时如果从缓存中查询到了数据，可以直接从缓存中获取结果，而<strong>无需再次执行方法体中的代码</strong>。</p>
+<h2 id="常用注解">2.常用注解<a id="common"></a></h2>
+<ul>
+<li><span class="citation" data-cites="Cacheable">@Cacheable</span>：在方法执行前查看是否有缓存对应的数据，如果有直接返回数据，如果没有调用方法获取数据返回，并缓存起来；</li>
+<li><span class="citation" data-cites="CacheEvict">@CacheEvict</span>：将一条或多条数据从缓存中删除；</li>
+<li><span class="citation" data-cites="CachePut">@CachePut</span>：将方法的返回值放到缓存中；</li>
+<li><span class="citation" data-cites="EnableCaching">@EnableCaching</span>：开启缓存注解功能；</li>
+<li><span class="citation" data-cites="Caching">@Caching</span>：组合多个缓存注解。</li>
+</ul>
+<h2 id="启用缓存">3.启用缓存<a id="start"></a></h2>
+<h3 id="配置yaml文件">3.1.配置yaml文件</h3>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring:</span>  </span><br><span class="line">  <span class="attr">cache:</span>  </span><br><span class="line">    <span class="attr">type:</span> <span class="string">simple</span>  </span><br><span class="line">    <span class="attr">simple:</span>  </span><br><span class="line">      <span class="attr">time-to-live:</span> <span class="string">600s</span></span><br></pre></td></tr></table></figure>
+<h3 id="添加注解">3.2.添加注解</h3>
+<p>在启动类上添加注解<code>@EnableCaching</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableCaching</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SpringBootstrap</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(SpringBootstrap.class, args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="创建缓存">3.3.创建缓存</h3>
+<blockquote>
+<p>使用<code>@CachePut</code>注解。当方法执行完后，如果缓存不存在则创建缓存；如果缓存存在则更新缓存。</p>
+<p>注解中的value属性可指定缓存的名称，key属性则可指定缓存的键，可使用SpEL表达式来获取key的值。</p>
+<p>这里result表示方法的返回值UserInfo，从UserInfo中获取id属性。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@CachePut(value = &quot;user&quot;, key = &quot;#result.id&quot;)</span></span><br><span class="line"><span class="keyword">public</span> UserInfo <span class="title function_">create</span><span class="params">(UserCreateRequest request)</span> &#123;</span><br><span class="line">    <span class="comment">// 将请求中的数据映射给实体类（相关方法自行创建）</span></span><br><span class="line">    <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> UserConverter.createByRequest(request);</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">save</span> <span class="operator">=</span> userService.save(user);</span><br><span class="line">    <span class="keyword">if</span> (save) &#123;</span><br><span class="line">        <span class="keyword">return</span> UserConverter.toInfo(user);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;User.create.fail&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="更新缓存">3.4.更新缓存</h3>
+<blockquote>
+<p>同样使用<code>@CachePut</code>注解。当方法执行完后，如果缓存不存在则创建缓存；如果缓存存在则更新缓存。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@CachePut(value = &quot;user&quot;, key = &quot;#result.id&quot;)</span></span><br><span class="line"><span class="keyword">public</span> UserInfo <span class="title function_">update</span><span class="params">(UserUpdateRequest request)</span> &#123;</span><br><span class="line">    <span class="comment">// 将请求中的数据映映射给wrapper（相关方法自行创建）</span></span><br><span class="line">    Wrapper&lt;User&gt; wrapper = UserConverter.updateWrapperByRequest(request);</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">update</span> <span class="operator">=</span> userService.update(wrapper);</span><br><span class="line">    <span class="keyword">if</span> (update) &#123;</span><br><span class="line">        <span class="keyword">return</span> UserConverter.toInfo(user);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;User.update.fail&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="查询缓存">3.5.查询缓存</h3>
+<blockquote>
+<p>使用<code>@Cacheable</code>注解。在方法执行前，首先会查询缓存，如果缓存不存在，则根据方法的返回结果创建缓存；如果缓存存在，则直接返回数据，不执行方法。</p>
+<p>这里使用request表示方法的参数UserQueryRequest。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Cacheable(value = &quot;user&quot;, key = &quot;#request.id&quot;)</span></span><br><span class="line"><span class="keyword">public</span> UserInfo <span class="title function_">query</span><span class="params">(UserQueryRequest request)</span> &#123;</span><br><span class="line">    <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> userService.getById(request.getId());</span><br><span class="line">    <span class="keyword">if</span> (Objects.isNull(user)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;User.not.exist&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> c2cInterestCategory;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="删除缓存">3.6.删除缓存</h3>
+<blockquote>
+<p>使用<code>@CacheEvict</code>注解。当方法执行完后，会根据key删除对应的缓存。</p>
+<p>这里可以使用condition属性，当返回结果为true（删除成功）后，才去删除缓存。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@CacheEvict(value = &quot;user&quot;, key = &quot;#request.id&quot;, condition = &quot;#result.equals(true)&quot;)</span></span><br><span class="line"><span class="keyword">public</span> Boolean <span class="title function_">delete</span><span class="params">(UserDeleteRequest request)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> userService.removeById(request.getId());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="多重操作">3.7.多重操作</h3>
+<blockquote>
+<p>使用<code>@Caching</code>注解，通过使用不同的属性进行相应操作。</p>
+</blockquote>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/379518c4ae66f2d1ef34865c44c6f1dc.png"></p>
+<p>创建/更新多个缓存：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Caching(</span></span><br><span class="line"><span class="meta">            put = &#123;</span></span><br><span class="line"><span class="meta">                    @CachePut(value = &quot;userById&quot;, key = &quot;#result.id&quot;),</span></span><br><span class="line"><span class="meta">                    @CachePut(value = &quot;userByPhone&quot;, key = &quot;#request.phone&quot;)</span></span><br><span class="line"><span class="meta">            &#125;</span></span><br><span class="line"><span class="meta">    )</span></span><br></pre></td></tr></table></figure>
+<p>删除多个缓存：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Caching(</span></span><br><span class="line"><span class="meta">            evict = &#123;</span></span><br><span class="line"><span class="meta">                    @CacheEvict(value = &quot;userById&quot;, key = &quot;#result.id&quot;),</span></span><br><span class="line"><span class="meta">                    @CacheEvict(value = &quot;userByPhone&quot;, key = &quot;#request.phone&quot;)</span></span><br><span class="line"><span class="meta">            &#125;</span></span><br><span class="line"><span class="meta">    )</span></span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>项目开发</category>
+      </categories>
+      <tags>
+        <tag>Redis</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【设计模式】工厂模式详解</title>
+    <url>/2024/07/28/%E3%80%90%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%91%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/</url>
+    <content><![CDATA[<h2 id="简介">1.简介</h2>
+<p><strong>工厂模式</strong>是一种创建型设计模式，通过提供一个接口或抽象类来创建对象，而不是直接实例化对象。工厂模式的主要思想是将对象的创建与使用分离，使得创建对象的过程更加灵活和可扩展。</p>
+<p>工厂模式主要包括以下角色：</p>
+<ul>
+<li><strong>抽象工厂（Abstract
+Factory）</strong>：定义了一个创建产品对象的接口，可以包含多个方法来创建不同类型的产品。</li>
+<li><strong>具体工厂（Concrete
+Factory）</strong>：实现抽象工厂接口，负责实例化具体的产品对象。</li>
+<li><strong>抽象产品（Abstract
+Product）</strong>：定义了产品的接口或抽象类，是工厂方法和抽象工厂模式中的基础。</li>
+<li><strong>具体产品（Concrete
+Product）</strong>：实现抽象产品接口，具体定义产品的功能和行为。</li>
+</ul>
+<h2 id="简单工厂模式">2.简单工厂模式</h2>
+<p><strong>简单工厂模式（Simple Factory
+Pattern）</strong>：由一个工厂类根据传入的参数决定创建哪一种产品类的实例。它通常包含一个静态方法，这个方法根据参数创建相应的对象。</p>
+<p>定义一个简单的例子：电脑有很多品牌，如惠普电脑、联想电脑，如果需要创建这两个对象时，主动new出来，使用了简单工厂模式后，可以把创建的动作交给工厂类，只需要指定参数即可获取对应的对象。</p>
+<h3 id="实现方法">实现方法</h3>
+<ol type="1">
+<li>编写产品类</li>
+</ol>
+<p>首先创建一个Computer接口，不同的产品实现这一接口</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 定义抽象产品接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Computer</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">compute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义具体产品，实现该接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HPComputer</span> <span class="keyword">implements</span> <span class="title class_">Computer</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">compute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;我是惠普电脑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LenovoComputer</span> <span class="keyword">implements</span> <span class="title class_">Computer</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">compute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;我是联想电脑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>编写工厂类</li>
+</ol>
+<p>简单工厂模式不存在抽象工厂，只需编写一个工厂类即可。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 根据传入的参数创建对应产品</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SimpleFactory</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Computer <span class="title function_">createProduct</span><span class="params">(String type)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (type.equals(<span class="string">&quot;HP&quot;</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">HPComputer</span>();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type.equals(<span class="string">&quot;Lenovo&quot;</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">LenovoComputer</span>();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;该类型无法被生产&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>测试类使用工厂创建产品</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 创建HP电脑</span></span><br><span class="line">        <span class="type">Computer</span> <span class="variable">hp</span> <span class="operator">=</span> SimpleFactory.createProduct(<span class="string">&quot;HP&quot;</span>);</span><br><span class="line">        <span class="comment">// 创建Lenovo电脑</span></span><br><span class="line">        <span class="type">Computer</span> <span class="variable">lenovo</span> <span class="operator">=</span> SimpleFactory.createProduct(<span class="string">&quot;Lenovo&quot;</span>);</span><br><span class="line">        hp.compute();</span><br><span class="line">        lenovo.compute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果如下：</p>
+<h3 id="小结">小结</h3>
+<p>简单工厂模式虽然实现比较简单，但是工厂类的职责过重，增加新的产品类型需要修改工厂类，违背了开闭原则。</p>
+<blockquote>
+<p><strong>开闭原则：</strong>软件实体（类、模块、函数等）应该对扩展开放，对修改关闭。</p>
+<p><strong>对扩展开放（Open for
+extension）</strong>：软件实体应该允许在不改变其现有代码的情况下，通过增加新功能来对其进行扩展。也就是说，当软件的需求发生变化时，我们应该能够通过添加新代码来满足这些需求，而不需要修改已有的代码。</p>
+<p><strong>对修改关闭（Closed for
+modification）</strong>：一旦软件实体被开发完成并投入使用，其源代码就不应该再被修改。这可以防止对现有功能的破坏，减少引入新的错误的风险，并使软件更加稳定和可维护。</p>
+</blockquote>
+<h2 id="工厂方法模式">3.工厂方法模式</h2>
+<p><strong>工厂方法模式（Factory Method
+Pattern）</strong>：定义一个创建对象的接口，但由子类决定实例化哪个类。工厂方法将对象的创建推迟到子类。</p>
+<h3 id="实现方法-1">实现方法</h3>
+<ol type="1">
+<li>编写产品类</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 定义抽象产品接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Computer</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">compute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义具体产品，实现该接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HPComputer</span> <span class="keyword">implements</span> <span class="title class_">Computer</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">compute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;我是惠普电脑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LenovoComputer</span> <span class="keyword">implements</span> <span class="title class_">Computer</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">compute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;我是联想电脑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>编写工厂类</li>
+</ol>
+<p>需要定义一个抽象工厂，然后由具体工厂创建对应的产品。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 定义抽象工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ComputerFactory</span> &#123;</span><br><span class="line">    Computer <span class="title function_">createComputer</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义HP工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HPComputerFactory</span> <span class="keyword">implements</span> <span class="title class_">ComputerFactory</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Computer <span class="title function_">createComputer</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">HPComputer</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义Lenovo工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LenovoComputerFactory</span> <span class="keyword">implements</span> <span class="title class_">ComputerFactory</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Computer <span class="title function_">createComputer</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">LenovoComputer</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>测试类使用不同的具体工厂创建产品</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 创建HP电脑</span></span><br><span class="line">        <span class="type">HPComputerFactory</span> <span class="variable">hpFactory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HPComputerFactory</span>();</span><br><span class="line">        <span class="type">Computer</span> <span class="variable">hpComputer</span> <span class="operator">=</span> hpFactory.createComputer();</span><br><span class="line">        hpComputer.compute();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建Lenovo电脑</span></span><br><span class="line">        <span class="type">LenovoComputerFactory</span> <span class="variable">lenovoFactory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">LenovoComputerFactory</span>();</span><br><span class="line">        <span class="type">Computer</span> <span class="variable">lenovoComputer</span> <span class="operator">=</span> lenovoFactory.createComputer();</span><br><span class="line">        lenovoComputer.compute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果如下：</p>
+<h3 id="小结-1">小结</h3>
+<p>优点：</p>
+<ul>
+<li>遵循开闭原则，新增产品时不需要修改现有系统代码，只需要添加新的具体工厂和具体产品类。</li>
+<li>更符合单一职责原则，每个具体工厂类只负责创建一种产品。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>增加了系统复杂度，需要增加额外的类和接口。</li>
+</ul>
+<h2 id="抽象工厂模式">4.抽象工厂模式</h2>
+<p><strong>抽象工厂模式（Abstract Factory
+Pattern）</strong>：提供一个创建一系列相关或相互依赖对象的接口，而无需指定它们具体的类。适用于<strong>产品族</strong>的场景，即多个产品等级结构中相关的产品需要一起创建和使用。</p>
+<blockquote>
+<p><strong>产品等级结构：</strong>指产品的继承结构，例如一个电脑抽象类，它有HP电脑、Lenovo电脑等实现类，那么这个电脑抽象类和他的实现类就构成了一个产品等级结构。</p>
+<p><strong>产品族：</strong>产品族是指由同一个工厂生产的，位于不同产品等级结构中的一组产品。比如，Lenovo除了生产电脑还可以生产打印机等其他产品。</p>
+</blockquote>
+<h3 id="实现方法-2">实现方法</h3>
+<ol type="1">
+<li>编写产品类</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 定义电脑抽象产品接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Computer</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">compute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义电脑具体产品，实现该接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HPComputer</span> <span class="keyword">implements</span> <span class="title class_">Computer</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">compute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;我是惠普电脑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LenovoComputer</span> <span class="keyword">implements</span> <span class="title class_">Computer</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">compute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;我是联想电脑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义打印机抽象产品接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Printer</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">print</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义打印机具体产品，实现该接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HPPrinter</span> <span class="keyword">implements</span> <span class="title class_">Printer</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">print</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;我是惠普打印机&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LenovoPrinter</span> <span class="keyword">implements</span> <span class="title class_">Printer</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">print</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;我是联想打印机&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>编写工厂类</li>
+</ol>
+<p>定义一个抽象工厂，该工厂可以创建多个产品。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 定义抽象工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">AbstractFactory</span> &#123;</span><br><span class="line">    Computer <span class="title function_">createComputer</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    Printer <span class="title function_">createPrinter</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义HP工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HPFactory</span> <span class="keyword">implements</span> <span class="title class_">AbstractFactory</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Computer <span class="title function_">createComputer</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">HPComputer</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Printer <span class="title function_">createPrinter</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">HPPrinter</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义Lenovo工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LenovoFactory</span> <span class="keyword">implements</span> <span class="title class_">AbstractFactory</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Computer <span class="title function_">createComputer</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">LenovoComputer</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Printer <span class="title function_">createPrinter</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">LenovoPrinter</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>测试类使用不同的具体工厂创建产品</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">HPFactory</span> <span class="variable">hpFactory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HPFactory</span>();</span><br><span class="line">        <span class="type">Computer</span> <span class="variable">hpComputer</span> <span class="operator">=</span> hpFactory.createComputer();</span><br><span class="line">        <span class="type">Printer</span> <span class="variable">hpPrinter</span> <span class="operator">=</span> hpFactory.createPrinter();</span><br><span class="line"></span><br><span class="line">        hpComputer.compute();</span><br><span class="line">        hpPrinter.print();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;===============&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">LenovoFactory</span> <span class="variable">lenovoFactory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">LenovoFactory</span>();</span><br><span class="line">        <span class="type">Computer</span> <span class="variable">lenovoComputer</span> <span class="operator">=</span> lenovoFactory.createComputer();</span><br><span class="line">        <span class="type">Printer</span> <span class="variable">lenovoPrinter</span> <span class="operator">=</span> lenovoFactory.createPrinter();</span><br><span class="line">        lenovoComputer.compute();</span><br><span class="line">        lenovoPrinter.print();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果如下：</p>
+<h3 id="小结-2">小结</h3>
+<p>优点：</p>
+<ul>
+<li>符合开闭原则，新增产品族时无需修改现有系统代码。</li>
+<li>符合单一职责原则，每个具体工厂类只负责创建一类产品族。</li>
+<li>保证产品族的一致性，同一个工厂创建的产品是属于同一个产品族的。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>增加了系统的复杂度。修改产品族时，需要修改所有具体工厂类，扩展性稍差。</li>
+</ul>
+<h2 id="总结">5.总结</h2>
+<blockquote>
+<p><strong>适用场景：</strong></p>
+</blockquote>
+<ul>
+<li><p><strong>简单工厂模式</strong>：适用于产品种类较少，客户端只需根据参数获得具体产品的简单场景。适合产品种类不经常变化的场合。</p></li>
+<li><p><strong>工厂方法模式</strong>：适用于产品种类较多，每个产品有相应的具体工厂类。适合需要扩展新产品，且不希望修改现有代码的场合。</p></li>
+<li><p><strong>抽象工厂模式</strong>：适用于产品族较多，每个产品族中包含多个相关产品。适合创建一系列相关或相互依赖的产品，且希望统一管理产品族的场合。</p></li>
+</ul>
+]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+      <tags>
+        <tag>工厂模式</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【设计模式】代理模式详解</title>
+    <url>/2024/07/28/%E3%80%90%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%91%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/</url>
+    <content><![CDATA[<h2 id="简介">1.简介</h2>
+<p><strong>代理模式</strong>是常用的Java设计模式，该模式的特点是<strong>代理类与委托类共享相同的接口</strong>。代理类主要负责预处理消息、过滤消息、将消息转发给委托类，并在事后处理消息等。代理类与委托类之间通常存在关联关系，一个代理类对象与一个委托类对象关联。代理类对象本身不真正实现服务，而是通过调用委托类对象的相关方法来提供特定的服务。</p>
+<p>代理模式主要包括以下角色：</p>
+<ul>
+<li><strong>抽象主题（Subject）</strong>：定义代理类和委托类（RealSubject）的共同接口。这个接口规定了代理类和委托类必须实现的方法，代理类可以通过这个接口来调用委托类的方法。</li>
+<li><strong>真实主题（RealSubject）</strong>：实现抽象主题，定义委托类的操作。它包含了实际的业务逻辑，是客户端实际需要调用的对象。</li>
+<li><strong>代理类（Proxy）</strong>：实现抽象主题，持有对委托类的引用，并在其方法被调用时进行控制。代理类在调用委托类的方法前后可以添加一些额外的功能，如日志记录、权限控制、事务处理等。</li>
+</ul>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407281114432.png"></p>
+<h2 id="静态代理">2.静态代理</h2>
+<p><strong>静态代理：</strong>在编译时期确定代理类和目标类的关系，代理类和目标类都要实现同一个接口。</p>
+<p>定义一个简单的例子：假如一个租客需要租房子，他可以直接通过<strong>房东（委托类）</strong>去租房，也可以经过<strong>中介（代理类）</strong>去租房。房东（realsubject）和中介（proxy）都需要实现subject接口实现房子出租。</p>
+<ol type="1">
+<li>确定接口具体行为</li>
+</ol>
+<p>首先创建一个Person接口。这个接口是房东和中介的共同接口，租房行为可以被中介代理。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Person</span> &#123;</span><br><span class="line">    <span class="comment">// 出租房子</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">hire</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>编写委托类业务逻辑</li>
+</ol>
+<p>创建一个委托类，实现subject接口，并编写业务逻辑</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Landlord</span> <span class="keyword">implements</span> <span class="title class_">Person</span>&#123;</span><br><span class="line">	<span class="comment">// 房东直售</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">hire</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;出租，收款1000元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>代理类增强方法</li>
+</ol>
+<p>创建一个代理类，同样实现subject接口，对委托类的方法进行增强</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Agency</span> <span class="keyword">implements</span> <span class="title class_">Person</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Landlord landlord;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Agency</span><span class="params">(Landlord landlord)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.landlord = landlord;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">// 中介出租，额外收取费用</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">hire</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;开始办理租房手续&quot;</span>);</span><br><span class="line">        landlord.hire();</span><br><span class="line">        System.out.println(<span class="string">&quot;额外收取中介费200元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="4" type="1">
+<li>测试类使用代理对象</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 获取代理对象</span></span><br><span class="line">        <span class="type">Landlord</span> <span class="variable">landlord</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Landlord</span>();</span><br><span class="line">        <span class="type">Agency</span> <span class="variable">agency</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Agency</span>(landlord);</span><br><span class="line">        <span class="comment">// 使用代理方法</span></span><br><span class="line">        agency.hire();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果如下，可以发现对方法进行了增强</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407281227360.png"></p>
+<h2 id="动态代理">3.动态代理</h2>
+<p><strong>动态代理：</strong>在程序运行时动态生成代理类（subject的实现类）。</p>
+<p><strong>相比于静态代理，
+动态代理的优势在于其较高的灵活性和代码复用性</strong>。同一个动态代理处理器可以代理多个目标对象，而静态代理则需要创建大量的代理类。</p>
+<p>在Java中，可以通过JDK和CGLIB实现动态代理。</p>
+<h3 id="jdk动态代理">3.1.JDK动态代理</h3>
+<h4 id="实现原理">实现原理</h4>
+<p><strong>JDK动态代理：</strong>在java的<code>java.lang.reflect</code>包下提供了<code>Proxy</code>类和<code>InvocationHandler</code>接口，利用这两个类和接口，可以<strong>在运行时动态生成指定接口的实现类</strong>。</p>
+<blockquote>
+<p><code>Proxy</code>类就是用来创建一个代理对象的类，在JDK动态代理中我们需要使用其<code>newProxyInstance</code>方法。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title function_">newProxyInstance</span><span class="params">(</span></span><br><span class="line"><span class="params">    ClassLoader loader, </span></span><br><span class="line"><span class="params">    Class&lt;?&gt;[] interfaces, </span></span><br><span class="line"><span class="params">    InvocationHandler h)</span>;</span><br></pre></td></tr></table></figure>
+<p>这个方法的作用就是创建一个代理类对象，它接收以下三个参数：</p>
+<ul>
+<li><strong>loader</strong>：一个ClassLoader对象，指定哪个ClassLoader将加载生成的代理类。</li>
+<li><strong>interfaces</strong>：一个Interface对象数组，定义代理对象实现的一组接口，代理类可以调用这些接口中声明的所有方法。</li>
+<li><strong>h</strong>：一个InvocationHandler对象，指定代理对象的方法调用将关联到哪个InvocationHandler对象，由它处理实际的方法调用。</li>
+</ul>
+<blockquote>
+<p><code>InvocationHandler</code>接口提供了一个<code>invoke</code>方法，当代理对象调用方法时，<code>invoke</code>方法会被调用。通过实现这个接口，可以在方法调用前后添加自定义逻辑。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">    * proxy:代理类代理的真实代理对象com.sun.proxy.$Proxy0</span></span><br><span class="line"><span class="comment">    * method:我们所要调用某个对象真实的方法的Method对象</span></span><br><span class="line"><span class="comment">    * args:指代代理对象方法传递的参数</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable;</span><br></pre></td></tr></table></figure>
+<h4 id="代码实现">代码实现</h4>
+<ol type="1">
+<li>确定接口具体行为</li>
+</ol>
+<p>这里我们设计两个接口</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">HouseServiceA</span> &#123;</span><br><span class="line">    <span class="comment">// 出租房子</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">hire</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">HouseServiceB</span> &#123;</span><br><span class="line">    <span class="comment">// 转租房子</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">sublet</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>编写委托类业务逻辑</li>
+</ol>
+<p>委托类实现这两个接口，并且定义具体的业务逻辑</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HouseServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">HouseServiceA</span>, HouseServiceB &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">hire</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;出租房子&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">sublet</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;转租房子&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>编写代理工厂代码</li>
+</ol>
+<p>代理工厂负责在运行时动态生成代理类，需要实现<code>InvocationHandler</code>接口重写<code>invoke</code>方法来做方法增强，使用<code>Proxy</code>类创建代理对象。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * JDK动态代理实现InvocationHandler接口</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HouseFactory</span> <span class="keyword">implements</span> <span class="title class_">InvocationHandler</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Object target;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//定义获取代理对象的方法（将目标对象传入进行代理）</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">getJDKProxy</span><span class="params">(Object target)</span>&#123;</span><br><span class="line">        <span class="comment">//为目标对象target赋值</span></span><br><span class="line">        <span class="built_in">this</span>.target = target;</span><br><span class="line">        <span class="comment">//JDK动态代理只能针对实现了接口的类进行代理，因此需要传递接口的class</span></span><br><span class="line">        <span class="keyword">return</span> Proxy.newProxyInstance(</span><br><span class="line">                target.getClass().getClassLoader(),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Class</span>&lt;?&gt;[]&#123;HouseServiceA.class, HouseServiceB.class&#125;,</span><br><span class="line">                <span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;JDK动态代理开始&quot;</span>);</span><br><span class="line">        <span class="comment">// 调用invoke方法，result存储该方法的返回值</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">result</span> <span class="operator">=</span> method.invoke(target, args);</span><br><span class="line">        System.out.println(<span class="string">&quot;JDK动态代理结束&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="4" type="1">
+<li>测试类使用代理对象</li>
+</ol>
+<p>在实际使用时，只需要将工厂类生成的代理对象转为需要的代理类，即可实现同时代理多个接口的方法。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 创建代理类工厂</span></span><br><span class="line">        <span class="type">HouseFactory</span> <span class="variable">factory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HouseFactory</span>();</span><br><span class="line">        <span class="comment">// 动态生成接口A的代理类</span></span><br><span class="line">        <span class="type">HouseServiceA</span> <span class="variable">houseProxyA</span> <span class="operator">=</span> (HouseServiceA) factory.getJDKProxy(<span class="keyword">new</span> <span class="title class_">HouseServiceImpl</span>());</span><br><span class="line">        houseProxyA.hire();</span><br><span class="line">        System.out.println(<span class="string">&quot;=====================&quot;</span>);</span><br><span class="line">        <span class="comment">// 动态生成接口B的代理类</span></span><br><span class="line">        <span class="type">HouseServiceB</span> <span class="variable">houseProxyB</span> <span class="operator">=</span> (HouseServiceB) factory.getJDKProxy(<span class="keyword">new</span> <span class="title class_">HouseServiceImpl</span>());</span><br><span class="line">        houseProxyB.sublet();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>返回结果：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407281338919.png"></p>
+<h3 id="cglib动态代理">3.2.CGLIB动态代理</h3>
+<h4 id="实现原理-1">实现原理</h4>
+<p><strong>CGLIB动态代理：</strong>依赖于ASM下的<code>Enhancer</code>类和<code>MethodInterceptor</code>接口，可以<strong>在运行时动态生成目标类的子类</strong>。</p>
+<blockquote>
+<p><code>Enhancer</code>类是用来创建代理对象的类。在CGLIB动态代理中，我们需要使用其<code>create</code>方法。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Enhancer</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">create</span><span class="params">()</span>;</span><br><span class="line">    <span class="comment">// 其他方法</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法的作用是创建一个代理类对象，通常还需要设置以下几个属性：</p>
+<ul>
+<li><strong>setSuperclass</strong>：设置被代理的目标类，CGLIB通过生成目标类的子类来实现代理。</li>
+<li><strong>setCallback</strong>：设置回调接口，用于处理代理对象的方法调用。</li>
+</ul>
+<blockquote>
+<p><code>MethodInterceptor</code>接口提供了一个<code>intercept</code>方法，当代理对象调用方法时，<code>intercept</code>方法会被调用。通过实现这个接口，可以在方法调用前后添加自定义逻辑。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">    * obj: 代理对象</span></span><br><span class="line"><span class="comment">    * method: 被代理的方法</span></span><br><span class="line"><span class="comment">    * args: 方法的参数</span></span><br><span class="line"><span class="comment">    * proxy: 用于调用父类方法的代理</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">intercept</span><span class="params">(Object obj, Method method, Object[] args, MethodProxy proxy)</span> <span class="keyword">throws</span> Throwable;</span><br></pre></td></tr></table></figure>
+<p>与JDK动态代理不同，CGLIB代理<strong>不需要目标类实现接口</strong>。CGLIB通过生成目标类的子类并重写方法来实现代理，因此它可以代理没有实现接口的类。</p>
+<h4 id="代码实现-1">代码实现</h4>
+<ol type="1">
+<li>首先导入依赖</li>
+</ol>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>cglib<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>cglib<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.3.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>编写委托类业务逻辑（无需实现接口）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HouseServiceImpl</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">hire</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;出租房子&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">sublet</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;转租房子&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>测试类使用代理对象</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">HouseFactory</span> <span class="variable">factory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HouseFactory</span>();</span><br><span class="line">        <span class="type">HouseServiceImpl</span> <span class="variable">cglibProxy</span> <span class="operator">=</span> (HouseServiceImpl) factory.getCglibProxy(<span class="keyword">new</span> <span class="title class_">HouseServiceImpl</span>());</span><br><span class="line">        cglibProxy.hire();</span><br><span class="line">        System.out.println(<span class="string">&quot;=====================&quot;</span>);</span><br><span class="line">        cglibProxy.sublet();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>返回结果：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407281418946.png"></p>
+<h2 id="总结">4.总结</h2>
+<h3 id="静态代理-1">静态代理</h3>
+<p>实现方式：</p>
+<ul>
+<li>由程序员显式编写代理类。<strong>代理类在编译期确定</strong>，编译前就存在代理类的字节码文件。</li>
+<li>需要实现与目标对象相同的接口，且在代理类中显式调用目标对象的方法。</li>
+</ul>
+<p>优点：</p>
+<ul>
+<li>结构简单，容易理解。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>每增加一个接口，都需要编写对应的代理类，代码量大，维护成本高。静态代理类在编译期生成，灵活性差。</li>
+</ul>
+<h3 id="jdk动态代理-1">JDK动态代理</h3>
+<p>实现方式：</p>
+<ul>
+<li>使用<code>java.lang.reflect.Proxy</code>类和<code>java.lang.reflect.InvocationHandler</code>接口。</li>
+<li><strong>代理类在运行时动态生成</strong>，不需要显式编写代理类。</li>
+</ul>
+<p>优点：</p>
+<ul>
+<li>代理类在运行时生成，增加了代码的灵活性和可维护性。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>只能代理实现了接口的类，不能代理没有实现接口的类。</li>
+</ul>
+<h3 id="cglib动态代理-1">CGLIB动态代理</h3>
+<p>实现方式：</p>
+<ul>
+<li>使用CGLIB（Code Generation Library），依赖ASM字节码生成框架。</li>
+<li><strong>代理类在运行时动态生成</strong>，不需要显式编写代理类。</li>
+</ul>
+<p>优点：</p>
+<ul>
+<li>不要求目标类实现接口，可以代理普通的类。</li>
+<li>性能通常比JDK动态代理更高，尤其在代理大量方法调用时更为显著。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>不能代理<code>final</code>类和<code>final</code>方法。</li>
+</ul>
+<blockquote>
+<p><strong>适用场景：</strong></p>
+</blockquote>
+<ul>
+<li><p><strong>静态代理</strong>：需要手动编写代理类，适用于简单的场景，但不够灵活，维护成本高。</p></li>
+<li><p><strong>JDK动态代理</strong>：适用于实现了接口的类，代理类在运行时生成，灵活性高，但只能代理接口。</p></li>
+<li><p><strong>CGLIB动态代理</strong>：适用于没有实现接口的类，性能优于JDK动态代理，但不能代理<code>final</code>类和<code>final</code>方法，且使用复杂度稍高。</p></li>
+</ul>
+]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+      <tags>
+        <tag>代理模式</tag>
+      </tags>
+  </entry>
 </search>
