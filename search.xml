@@ -2313,4 +2313,356 @@ Pattern）</strong>：提供一个创建一系列相关或相互依赖对象的�
         <tag>代理模式</tag>
       </tags>
   </entry>
+  <entry>
+    <title>【MySQL】一文吃透MVCC执行原理</title>
+    <url>/2024/08/02/%E3%80%90MySQL%E3%80%91%E4%B8%80%E6%96%87%E5%90%83%E9%80%8FMVCC%E6%89%A7%E8%A1%8C%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[<h2 id="mvcc是什么">1.MVCC是什么？</h2>
+<p>MVCC全称Multi-Version Concurrency
+Control，即<strong>多版本并发控制</strong>。它通过维护数据的多个版本来实现高效的并发控制，用于在多个并发事务同时<strong>读写</strong>数据库时保持数据的<strong>一致性</strong>和<strong>隔离性</strong>。</p>
+<p>在搞清楚MVCC的实现原理之前，还需要了解快照读和当前读的概念。</p>
+<blockquote>
+<p><strong>一致性非锁定读（快照读）</strong></p>
+</blockquote>
+<p>简单的select语句（不加锁）就是快照读，读取的是记录数据的可见版本，不加锁，是非阻塞读。</p>
+<ul>
+<li><code>select ...</code></li>
+</ul>
+<blockquote>
+<p><strong>一致性锁定读（当前读）</strong></p>
+</blockquote>
+<p>读取的是记录的最新版本，读取时需要保证其他并发事务不能修改当前记录，会对读取的记录加锁。如果执行的是下列语句，就是锁定读。</p>
+<ul>
+<li><code>select ... lock in share mode</code></li>
+<li><code>select ... for update</code></li>
+<li><code>insert</code>、<code>update</code>、<code>delete</code>
+操作</li>
+</ul>
+<h2 id="mvcc实现原理">2.MVCC实现原理</h2>
+<p><code>MVCC</code> 的实现依赖于：<strong>隐藏字段、Read View、undo
+log</strong>。</p>
+<h3 id="隐藏字段">隐藏字段</h3>
+<p>在内部，<code>InnoDB</code>
+存储引擎为<strong>每行数据</strong>添加了三个隐藏字段</p>
+<table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 75%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>隐藏字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DB_ROW_ID（6字节）</td>
+<td>隐藏主键，如果当前表不存在主键，则将该隐藏字段作为主键</td>
+</tr>
+<tr class="even">
+<td>DB_TRX_ID（6字节）</td>
+<td>最近修改事务ID，记录插入这条数据或最后一次修改该记录的事务ID</td>
+</tr>
+<tr class="odd">
+<td>DB_ROLL_PTR（7字节）</td>
+<td>回滚指针，指向这条记录的上一个版本，用于配合undo log</td>
+</tr>
+</tbody>
+</table>
+<p>假设有一个学生表，该表没有指定主键。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407291548685.png"></p>
+<p>那么该表实际上的字段如下，如果存在主键则不存在<code>DB_ROW_ID</code>字段。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407291554966.png"></p>
+<h3 id="undo-log">undo log</h3>
+<p><code>undo log</code> 分为两种类型：<code>insert undo log</code> 和
+<code>update undo log</code>。</p>
+<ul>
+<li><code>Insert undo log</code>
+是在事务进行插入操作时生成的日志。其主要作用是用于事务回滚时撤销插入操作。<strong>该日志只在回滚时需要，在事务提交后，可被立即删除。</strong></li>
+<li><code>Update undo log</code>
+是在事务进行更新或删除操作时生成的日志。其主要作用是用于事务回滚时撤销更新和删除操作。<strong>该日志不仅在回滚时需要，在快照读时也需要，不会被立即删除。</strong></li>
+</ul>
+<p>一条记录的每一次更新操作产生的 undo log 格式都有一个一个
+DB_TRX_ID事务id 和 DB_ROLL_PTR 指针：</p>
+<ul>
+<li>通过 DB_TRX_ID 可以知道该记录是被哪个事务修改的；</li>
+<li>通过 DB_ROLL_PTR 指针可以将这些 undo log
+串成一个链表，这个链表就被称为版本链；</li>
+</ul>
+<blockquote>
+<p><strong><em>举例说明：</em></strong></p>
+</blockquote>
+<p>事务1已经提前执行了<code>INSERT INTO user (id, age, name) VALUES (10, 10, 'Jack');</code>语句插入了一条记录。则<code>DB_TRX_ID</code>（插入这条数据或最后一次修改该记录的事务ID）为1，由于<code>insert undo log</code>在事务提交后自动删除，所以不存在undo
+log日志，<code>DB_ROLL_PTR</code>为null。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407291751813.png">该示例中有四个并发事务，其他事务在不同的时刻将执行update语句修改记录。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407291744033.png"></p>
+<p>所有事务执行完毕后，当前记录的DB_TRX_ID为4，且形成了一条Update Undo
+Log版本链，<strong>后续MVCC可以利用这条版本链获取旧数据。</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407291803408.png"></p>
+<h3 id="read-view">Read View</h3>
+<p>ReadView（读视图）是<strong>快照读</strong>执行时MVCC获取数据的依据，记录并维护系统尚未提交的事务（也称为活跃事务）id。</p>
+<p>ReadView有以下四个重要字段：</p>
+<table>
+<thead>
+<tr class="header">
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>m_ids</td>
+<td>当前活跃事务的ID集合</td>
+</tr>
+<tr class="even">
+<td>min_trx_id</td>
+<td>最小活跃事务ID</td>
+</tr>
+<tr class="odd">
+<td>max_trx_id</td>
+<td>预分配事务ID，当前最大事务ID+1（事务ID自增）</td>
+</tr>
+<tr class="even">
+<td>creator_trx_id</td>
+<td>ReadView创建者的事务ID</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tips：</strong><code>m_ids</code>的长度可不是<code>max_trx_id - min_trx_id</code>，因为m_ids是当前<strong>活跃事务</strong>的ID集合，在<code>min_trx_id</code>到<code>max_trx_id</code>即可能有<strong>活跃事务</strong>，也可能有<strong>非活跃事务</strong>。</p>
+</blockquote>
+<p><strong>当一个事务需要读取一条记录时，需要遵循以下四条规则进行读取（非常重要）：</strong></p>
+<ol type="1">
+<li><p><code>DB_TRX_ID == creator_trx_id</code>时，说明该数据就是当前事务更改的，<strong>可以访问该版本</strong>。</p></li>
+<li><p><code>DB_TRX_ID &lt; min_trx_id</code>时，比最小活跃事务ID小，说明当前事务已经提交了，<strong>可以访问该版本</strong>。</p></li>
+<li><p><code>DB_TRX_ID &gt; max_trx_id</code>时，比预分配事务ID大，说明当前事务在ReadView生成后才开始，还没有提交<strong>不能访问该版本</strong>。</p></li>
+<li><p><code>min_trx_id &lt;= DB_TRX_ID &lt;= max_trx_id</code>时，<strong>如果DB_TRX_ID不在m_ids中，即当前事务已经提交了，可以访问该版本。</strong></p></li>
+</ol>
+<p>看完这些规则我们可以总结以下规律：</p>
+<ol type="1">
+<li>当前事务可以读取自己更改的记录，对应第一条规则</li>
+<li>只有一个事务提交了，才能去读取该事务ID下的版本记录（保证事务的隔离性，防止脏读），对应第二、三、四条规则</li>
+</ol>
+<h2 id="mvcc的执行流程">3.MVCC的执行流程</h2>
+<p>这里承接第二部分举过的案例，来具体分析事务5在<strong>不同隔离级别</strong>两次<strong>查询id为10的记录</strong>时，分别会读取哪个版本的数据。学会这个案例之后，就能理解MVCC如何解决<strong>不可重复读</strong>和<strong>幻读</strong>的问题。</p>
+<h3 id="rc隔离级别">RC隔离级别</h3>
+<p>在RC隔离级别下，事务每一次执行快照读时都会生成一次ReadView。</p>
+<p>在第一次查询时，还未提交的事务有3、4、5，那么m_ids（活跃事务ID集合）为{3,4,5}，min_trx_id（最小活跃事务ID）为3，max_trx_id（预提交事务ID）为5+1=6，creator_trx_id（事务创建者ID）为5。</p>
+<p>在第二次查询时，还未提交的事务有4、5，那么m_ids（活跃事务ID集合）为{4,5}，min_trx_id（最小活跃事务ID）为4，max_trx_id（预提交事务ID）为5+1=6，creator_trx_id（事务创建者ID）为5。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407291855687.png"></p>
+<h3 id="rr隔离级别">RR隔离级别</h3>
+<p>在RR隔离级别下，仅在事务中<strong>第一次执行快照读</strong>时生成ReadView，后续复用该ReadView。</p>
+<p>在第一次查询时，还未提交的事务有3、4、5，那么m_ids（活跃事务ID集合）为{3,4,5}，min_trx_id（最小活跃事务ID）为3，max_trx_id（预提交事务ID）为5+1=6，creator_trx_id（事务创建者ID）为5。</p>
+<p>在第二次查询时，直接复用ReadView。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407291900296.png"></p>
+<h3 id="读取版本记录">读取版本记录</h3>
+<p><strong>在读取版本记录时，需要根据DB_TRX_ID匹配ReadView的读取规则，判断当前记录对DB_TRX_ID对应的事务是否可见，如果可见，直接读取当前版本，如果不可见，则读取前一个undo
+log记录继续进行匹配。</strong></p>
+<p>我们以第一个ReadView举例，当前undo log版本链和读视图如下：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407291803408.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202407291907166.png"></p>
+<p>当DB_TRX_ID为4，存在于活跃事务列表中，因此不可以读取该行数据，需要向前找DB_TRX_ID为3的记录。</p>
+<p>当DB_TRX_ID为3时，同样存在于活跃事务列表，因此不可以读取该行数据，需要向前找DB_TRX_ID为2的记录。</p>
+<p>当DB_TRX_ID为2时，发现DB_TRX_ID&lt;min_trx_id，符合规则，因此可以读取该行记录。</p>
+<p>最后的读取结果为：</p>
+<table>
+<thead>
+<tr class="header">
+<th>10</th>
+<th>20</th>
+<th>Jack</th>
+<th>2</th>
+<th>0x00001</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h2 id="mvcc小结">4.MVCC小结</h2>
+<h3 id="mvcc解决不可重复读">MVCC解决不可重复读</h3>
+<blockquote>
+<p>RC隔离级别</p>
+</blockquote>
+<p>在RC读取已提交下，事务每一次执行快照读时都会生成一次ReadView，这也就<strong>造成了每次读取就有不同
+ReadView</strong>，那么就会读到已提交的事务修改的内容，不能解决不可重复读的问题。</p>
+<blockquote>
+<p>RR隔离级别</p>
+</blockquote>
+<p>解决 RR 不可重复读主要靠
+Readview，在隔离级别为可重复读时，仅在事务中<strong>第一次执行快照读</strong>时生成ReadView，后续复用该ReadView。由于后续<strong>复用了
+ReadView，所以数据对当前事务的可见性和第一次是一样的</strong>，所以从
+undo log
+中读到的数据快照和第一次是一样的，即便过程中有其他事务修改也读不到。因此解决了不可重复读的问题。</p>
+<h3 id="mvcc解决幻读">MVCC解决幻读</h3>
+<p><code>InnoDB</code>存储引擎在 RR 级别下通过
+<strong><code>MVCC</code>和
+<code>Next-key Lock</code>（临键锁）</strong> 来解决幻读问题：</p>
+<p><strong>1、执行快照读</strong></p>
+<p>在<strong>快照读</strong>的情况下，RR
+隔离级别使用MVCC，只会在事务开启后的第一次查询生成
+<code>Read View</code> ，并使用至事务提交。所以<strong>在生成
+<code>Read View</code>
+之后其它事务所做的更新、插入记录版本对当前事务并不可见</strong>，实现了可重复读和防止快照读下的
+“幻读”。</p>
+<p><strong>2、执行当前读</strong></p>
+<p>在<strong>当前读</strong>的情况下，读取的都是最新的数据，如果其它事务有插入新的记录，并且刚好在当前事务查询范围内，就会产生幻读。<code>InnoDB</code>
+使用<code>Next-key Lock</code>来防止这种情况。当执行当前读时，会锁定读取到的记录的同时，锁定它们的间隙，防止其它事务在查询范围内插入数据。</p>
+]]></content>
+      <categories>
+        <category>MySQL</category>
+      </categories>
+      <tags>
+        <tag>MVCC</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【MySQL】索引概念解析</title>
+    <url>/2024/08/01/%E3%80%90MySQL%E3%80%91%E7%B4%A2%E5%BC%95%E6%A6%82%E5%BF%B5%E8%A7%A3%E6%9E%90/</url>
+    <content><![CDATA[<h2 id="什么是索引">1.什么是索引？</h2>
+<p><strong>MySQL中的索引是一种数据结构，用于帮助MySQL数据库管理系统快速查询数据。索引的主要目的是提高数据检索的速度，减少数据库系统需要扫描的数据量。</strong></p>
+<p>优点：</p>
+<ol type="1">
+<li>索引可以极大的提高数据检索效率，降低数据库IO成本</li>
+<li>通过创建唯一性索引，可以保证数据库表中每一行数据的唯一性</li>
+<li>通过索引列对数据进行排序，降低数据排序的成本，减少CPU的消耗</li>
+</ol>
+<p>缺点：</p>
+<ol type="1">
+<li>创建索引需要消耗物理空间。对于大型数据库，索引可能会占用相当大的磁盘空间。</li>
+<li>创建索引和维护索引需要消耗时间，降低表的更新效率。对表中数据进行增删改操作时，那么索引也需要动态的修改，会降低
+SQL 执行效率。</li>
+</ol>
+<p>适用场景：</p>
+<ol type="1">
+<li>具有<strong>唯一性约束的字段</strong>，比如商品编码，可以适用唯一性索引</li>
+<li><strong>频繁使用的列</strong>，如主键、外键</li>
+<li>经常用于<strong>WHERE</strong>查询条件的字段，如果查询条件不是⼀个字段，可以建⽴联合索引。</li>
+<li>用于<strong>GROUP BY</strong>或<strong>ORDER
+BY</strong>中的字段，由于索引基于B+树实现，会自动维护数据的有序性，降低数据排序的成本。</li>
+</ol>
+<p>不适用场景：</p>
+<ol type="1">
+<li><p><strong>WHERE</strong>、<strong>GROUP BY</strong>或<strong>ORDER
+BY</strong>用不到的字段，索引的作用是快速定位，用不到的话会额外占用空间</p></li>
+<li><p>存在<strong>大量重复元素</strong>的字段，如性别，无论怎么搜索可能只会得到一半的数据。</p></li>
+<li><p><strong>表数据太少</strong>的时候，无需创建索引。</p></li>
+<li><p><strong>频繁修改的列</strong>，当对表中数据进行增删改操作时，由于索引需要维护B+树的有序性，会频繁的创建索引，影响数据库的性能。</p></li>
+</ol>
+<h2 id="索引结构选型">2.索引结构选型</h2>
+<p>B+
+树非常适合作为数据库索引结构，特别是在处理大量数据的场景下，能够提供高效的查询、插入和删除操作，并且支持范围查询和顺序扫描。这些特性使得
+B+ 树成为 MySQL 等数据库系统中首选的索引数据结构。</p>
+<p>下面将针对不同的数据结构进行分析，以说明B+树为何能在众多数据结构中脱颖而出。</p>
+<h3 id="hash表">Hash表</h3>
+<p>MySQL 的 InnoDB
+存储引擎不直接支持常规哈希索引，但有一种<strong>自适应哈希索引</strong>（Adaptive
+Hash Index）。这种索引结合了 B+
+树和哈希索引的特点，适应实际数据访问模式和性能需求。自适应哈希索引的每个哈希桶实际上是一个小型的
+B+ 树结构，存储多个键值对，减少了哈希冲突，提高了效率。</p>
+<p>MySQL
+没有采用哈希索引作为主要索引结构，主要因为哈希索引不支持顺序和范围查询。此外，每次
+IO 只能取一个值，限制了查询性能。</p>
+<h3 id="二叉查找树bst">二叉查找树(BST)</h3>
+<p>二叉查找树的性能非常依赖于它的平衡程度。</p>
+<ul>
+<li><strong>平衡时</strong>：查询时间复杂度为 O(log N)，效率较高。</li>
+<li><strong>不平衡时</strong>：最坏情况下退化为线性链表，查询效率降至
+O(N)。</li>
+</ul>
+<h3 id="avl树">AVL树</h3>
+<p>AVL
+树是一种<strong>高度平衡二叉树</strong>，保证任何节点的左右子树高度之差不超过
+1，查找、插入和删除的时间复杂度均为 O(log N)。AVL
+树通过四种旋转操作（LL、RR、LR、RL）保持平衡，但频繁的旋转操作增加了计算开销，降低了数据库写操作的性能。</p>
+<p>每个 AVL 树节点仅存储一个数据，每次磁盘 IO
+只能读取一个节点的数据，需要多次 IO 查询多个节点的数据，影响了性能。</p>
+<h3 id="红黑树">红黑树</h3>
+<p>红黑树是一种自平衡二叉查找树，通过颜色变换和旋转操作保持平衡，具有以下特点：</p>
+<ol type="1">
+<li>每个节点非红即黑；</li>
+<li>根节点总是黑色；</li>
+<li>每个叶子节点是黑色的空节点（NIL）；</li>
+<li>红色节点的子节点必须是黑色；</li>
+<li>从任意节点到叶子节点的每条路径包含相同数量的黑色节点。</li>
+</ol>
+<p><img src="https://oss.javaguide.cn/github/javaguide/cs-basics/data-structure/red-black-tree.png"></p>
+<p><strong>红黑树追求的是大致平衡</strong>，查询效率略低于 AVL
+树，因为红黑树的平衡性较弱，可能导致树的高度较高，需要多次磁盘 IO
+操作。这也是 MySQL
+没有选择红黑树的原因之一。但红黑树的插入和删除操作效率高，因为只需进行
+O(1) 次数的旋转和变色操作，保持基本平衡状态。</p>
+<p><strong>红黑树广泛应用于 TreeMap、TreeSet 和 JDK1.8 的 HashMap
+底层，在内存中的表现非常优异。</strong></p>
+<h3 id="b树b树">B树&amp;B+树</h3>
+<p>B 树也称 B-树,全称为 <strong>多路平衡查找树</strong> ，B+ 树是 B
+树的一种变体。B 树和B+ 树中的 B 是 <code>Balanced</code>
+（平衡）的意思。</p>
+<p>目前大部分数据库系统及文件系统都采用 B-Tree 或其变种 B+Tree
+作为索引结构。</p>
+<blockquote>
+<p><strong>B 树&amp;B+ 树两者有何异同呢？</strong></p>
+</blockquote>
+<ol type="1">
+<li><strong>存储方式不同</strong></li>
+</ol>
+<p>B
+树的所有节点既存放键（key）也存放数据（data），而B+树只有叶子节点存放
+key 和 data，非叶子节点只存放 key。</p>
+<ol start="2" type="1">
+<li><strong>单点查询稳定性不同</strong></li>
+</ol>
+<p>B
+树的查询波动较大，因为每个节点既存放索引又存放记录，有时访问到非叶子节点就能找到数据，有时需要访问叶子节点才能找到。</p>
+<p>B+ 树的非叶子节点仅存放索引，因此可以存放更多的索引，使得 B+ 树比 B
+树更「矮胖」，查询底层节点的磁盘 I/O 次数更少。</p>
+<ol start="3" type="1">
+<li><strong>插入和删除效率不同</strong></li>
+</ol>
+<ul>
+<li>在B树中，当内部节点需要删除或插入时，可能会涉及到多个子节点的调整。由于B树的非叶子节点也存储数据，因此分裂或合并操作需要确保数据的完整性和树的平衡。</li>
+<li>相比之下，B+树的非叶子节点只存储键信息，不存储实际的数据。因此，在分裂或合并非叶子节点时，只需要处理键信息，这使得操作相对简单且高效。并且，B+树的叶子节点包含所有实际的数据，并且它们之间通过指针相连。这使得在删除节点时，可以更容易地重新组织数据以保持树的平衡。</li>
+</ul>
+<ol start="4" type="1">
+<li><strong>范围查询效率不同</strong></li>
+</ol>
+<p>B+
+树支持范围查询。进行范围查找时，从根节点遍历到叶子节点即可，因为数据都存储在叶子节点上，且叶子节点通过指针连接，便于范围查找。</p>
+<h2 id="索引的类型">3.索引的类型</h2>
+<p>按照底层存储方式角度划分：</p>
+<ul>
+<li>聚簇索引（聚集索引）：索引结构和数据<strong>一起存放</strong>的索引，<strong>只有InnoDB
+中的主键索引属于聚簇索引</strong>。</li>
+<li>非聚簇索引（非聚集索引）：索引结构和数据<strong>分开存放</strong>的索引，二级索引(辅助索引)就属于非聚簇索引。MySQL
+的 MyISAM 引擎，不管主键还是非主键，使用的都是非聚簇索引。</li>
+</ul>
+<p>按照应用维度划分：</p>
+<h3 id="主键索引">主键索引</h3>
+<p>加速查询 + 列值唯一 + 不可以有NULL + 表中只有一个。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE TABLE tb_user (</span><br><span class="line">    id INT PRIMARY KEY,</span><br><span class="line">    name VARCHAR(50)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<h3 id="普通索引">普通索引</h3>
+<p>加速查询 + 列值可以重复 + 可以有NULL。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE INDEX idx_name ON tb_user(name);</span><br></pre></td></tr></table></figure>
+<h3 id="唯一索引">唯一索引</h3>
+<p>加速查询 + 列值唯一 + 可以有NULL。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE UNIQUE INDEX idx_email ON tb_user(email);</span><br></pre></td></tr></table></figure>
+<h3 id="联合索引">联合索引</h3>
+<p>多个列组成一个索引，专门用于组合搜索，其效率大于多个单列索引的合并效率。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE INDEX idx_cover ON tb_user(name, email);</span><br></pre></td></tr></table></figure>
+<h3 id="覆盖索引">覆盖索引</h3>
+<p>一个索引包含所有需要查询的字段的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE INDEX idx_cover ON tb_user(name, email);</span><br><span class="line"></span><br><span class="line">SELECT name, email FROM tb_user WHERE name = &#x27;John&#x27;;</span><br></pre></td></tr></table></figure>
+<h3 id="全文索引">全文索引</h3>
+<p>对文本的内容进行分词，进行搜索。目前只有
+<code>CHAR</code>、<code>VARCHAR</code> ，<code>TEXT</code>
+列上可以创建全文索引。一般不会使用，效率较低，通常使用搜索引擎如
+ElasticSearch 代替。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE TABLE articles (</span><br><span class="line">    id INT PRIMARY KEY,</span><br><span class="line">    title VARCHAR(200),</span><br><span class="line">    content TEXT,</span><br><span class="line">    FULLTEXT (title, content)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>MySQL</category>
+      </categories>
+      <tags>
+        <tag>索引</tag>
+      </tags>
+  </entry>
 </search>
