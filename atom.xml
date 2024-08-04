@@ -6,7 +6,7 @@
   <link href="https://moduokesi.top/atom.xml" rel="self"/>
   
   <link href="https://moduokesi.top/"/>
-  <updated>2024-08-02T08:06:28.655Z</updated>
+  <updated>2024-08-04T09:31:20.531Z</updated>
   <id>https://moduokesi.top/</id>
   
   <author>
@@ -15,6 +15,61 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>【MySQL】慢sql查询优化</title>
+    <link href="https://moduokesi.top/2024/08/04/%E3%80%90MySQL%E3%80%91%E6%85%A2sql%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96/"/>
+    <id>https://moduokesi.top/2024/08/04/%E3%80%90MySQL%E3%80%91%E6%85%A2sql%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96/</id>
+    <published>2024-08-04T03:31:24.000Z</published>
+    <updated>2024-08-04T09:31:20.531Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;定位慢sql&quot;&gt;定位慢sql&lt;/h1&gt;
+&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="MySQL" scheme="https://moduokesi.top/categories/MySQL/"/>
+    
+    
+    <category term="索引" scheme="https://moduokesi.top/tags/%E7%B4%A2%E5%BC%95/"/>
+    
+    <category term="日志" scheme="https://moduokesi.top/tags/%E6%97%A5%E5%BF%97/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【MySQL】全面剖析索引失效、回表查询与索引下推</title>
+    <link href="https://moduokesi.top/2024/08/03/%E3%80%90MySQL%E3%80%91%E5%85%A8%E9%9D%A2%E5%89%96%E6%9E%90%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E3%80%81%E5%9B%9E%E8%A1%A8%E6%9F%A5%E8%AF%A2%E4%B8%8E%E7%B4%A2%E5%BC%95%E4%B8%8B%E6%8E%A8/"/>
+    <id>https://moduokesi.top/2024/08/03/%E3%80%90MySQL%E3%80%91%E5%85%A8%E9%9D%A2%E5%89%96%E6%9E%90%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E3%80%81%E5%9B%9E%E8%A1%A8%E6%9F%A5%E8%AF%A2%E4%B8%8E%E7%B4%A2%E5%BC%95%E4%B8%8B%E6%8E%A8/</id>
+    <published>2024-08-03T08:24:24.000Z</published>
+    <updated>2024-08-04T09:32:16.324Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;索引失效的情况&quot;&gt;1.索引失效的情况&lt;/h2&gt;
+&lt;p&gt;以tb_user表举例，id为主键索引、name和phone字段上建立了一个普通索引，name和phone均为varchar类型。&lt;/p&gt;
+&lt;p&gt;&lt;img</summary>
+        
+      
+    
+    
+    
+    <category term="MySQL" scheme="https://moduokesi.top/categories/MySQL/"/>
+    
+    
+    <category term="索引" scheme="https://moduokesi.top/tags/%E7%B4%A2%E5%BC%95/"/>
+    
+  </entry>
   
   <entry>
     <title>【MySQL】一文吃透MVCC执行原理</title>
@@ -476,57 +531,6 @@
     
     
     <category term="项目管理" scheme="https://moduokesi.top/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Redis持久化问题排查</title>
-    <link href="https://moduokesi.top/2022/10/29/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/"/>
-    <id>https://moduokesi.top/2022/10/29/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/</id>
-    <published>2022-10-29T12:49:50.000Z</published>
-    <updated>2022-10-30T07:22:42.341Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2</summary>
-        
-      
-    
-    
-    
-    <category term="Linux" scheme="https://moduokesi.top/categories/Linux/"/>
-    
-    
-    <category term="问题解决" scheme="https://moduokesi.top/tags/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>VMWare演示Redis持久化</title>
-    <link href="https://moduokesi.top/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/"/>
-    <id>https://moduokesi.top/2022/10/28/VMWare%E6%BC%94%E7%A4%BARedis%E6%8C%81%E4%B9%85%E5%8C%96/</id>
-    <published>2022-10-28T12:49:50.000Z</published>
-    <updated>2022-10-30T09:09:04.288Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2 id=&quot;vmware演示redis持久化&quot;&gt;VMware演示Redis持久化&lt;/h2&gt;
-&lt;h3</summary>
-        
-      
-    
-    
-    
-    <category term="Linux" scheme="https://moduokesi.top/categories/Linux/"/>
-    
-    
-    <category term="学习笔记" scheme="https://moduokesi.top/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
     
   </entry>
   

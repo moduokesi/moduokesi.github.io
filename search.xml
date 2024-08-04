@@ -2665,4 +2665,381 @@ ElasticSearch 代替。</p>
         <tag>索引</tag>
       </tags>
   </entry>
+  <entry>
+    <title>【MySQL】全面剖析索引失效、回表查询与索引下推</title>
+    <url>/2024/08/03/%E3%80%90MySQL%E3%80%91%E5%85%A8%E9%9D%A2%E5%89%96%E6%9E%90%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E3%80%81%E5%9B%9E%E8%A1%A8%E6%9F%A5%E8%AF%A2%E4%B8%8E%E7%B4%A2%E5%BC%95%E4%B8%8B%E6%8E%A8/</url>
+    <content><![CDATA[<h2 id="索引失效的情况">1.索引失效的情况</h2>
+<p>以tb_user表举例，id为主键索引、name和phone字段上建立了一个普通索引，name和phone均为varchar类型。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021323066.png"></p>
+<h3 id="索引列运算">索引列运算</h3>
+<blockquote>
+<p><strong>当在 <code>WHERE</code> 子句或 <code>JOIN</code>
+子句中对列使用函数或表达式时，索引会失效。</strong></p>
+</blockquote>
+<p>执行以下语句，可以发现执行计划中索引已经生效。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">explain select * from tb_user <span class="type">where</span> <span class="variable">name</span> <span class="operator">=</span> <span class="string">&#x27;Jack&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021307931.png"></p>
+<p>如果我们使用substring函数只取前三个字符，则索引失效。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">explain select * from tb_user where <span class="title function_">SUBSTRING</span><span class="params">(name, <span class="number">1</span>, <span class="number">3</span>)</span> = <span class="string">&#x27;Jac&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>可以发现type为ALL，key为null，<strong>说明本次查询没有执行索引，走的是全表扫描</strong>。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021308061.png"></p>
+<h3 id="隐式类型转换">隐式类型转换</h3>
+<blockquote>
+<p><strong>当列的类型和查询中的值类型不同时，MySQL
+可能会进行隐式类型转换，导致索引失效。</strong></p>
+</blockquote>
+<p>执行以下语句，phone为varchar类型，如果等号右侧不加引号，则发生隐式转换，索引失效。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">explain select * from tb_user <span class="type">where</span> <span class="variable">phone</span> <span class="operator">=</span> <span class="number">13016161546</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021316202.png"></p>
+<h3 id="前导通配符查询">前导通配符查询</h3>
+<blockquote>
+<p><strong>使用通配符查询时，如果通配符在字符串的前面，索引会失效。</strong></p>
+</blockquote>
+<p>执行以下语句，查询name字段后缀为<code>ack</code>的数据，索引失效。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">explain select * from tb_user where name like <span class="string">&#x27;%ack&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021316202.png"></p>
+<h3 id="or连接条件">or连接条件</h3>
+<blockquote>
+<p><strong>当 or 条件中某个列没有索引时，索引会失效</strong></p>
+</blockquote>
+<p>执行以下语句，因为name和phone都是索引字段，索引正常生效。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">explain select * from tb_user <span class="type">where</span> <span class="variable">name</span> <span class="operator">=</span> <span class="string">&#x27;Jack&#x27;</span> <span class="type">or</span> <span class="variable">phone</span> <span class="operator">=</span> <span class="string">&#x27;15846234682&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021325531.png"></p>
+<p>执行以下语句，因为age字段没有设置索引，所以索引失效查询。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">explain select * from tb_user <span class="type">where</span> <span class="variable">name</span> <span class="operator">=</span> <span class="string">&#x27;Jack&#x27;</span> <span class="type">or</span> <span class="variable">age</span> <span class="operator">=</span> <span class="string">&#x27;20&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021328278.png"></p>
+<h3 id="最左匹配原则">最左匹配原则</h3>
+<blockquote>
+<p><strong>对于联合索引（多个列组成的索引），如果查询条件不包含索引的最左前缀部分，索引会失效。</strong></p>
+<p><strong>TIPS：</strong>这里指的最左是联合索引中的顺序，而不是SQL语句查询条件的顺序。</p>
+</blockquote>
+<p>在本例中，我们新建一个表<code>table</code>，给字段col1、col2、age建立联合索引（col1,
+col2, age）</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021358430.png"></p>
+<ul>
+<li><strong>遵循最左匹配发展</strong></li>
+</ul>
+<p>按照最左前缀法则查询数据。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">explain select * from `table` <span class="type">where</span> <span class="variable">col1</span> <span class="operator">=</span> <span class="string">&#x27;user&#x27;</span> <span class="type">and</span> <span class="variable">col2</span> <span class="operator">=</span> <span class="string">&#x27;password&#x27;</span> <span class="type">and</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">21</span>;</span><br></pre></td></tr></table></figure>
+<p>可以发现，联合索引的总长度为107</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021400955.png"></p>
+<ul>
+<li><strong>不遵循最左匹配法则（查询条件中不包括联合索引的最左前缀部分）</strong></li>
+</ul>
+<p>如果不按照最左匹配法则，直接查询col2的数据</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">explain select * from `table` <span class="type">where</span> <span class="variable">col2</span> <span class="operator">=</span> <span class="string">&#x27;password&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>本次查询走的是<code>index</code>全索引扫描，性能上要低于<code>ref</code>。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021351634.png"></p>
+<ul>
+<li><strong>不遵循最左匹配法则（查询条件中包含<code>&gt; &lt;</code>范围查询）</strong></li>
+</ul>
+<p>如果查询条件中使用了<code>&gt; &lt;</code>，则不遵循最左匹配法则（可以使用其他范围查询符号），<strong>范围查询右侧的索引失效。</strong></p>
+<p>执行以下语句，由于age在联合索引（col1, col2,
+age）中是最后一个，所以不存在其右侧索引失效的情况。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">explain select * from `table` <span class="type">where</span> <span class="variable">col1</span> <span class="operator">=</span> <span class="string">&#x27;user&#x27;</span> <span class="type">and</span> <span class="variable">col2</span> <span class="operator">=</span> <span class="string">&#x27;password&#x27;</span> and age &gt; <span class="number">21</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021411852.png"></p>
+<p>但是如果我们将col2和age调换顺序，改为（col1, age,
+col2），则col2索引失效。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021412826.png"></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021412887.png"></p>
+<h3 id="数据分布情况">数据分布情况</h3>
+<blockquote>
+<p><strong>MySQL会根据表中数据的分布情况，决定是否使用索引</strong></p>
+</blockquote>
+<p>举一个简单的例子，如果表中的age字段最小值为10，查询条件为age &gt;=
+10。则在查询时可能不会走索引，因为走索引和不走索引都需要查询表中的全部数据，不过判断一个语句是否走索引还是要根据<code>explain</code>关键字返回的结果进行判断。</p>
+<h2 id="回表查询">2.回表查询</h2>
+<p><strong>回表查询</strong>是指在使用<strong>辅助索引</strong>（二级索引）进行查询时，由于辅助索引中不包含查询所需的所有列数据，数据库必须通过索引找到对应的数据行位置，再去实际的数据表（即“回表”）中读取完整的数据行。<strong>这种操作会增加额外的
+I/O
+开销，因此回表查询通常比直接从索引中获取数据的查询更慢。</strong></p>
+<h3 id="回表查询示例">回表查询示例</h3>
+<p>假设有以下表数据，id为主键索引，name为普通索引。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021453416.png"></p>
+<p><strong>主键索引</strong>（id）的索引结构如下图，在叶子节点中存储的是<strong>每一行的数据</strong>。如果我们直接根据id查询，就可以在遍历索引时直接拿到每一行的数据。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">select * from tb_user where id = 2;</span><br></pre></td></tr></table></figure>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021459755.png"></p>
+<p><strong>辅助索引</strong>（name）的索引结构如下，叶子节点存储的是该行的主键（id），如果需要查询该行的数据，则需要遍历索引后获得主键id，再根据这个主键id前往主键索引中查询，这个过程就是<strong>回表查询</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">select * from tb_user where name = &#x27;Arm&#x27;;</span><br></pre></td></tr></table></figure>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408021503521.png"></p>
+<h3 id="避免回表查询">避免回表查询</h3>
+<p>避免回表查询很简单，只需要保证查询的列能够被索引结构覆盖即可。通过创建一个包含所有查询所需列的索引，数据库可以直接从索引中获取所有需要的数据，无需回表。</p>
+<p><strong>覆盖索引</strong>（Covering
+Index）是指查询所需的所有列都包含在同一个索引中，从而避免回表操作。这样可以显著提高查询性能。</p>
+<p>比如我们直接使用以下语句，就可以避免回表查询，因为name索引中包含了name和id的数据，而无需回到数据库进行查询。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">select name from tb_user where name = &#x27;Arm&#x27;;</span><br><span class="line"></span><br><span class="line">select id, name from tb_user where name = &#x27;Arm&#x27;;</span><br></pre></td></tr></table></figure>
+<h2 id="索引下推">3.索引下推</h2>
+<p><strong>索引下推（Index Condition Pushdown，ICP）</strong>是 MySQL
+5.6 及以上版本中引入的一种优化技术，用于提高使用索引查询的效率。ICP
+可以减少回表操作（即从索引表跳回数据表读取完整行数据）的次数，从而提高查询性能。</p>
+<p><strong>除了可以减少回表次数之外，索引下推还可以减少存储引擎层和
+Server 层的数据传输量。</strong></p>
+<h3 id="工作原理">工作原理</h3>
+<p>在没有索引下推的情况下，MySQL 的查询执行流程通常是：</p>
+<ol type="1">
+<li><strong>索引扫描</strong>：存储引擎使用索引查找满足索引条件的记录。</li>
+<li><strong>返回记录</strong>：将这些记录返回给 MySQL 服务器。</li>
+<li><strong>行过滤</strong>：MySQL
+服务器根据剩余的查询条件进一步过滤这些记录。</li>
+</ol>
+<p>使用索引下推后，MySQL
+优化器会在索引扫描阶段<strong>尽可能多地应用查询条件</strong>，只有在通过索引扫描无法完全过滤的情况下，才进行回表操作。</p>
+<h3 id="适用场景">适用场景</h3>
+<p>索引下推在以下场景中尤其有效：</p>
+<ol type="1">
+<li><strong>范围查询</strong>：对索引列进行范围查询时，例如
+<code>BETWEEN</code>、<code>&lt;</code>、<code>&gt;</code> 等。</li>
+<li><strong>联合索引查询</strong>：在联合索引的前缀列上进行查询，并且查询条件涉及非索引列时。</li>
+<li><strong>复杂条件查询</strong>：查询条件包含多个过滤条件时，例如
+<code>AND</code>、<code>OR</code> 等。</li>
+</ol>
+<h3 id="示例">示例</h3>
+<p>假设有一个包含联合索引 <code>idx_name_age</code> 的表
+<code>tb_user</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE TABLE tb_user (</span><br><span class="line">    id INT PRIMARY KEY,</span><br><span class="line">    name VARCHAR(50),</span><br><span class="line">    age INT,</span><br><span class="line">    address VARCHAR(255),</span><br><span class="line">    INDEX idx_name_age (name, age)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>查询语句：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">explain select * from tb_user where name = &#x27;John&#x27; and age &gt; 30 and address like &#x27;%Street%&#x27;;</span><br></pre></td></tr></table></figure>
+<p>在没有索引下推的情况下，MySQL 会：</p>
+<ol type="1">
+<li>使用索引 <code>idx_name_age</code> 找到 <code>name = 'John'</code>
+的所有记录。</li>
+<li>回表读取每一条记录的实际数据。</li>
+<li>对回表后的数据应用剩余条件 <code>age &gt; 30</code> 和
+<code>address LIKE '%Street%'</code> 进行过滤。</li>
+</ol>
+<p>在启用索引下推的情况下，MySQL 会：</p>
+<ol type="1">
+<li>使用索引 <code>idx_name_age</code> 找到 <code>name = 'John'</code>
+且 <code>age &gt; 30</code> 的记录（在索引扫描阶段应用部分条件）。</li>
+<li>仅对符合前两个条件的记录进行回表操作。</li>
+<li>对回表后的数据应用剩余条件 <code>address LIKE '%Street%'</code>
+进行最终过滤。</li>
+</ol>
+]]></content>
+      <categories>
+        <category>MySQL</category>
+      </categories>
+      <tags>
+        <tag>索引</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【MySQL】慢sql查询优化</title>
+    <url>/2024/08/04/%E3%80%90MySQL%E3%80%91%E6%85%A2sql%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96/</url>
+    <content><![CDATA[<h1 id="定位慢sql">定位慢sql</h1>
+<h2 id="工具排查慢sql">工具排查慢sql</h2>
+<ul>
+<li>调试工具：Arthas</li>
+<li>运维工具：Skywalking</li>
+</ul>
+<p>通过以上工具可以看到哪个接口比较慢，并且可以分析SQL具体的执行时间，定位到哪个sql出了问题。</p>
+<h2 id="启用慢查询日志">启用慢查询日志</h2>
+<p>慢查询日志记录了所有执行时间超过指定参数(long_query_time，单位:秒，默认10秒)的所有SQL语句的日志。</p>
+<p>MySQL的慢查询日志默认没有开启，需要在MySQL的配置文件(/etc/my.cnf)中配置如下信息:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 开启MySQL慢日志查询开关</span></span><br><span class="line"><span class="string">slow_query_log=1</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置慢日志的时间为1秒，SQL语句执行时间超过1秒，就会视为慢查询，记录到慢查询日志中</span></span><br><span class="line"><span class="string">long_query_time=2</span></span><br></pre></td></tr></table></figure>
+<p>配置完成后，重启MySQL服务保证配置生效。</p>
+<p>慢查询日志一般的返回结果如下：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Time:2024-08-01T12:00:00.123456Z</span></span><br><span class="line"><span class="comment"># User@Host: root[root] @ localhost [] Id: 	8</span></span><br><span class="line"><span class="comment"># Query time:2.345678 Lock_time:0.012345 Rows sent:10 Rows examined: 100</span></span><br><span class="line"><span class="string">SET</span> <span class="string">timestamp=1650000000;</span></span><br><span class="line"><span class="string">SELECT</span> <span class="string">*</span> <span class="string">FROM</span> <span class="string">orders</span> <span class="string">WHERE</span> <span class="string">status</span> <span class="string">=&#x27;pending&quot;</span> <span class="string">ORDER</span> <span class="string">BY</span> <span class="string">gmt</span> <span class="string">created</span> <span class="string">DEsc;</span></span><br></pre></td></tr></table></figure>
+<p>需要关注以下内容：</p>
+<ul>
+<li><p><strong>Query_time（查询时间）</strong>：查询执行的总时间，单位为秒。是关键的指标，用于判断查询的性能。</p></li>
+<li><p><strong>Lock_time（锁定时间）</strong>：表被锁定的时间，单位为秒。可以帮助判断是否存在锁等待问题。</p></li>
+<li><p><strong>Rows_sent（发送的行数）</strong>：查询返回的行数。</p></li>
+<li><p><strong>Rows_examined（检查的行数）</strong>：查询过程中检查的行数，用于判断查询的效率。</p></li>
+</ul>
+<h1 id="分析慢sql">分析慢sql</h1>
+<h2 id="profile详情">profile详情</h2>
+<p><code>SHOW PROFILE</code> 是 MySQL
+提供的一种用于查看查询语句执行的详细步骤和资源消耗的工具。使用
+<code>SHOW PROFILE</code>
+命令可以帮助找出查询语句的瓶颈，优化查询性能。</p>
+<blockquote>
+<p><strong>启用 Profiling</strong></p>
+</blockquote>
+<p>在使用 <code>SHOW PROFILE</code> 之前，需要先启用 Profiling：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SET profiling = 1;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>执行查询</strong></p>
+</blockquote>
+<p>执行你想分析的查询语句：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM your_table WHERE some_column = &#x27;some_value&#x27;;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>查看 Profile 列表</strong></p>
+</blockquote>
+<p>使用以下命令查看刚才执行的查询的 Profile：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SHOW PROFILES;</span><br></pre></td></tr></table></figure>
+<p>这将显示一个查询 ID 列表及其对应的查询语句和总执行时间。</p>
+<blockquote>
+<p><strong>查看详细的 Profile 信息</strong></p>
+</blockquote>
+<p>使用 <code>SHOW PROFILE</code> 查看某个查询 ID 的详细信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SHOW PROFILE FOR QUERY query_id;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>查看CPU信息</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SHOW PROFILE CPU FOR QUERY query_id;</span><br></pre></td></tr></table></figure>
+<h2 id="explain执行计划">explain执行计划</h2>
+<p><code>explain</code> 是 MySQL 提供的一种用于分析和调试 SQL
+查询的工具。</p>
+<p>通过使用 <code>explain</code>，可以了解 MySQL
+在执行查询时采用的具体执行计划，包括访问数据表的方式、使用的索引、连接表的顺序等信息。这些信息对于优化查询性能至关重要。</p>
+<h3 id="基本概念">基本概念</h3>
+<p><code>EXPLAIN</code> 执行计划支持
+<code>SELECT</code>、<code>DELETE</code>、<code>INSERT</code>、<code>REPLACE</code>
+以及 <code>UPDATE</code> 语句。我们一般多用于分析 <code>SELECT</code>
+查询语句，要获取一条sql语句的执行计划，只需要在语句前加上<code>explain</code>关键字即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">explain + sql语句;</span><br></pre></td></tr></table></figure>
+<p>执行计划的返回结果一般是这样的：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">+----+-------------+----------+------------+-------+-----------------+---------+---------+------+--------+----------+-------------+</span><br><span class="line">| id | select_type | table    | partitions | type  | possible_keys   | key     | key_len | ref  | rows   | filtered | Extra       |</span><br><span class="line">+----+-------------+----------+------------+-------+-----------------+---------+---------+------+--------+----------+-------------+</span><br><span class="line">|  1 | PRIMARY     | dept_emp | NULL       | ALL   | NULL            | NULL    | NULL    | NULL | 331143 |   100.00 | Using where |</span><br><span class="line">+----+-------------+----------+------------+-------+-----------------+---------+---------+------+--------+----------+-------------+</span><br></pre></td></tr></table></figure>
+<p>返回结果中各字段的含义解释如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>列名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>id</td>
+<td>SELECT 查询的序列标识符</td>
+</tr>
+<tr class="even">
+<td>select_type</td>
+<td>SELECT 关键字对应的查询类型</td>
+</tr>
+<tr class="odd">
+<td>table</td>
+<td>用到的表名</td>
+</tr>
+<tr class="even">
+<td>partitions</td>
+<td>匹配的分区，对于未分区的表，值为 NULL</td>
+</tr>
+<tr class="odd">
+<td>type</td>
+<td>表的访问方法</td>
+</tr>
+<tr class="even">
+<td>possible_keys</td>
+<td>可能用到的索引</td>
+</tr>
+<tr class="odd">
+<td>key</td>
+<td>实际用到的索引</td>
+</tr>
+<tr class="even">
+<td>key_len</td>
+<td>所选索引的长度</td>
+</tr>
+<tr class="odd">
+<td>ref</td>
+<td>当使用索引等值查询时，与索引作比较的列或常量</td>
+</tr>
+<tr class="even">
+<td>rows</td>
+<td>预计要读取的行数</td>
+</tr>
+<tr class="odd">
+<td>filtered</td>
+<td>按表条件过滤后，留存的记录数的百分比</td>
+</tr>
+<tr class="even">
+<td>Extra</td>
+<td>附加信息</td>
+</tr>
+</tbody>
+</table>
+<h3 id="字段释意">字段释意</h3>
+<h4 id="id">id</h4>
+<p>查询的序列标识符，用于表示查询的执行顺序。值越大，优先级越低，执行顺序越靠后。</p>
+<h4 id="select_type">select_type</h4>
+<p>查询的类型，主要用于区分普通查询、联合查询、子查询等复杂的查询，常见的值有：</p>
+<ul>
+<li><code>SIMPLE</code>: 简单查询，不包含子查询或 UNION。</li>
+<li><code>PRIMARY</code>: 最外层的 SELECT 查询。</li>
+<li><code>SUBQUERY</code>: 子查询中的第一个 SELECT。</li>
+<li><code>DERIVED</code>: 派生表（子查询中的 FROM 子句）。</li>
+<li><code>UNION</code>: UNION 操作中的第二个或后续的 SELECT 查询。</li>
+<li><code>UNION RESULT</code>: UNION 的结果集。</li>
+</ul>
+<h4 id="table">table</h4>
+<p>查询用到的表名。</p>
+<h4 id="type重要">type（重要）</h4>
+<p>查询执行的类型，描述了查询是如何执行的。常见的类型如下，这些类型的性能从最优到最差排序为：<code>system &gt; const &gt; eq_ref &gt; ref &gt; range &gt; index &gt; ALL</code></p>
+<ul>
+<li><strong>system</strong>：如果表使用的引擎对于表行数统计是精确的（如：MyISAM），且表中只有一行记录的情况下，访问方法是
+system ，是 const 的一种特例。</li>
+<li><strong>const</strong>：表中最多只有一行匹配的记录，一次查询就可以找到，常用于使用主键或唯一索引的所有字段作为查询条件。</li>
+<li><strong>eq_ref</strong>：当连表查询时，前一张表的行在当前这张表中只有一行与之对应。是除了
+system 与 const 之外最好的 join
+方式，常用于<strong>使用主键或唯一索引</strong>的所有字段作为连表条件。</li>
+<li><strong>ref</strong>：使用普通索引作为查询条件，查询结果可能找到多个符合条件的行。</li>
+<li><strong>range</strong>：对索引列进行范围查询，执行计划中的 key
+列表示哪个索引被使用了。</li>
+<li><strong>index</strong>：查询遍历了整棵索引树，与 ALL
+类似，只不过扫描的是索引，而索引一般在内存中，速度更快。</li>
+<li><strong>ALL</strong>：全表扫描。</li>
+</ul>
+<h4 id="possible_keys">possible_keys</h4>
+<p>possible_keys 列表示 MySQL 执行查询时可能用到的索引。如果这一列为
+NULL ，则表示没有索引可以使用。</p>
+<h4 id="key重要">key（重要）</h4>
+<p>key 列表示 MySQL 实际使用到的索引。如果为
+NULL，则表示未用到索引。</p>
+<h4 id="extra重要">Extra（重要）</h4>
+<p>这列包含了 MySQL 解析查询的额外信息，通过这些信息，可以更准确的理解
+MySQL 到底是如何执行查询的。常见的值如下：</p>
+<ul>
+<li><strong>Using
+index</strong>：表明查询使用了覆盖索引，不用回表，查询效率非常高。</li>
+<li><strong>Using index
+condition</strong>：表示查询优化器选择使用了<strong>索引下推</strong>这个特性。</li>
+<li><strong>Using where</strong>：表明查询使用了 WHERE
+子句进行条件过滤。一般在没有使用到索引的时候会出现。</li>
+<li><strong>Using
+filesort</strong>：在排序时使用了文件排序而不是索引排序，通常是因为无法使用索引进行排序。</li>
+<li><strong>Using temporary</strong>：MySQL
+需要创建临时表来存储查询的结果，常见于 ORDER BY 和 GROUP BY。</li>
+<li><strong>Using join buffer (Block Nested
+Loop)</strong>：连表查询的方式，表示当被驱动表的没有使用索引的时候，MySQL
+会先将驱动表读出来放到 join buffer
+中，再遍历被驱动表与驱动表进行查询。</li>
+</ul>
+<h1 id="优化慢sql">优化慢sql</h1>
+<h2 id="sql优化方案">sql优化方案</h2>
+<p>根据<code>explain</code>执行计划的返回结果，我们可以根据以下字段进行sql优化：</p>
+<ul>
+<li>通过<code>key</code>和<code>key_len</code>检査<strong>是否命中了索引</strong>（索引本身存在是否有失效的情况）</li>
+<li>通过<code>type</code>字段查看sql是否有进一步的优化空间，是否存在<strong>全索引扫描或全表扫描</strong></li>
+<li>通过<code>extra</code>字段判断，是否出现了回表的情况，如果出现了，可以尝试添加索引或修改返回字段来修复</li>
+</ul>
+<h2 id="深分页优化查询">深分页优化查询</h2>
+<h3 id="传统分页">传统分页</h3>
+<p><strong>传统分页通常使用 <code>OFFSET</code> 和 <code>LIMIT</code>
+来实现</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM table_name ORDER BY column_name LIMIT 10 OFFSET 1000;</span><br></pre></td></tr></table></figure>
+<p>这种方法对于小数据集或页数较小时效果较好，但在数据量非常大的情况下，<code>OFFSET</code>
+的值越大，数据库需要扫描的行数就越多，性能会急剧下降。</p>
+<h3 id="深分页">深分页</h3>
+<p><strong>深分页通过避免使用 <code>OFFSET</code>
+来提高性能</strong></p>
+<p><strong>1.覆盖索引+子查询：</strong>
+这种方法<strong>通过子查询使用覆盖索引快速定位到分页的起始位置</strong>，外部查询从该位置获取实际数据，避免大量数据扫描和回表操作。</p>
+<p>如本例中通过子查询定位到了第100001页的起始位置，向后获取100行数据。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT * FROM users WHERE id &gt; (SELECT id FROM users ORDER BY id LIMIT 100000, 1) LIMIT 100;</span><br></pre></td></tr></table></figure>
+<p>这种方法避免了大量数据扫描，<strong>适用于有索引列</strong>的情况。</p>
+<p><strong>2.存储分页结果：</strong>
+另一种方法是将分页结果存储在缓存（如
+Redis）或临时表中，从而避免频繁查询数据库。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">-- 第一次查询并缓存结果</span><br><span class="line">SELECT * FROM table_name ORDER BY column_name LIMIT 1000;</span><br><span class="line">-- 将结果缓存起来，随后从缓存中进行分页</span><br></pre></td></tr></table></figure>
+<p>这种方法<strong>适用于需要多次访问相同分页结果</strong>的场景。</p>
+]]></content>
+      <categories>
+        <category>MySQL</category>
+      </categories>
+      <tags>
+        <tag>索引</tag>
+        <tag>日志</tag>
+      </tags>
+  </entry>
 </search>
