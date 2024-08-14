@@ -72,7 +72,7 @@ file(Redis数据备份文件)，也被叫做Redis数据快照。简单来说就�
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282119328.png"></p>
 <p>此外，当Redis停机时会执行一次RDB操作进行数据备份。</p>
 <p>下面将对该情况进行验证</p>
-<h3 id="rdb演示">RDB演示</h3>
+<h4 id="rdb演示">RDB演示</h4>
 <p>使用<code>redis-server redis.conf</code>指令在任意路径下运行Redis</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210291303145.png"></p>
 <p>接下来创建一个新的终端创建连接，存入键值对</p>
@@ -88,7 +88,7 @@ num返回错误<strong>Error：Server closed the
 connection</strong>要将redis.conf的<strong>protected-mode</strong>设置为No关闭保护模式）表明数据备份成功</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301704159.png"></p>
 <p><strong>Redis停机自动执行RDB证明完毕！</strong></p>
-<h3 id="实现rdb的相关配置">实现RDB的相关配置</h3>
+<h4 id="rdb相关配置">RDB相关配置</h4>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210282152250.png"></p>
 <p>这里需要 cd 到redis的安装目录下，我的安装目录在
 /usr/local/src/redis-6.2.6下</p>
@@ -126,7 +126,7 @@ num命令发现结果为空，再set
 <p>everysec配置每隔一秒将缓冲区里的数据写入到AOF文件，避免直接对AOF文件操作而性能上有了提升，但是在数据间隔的一秒内如果出现服务宕机的情况会丢失最多一秒的数据</p>
 <p>no配置执行频率最低，性能最好，但是可靠性很低，不推荐使用</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301559763.png"></p>
-<h3 id="aof演示">AOF演示</h3>
+<h4 id="aof演示">AOF演示</h4>
 <p>先使用 cd 命令进入到Redis的安装路径下</p>
 <p>使用<code>vi redis.conf</code>命令修改redis配置文件</p>
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301615021.png"></p>
@@ -159,7 +159,7 @@ num命令发现结果为空，再set
 <p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202210301647804.png"></p>
 ]]></content>
       <categories>
-        <category>Linux</category>
+        <category>Redis</category>
       </categories>
       <tags>
         <tag>学习笔记</tag>
@@ -3040,6 +3040,805 @@ Redis）或临时表中，从而避免频繁查询数据库。例如：</p>
       <tags>
         <tag>索引</tag>
         <tag>日志</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【JVM】Java内存区域图文详解</title>
+    <url>/2024/08/07/%E3%80%90JVM%E3%80%91Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E5%9B%BE%E6%96%87%E8%AF%A6%E8%A7%A3/</url>
+    <content><![CDATA[<h2 id="jvm运行时区域总览">1.JVM运行时区域总览</h2>
+<p>Java 虚拟机在执行 Java
+程序的过程中会把它管理的内存划分成若干个不同的数据区域。</p>
+<p>JVM运行时区域也成为<strong>Java内存区域</strong>。
+在讨论Java内存模型时，通常将其分为线程共享区域和线程私有区域：</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/15a805d278b831d1097145a80c23c046.png"></p>
+<h2 id="线程私有区域">2.线程私有区域</h2>
+<h3 id="程序计数器">2.1.程序计数器</h3>
+<p>程序计数器是一块较小的<strong>内存空间</strong>，可以看作是<strong>当前线程所执行的字节码的行号指示器</strong>。字节码解释器工作时通过改变这个计数器的值来选取下一条需要执行的字节码指令，分支、循环、跳转、异常处理、线程恢复等功能都需要依赖这个计数器来完成。</p>
+<p>程序计数器主要有两个作用：</p>
+<ol type="1">
+<li><p>字节码解释器通过<strong>改变程序计数器</strong>来依次读取指令，从而实现代码的流程控制，如：顺序执行、选择、循环、异常处理。</p></li>
+<li><p>在多线程的情况下，程序计数器用于<strong>记录当前线程执行的位置</strong>，从而当线程被切换回来的时候能够知道该线程上次运行到哪儿了。</p></li>
+</ol>
+<p>⚠️ 注意：程序计数器是唯一一个不会出现 <code>OutOfMemoryError</code>
+的内存区域，它的生命周期随着线程的创建而创建，随着线程的结束而死亡。</p>
+<h3 id="java虚拟机栈">2.2.Java虚拟机栈</h3>
+<p>JVM栈可以说是 JVM 运行时数据区域的一个核心，除了一些 Native
+方法调用是通过本地方法栈实现的，其他<strong>所有的 Java
+方法调用都是通过JVM栈</strong>来实现的（也需要和其他运行时数据区域比如程序计数器配合）。</p>
+<p><strong>从方法调用直至执行完成的过程，就对应着一个栈帧在 Java
+虚拟机栈中入栈和出栈的过程。</strong></p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/4194bd2ac809db04d8eeaae1afa4ff6f.png"></p>
+<blockquote>
+<p>局部变量表</p>
+</blockquote>
+<p><strong>局部变量表</strong>
+主要存放了编译期可知的各种数据类型（boolean、byte、char、short、int、float、long、double）、对象引用（reference
+类型，它不同于对象本身，可能是一个指向对象起始地址的引用指针，也可能是指向一个代表对象的句柄或其他与此对象相关的位置）</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/d0d7cf1a84b68da00f66296e4e90e433.png"></p>
+<blockquote>
+<p>操作数栈</p>
+</blockquote>
+<p><strong>操作数栈</strong>
+主要作为方法调用的中转站使用，用于存放方法执行过程中产生的<strong>中间计算结果</strong>。另外，计算过程中产生的<strong>临时变量</strong>也会放在操作数栈中。</p>
+<blockquote>
+<p>动态链接</p>
+</blockquote>
+<p><strong>动态链接</strong>
+主要服务一个方法需要调用其他方法的场景。Class
+文件的常量池里保存有大量的<strong>符号引用</strong>，比如方法引用的符号引用。动态链接的作用就是为了<strong>将符号引用转换为调用方法的直接引用</strong>，这个过程也被称为
+<strong>动态连接</strong> 。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/5f8bb04546c685a25c62a0668c9ab6fc.png"></p>
+<blockquote>
+<p>方法返回地址</p>
+</blockquote>
+<p>方法返回地址是<strong>当前方法执行完成后</strong>，线程应该跳转到的<strong>下一条指令</strong>的地址。这个返回地址实际上是保存在栈帧中的一个特殊位置，用于在方法执行完毕后恢复程序的执行流程。</p>
+<h3 id="本地方法栈">2.3.本地方法栈</h3>
+<p>和虚拟机栈所发挥的作用非常相似，区别是：<strong>虚拟机栈为虚拟机执行
+Java 方法 （也就是字节码）服务，而本地方法栈则为虚拟机使用到的 Native
+方法服务。</strong> 在 HotSpot 虚拟机中和 Java 虚拟机栈合二为一。</p>
+<p>本地方法被执行的时候，在本地方法栈也会创建一个栈帧，用于存放该本地方法的局部变量表、操作数栈、动态链接、出口信息。</p>
+<p>方法执行完毕后相应的栈帧也会出栈并释放内存空间，也会出现
+<code>StackOverFlowError</code> 和 <code>OutOfMemoryError</code>
+两种错误。</p>
+<h2 id="线程共享区域">3.线程共享区域</h2>
+<h3 id="堆">3.1.堆</h3>
+<p>Java 虚拟机所管理的内存中最大的一块，Java
+堆是所有线程共享的一块内存区域，在虚拟机启动时创建。<strong>此内存区域的唯一目的就是存放对象实例，几乎所有的对象实例以及数组都在这里分配内存。</strong></p>
+<p>Java
+堆是<strong>垃圾收集器</strong>管理的<strong>主要区域</strong>，因此也被称作
+<strong>GC 堆（Garbage Collected
+Heap）</strong>。从垃圾回收的角度，由于现在收集器基本都采用分代垃圾收集算法，所以
+Java 堆还可以细分为：新生代和老年代；再细致一点有：Eden、Survivor、Old
+等空间。进一步划分的目的是更好地回收内存，或者更快地分配内存。</p>
+<p><strong>JDK 8 版本之前，堆内存被通常分为下面三部分：</strong></p>
+<ol type="1">
+<li>新生代(Young Generation)</li>
+<li>老生代(Old Generation)</li>
+<li>永久代(Permanent Generation)</li>
+</ol>
+<p><strong>JDK 8 版本之后 PermGen(永久代) 已被 Metaspace(元空间)
+取代，元空间使用的是本地内存。</strong></p>
+<p>下图所示的 Eden 区、两个 Survivor
+区都属于新生代，中间一层属于老年代，最下面一层属于元空间。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b70bd47c8d208f98a0ce75eb6d40895c.png"></p>
+<h4 id="字符串常量池">字符串常量池</h4>
+<p><strong>字符串常量池</strong> 是 JVM
+为了提升性能和减少内存消耗针对字符串（String
+类）专门开辟的一块区域，主要目的是为了避免字符串的重复创建。</p>
+<p>JDK1.7
+之前，字符串常量池存放在永久代，JDK1.7之后<strong>字符串常量池、静态变量和常量</strong>从永久代移动了
+Java 堆中。</p>
+<blockquote>
+<p><strong>JDK 1.7 为什么要将字符串常量池移动到堆中？</strong></p>
+</blockquote>
+<p>主要是因为永久代（方法区实现）的 GC 回收效率太低，只有在整堆收集
+(Full GC)的时候才会被执行 GC。Java
+程序中通常会有大量的被创建的字符串等待回收，将字符串常量池放到堆中，能够更高效及时地回收字符串内存。</p>
+<h3 id="方法区">3.2.方法区</h3>
+<p><strong>方法区是JVM规范定义的一块用于存储类的元数据、常量、静态变量、即时编译器(JIT编译器)编译后的代码等数据的内存区域。</strong></p>
+<p><strong>当虚拟机要使用一个类时，它需要读取并解析 Class
+文件获取相关信息，再将信息存入到方法区。</strong>
+方法区会存储已被虚拟机加载的类信息、字段信息、方法信息、常量、静态变量、即时编译器编译后的代码缓存等数据。</p>
+<blockquote>
+<p><strong>方法区和永久代以及元空间是什么关系呢？</strong>
+方法区和永久代以及元空间的关系很像 Java
+中接口和类的关系，类实现了接口，这里的类就可以看作是永久代和元空间，接口可以看作是方法区，也就是说永久代以及元空间是
+HotSpot 虚拟机对虚拟机规范中方法区的两种实现方式。并且，永久代是 JDK 1.8
+之前的方法区实现，JDK 1.8 及以后方法区的实现变成了元空间。</p>
+</blockquote>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/97c6b050e30b12ad47312b5af8de1a6b.png"></p>
+<blockquote>
+<p><strong>为什么要将永久代 (PermGen) 替换为元空间 (MetaSpace)
+呢?</strong></p>
+</blockquote>
+<p>1、永久代有 JVM
+本身设置的固定大小上限，无法进行调整，而元空间使用的是本地内存，受本机可用内存的限制，虽然元空间仍旧可能溢出，但是比原来出现的几率会更小。</p>
+<p>当元空间溢出时会得到如下错误：<code>java.lang.OutOfMemoryError: MetaSpace</code></p>
+<p>你可以使用 <code>-XX：MaxMetaspaceSize</code>
+标志设置<strong>最大元空间大小</strong>，默认值为
+unlimited，这意味着它只受系统内存的限制。<code>-XX：MetaspaceSize</code>
+调整标志定义<strong>初始元空间大小</strong>，如果未指定此标志，则
+Metaspace 将根据运行时的应用程序需求动态地重新调整大小。</p>
+<p>2、元空间里面存放的是类的元数据，这样加载多少类的元数据就不由
+<code>MaxPermSize</code> 控制了,
+而由系统的实际可用空间来控制，这样能加载的类就更多了。</p>
+<blockquote>
+<p><strong>在JDK
+1.8中，运行时常量池和字符串常量池逻辑上属于方法区，但是实际存放在堆内存中</strong>。</p>
+</blockquote>
+<h4 id="运行时常量池">运行时常量池</h4>
+<p>JVM的运行时常量池是方法区的一部分，它主要用于存放编译期生成的各种<strong>字面量</strong>和<strong>符号引用</strong>。这些字面量和符号引用是在<strong>类加载</strong>的过程中，<strong>从Class文件的常量池中加载到方法区的运行时常量池中的。</strong></p>
+<p><strong>字面量是源代码中的固定值的表示法</strong>，即通过字面我们就能知道其值的含义。字面量包括整数、浮点数和字符串字面量。常见的<strong>符号引用</strong>包括类符号引用、字段符号引用、方法符号引用、接口方法符号。</p>
+<p><strong>常量池会在类加载后存放到方法区的运行时常量池中。</strong></p>
+<p>运行时常量池的功能类似于传统编程语言的符号表，尽管它包含了比典型符号表更广泛的数据。</p>
+<p>既然运行时常量池是方法区的一部分，自然受到方法区内存的限制，当常量池无法再申请到内存时会抛出
+<code>OutOfMemoryError</code> 错误。</p>
+<blockquote>
+<p><strong>Class常量池：</strong>
+可以理解为是<strong>Class文件</strong>中的资源仓库。
+Class文件中除了包含<strong>类的版本、字段、方法、接口等描述信息</strong>外，还有就是<strong>常量池</strong>(constant
+pool table)，用于存放编译器生成的<strong>各种字面量和符号引用</strong>。
+Class是用来保存常量的一个媒介场所，并且是一个中间场所。<strong>Class文件中的常量池部分的内容，会在运行期被运行时常量池加载进去。</strong></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>JVM</category>
+      </categories>
+      <tags>
+        <tag>Java内存区域</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【JVM】深入JIT优化机制</title>
+    <url>/2024/08/08/%E3%80%90JVM%E3%80%91%E6%B7%B1%E5%85%A5JIT%E4%BC%98%E5%8C%96%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[<h2 id="jit优化技术">1.JIT优化技术</h2>
+<p>在将高级语言转化为计算机可识别的机器语言时，常用的两种方式是编译和解释。Java在编译过程中，首先将代码编译成字节码。但是，字节码并不能直接在机器上执行。因此，JVM中内置了解释器（Interpreter），它在<strong>运行时将字节码逐行翻译成机器码</strong>并执行。</p>
+<p>然而，解释器的执行方式是一边翻译，一边执行，导致执行效率较低。<strong>为了提高效率，HotSpot
+JVM引入了JIT（Just-In-Time）编译技术。</strong></p>
+<p>有了JIT技术后，JVM仍然通过解释器进行初始执行。但当JVM发现某个方法或代码块被频繁执行时，它将其标记为“热点代码”（Hot
+Spot
+Code）。JIT随后将这些热点代码编译为机器码，并进行优化。优化后的机器码被缓存起来，以便下次直接使用，从而显著提升执行效率。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/bf7e979c2922d5887d26966c500c97c8.png"></p>
+<h2 id="热点检测">2.热点检测</h2>
+<p>上面我们说过，要想触发JIT，首先需要识别出热点代码。目前主要的热点代码识别方式是热点探测，有以下两种</p>
+<ol type="1">
+<li><p><strong>基于采样的方式探测：</strong>
+周期性检测各个线程的栈顶，发现某个方法经常出现在栈顶，就认为是热点方法。好处就是简单，缺点就是无法精确确认一个方法的热度。容易受线程阻塞或别的原因千扰热点探测。</p></li>
+<li><p><strong>基于计数器的热点探测：</strong>
+采用这种方法的虚拟机会为每个方法，甚至是代码块建立计数器，统计方法的执行次数，某个方法超过阀值就认为是热点方法，触发JIT编译。</p>
+<p>在HotSpot虚拟机中使用的是第二种一一基于计数器的热点探测方法，因此它为每个方法准备了两个计数器:
+方法调用计数器和回边计数器。</p>
+<p>方法计数器。顾名思义，就是记录一个方法被调用次数的计数器</p>
+<p>回边计数器。是记录方法中的for或者while的运行次数的计数器</p></li>
+</ol>
+<h2 id="编译优化">3.编译优化</h2>
+<h3 id="逃逸分析">逃逸分析</h3>
+<ol type="1">
+<li><strong>全局逃逸：</strong>对象超出了方法或线程的范围，比如被存储在<strong>静态字段</strong>或<strong>作为方法的返回值</strong>。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GlobalEscapeExample</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> object staticObject;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">globalEscape</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">static</span> <span class="variable">object</span> <span class="operator">=</span> <span class="keyword">new</span> 0bject();<span class="comment">// 这个对象赋值给静态字段，因此它是全局逃逸的</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> stringBuffer <span class="title function_">craetestringBuffer</span><span class="params">(string sl,string s2)</span>&#123;</span><br><span class="line">        <span class="type">StringBuffer</span> <span class="variable">sb</span> <span class="operator">=</span><span class="keyword">new</span> <span class="title class_">stringBuffer</span>();</span><br><span class="line">        sb.append(s1);</span><br><span class="line">        sb.append(s2);</span><br><span class="line">        <span class="keyword">return</span> sb;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如我们新建的staticObject就是全局逃逸的。以及下面的方法中的sb对象，也是全局逃逸的。</p>
+<ol start="2" type="1">
+<li><strong>参数逃逸：</strong>
+对象被作为参数传递或被参数引用，但在方法调用期间不会全局逃逸。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ArgEscapeExample</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">methodA</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">obiect</span> <span class="variable">localobject</span> <span class="operator">=</span><span class="keyword">new</span> <span class="title class_">object</span>();</span><br><span class="line">		methodB(localobject);<span class="comment">//localobject作为参数传递，但不会从methodB中逃逸</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">methodB</span><span class="params">(object param)</span>&#123;</span><br><span class="line">        <span class="comment">//在这里使用param</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如传递到methodB中的param对象，就是发生了参数逃逸的。因为他从methodA中逃逸到了methodB中</p>
+<ol start="3" type="1">
+<li><strong>无逃逸：</strong>
+对象可以被标量替换，意味着它的内存分配可以从生成的代码中移除。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> string <span class="title function_">createstringBuffer</span><span class="params">(string s1,string s2)</span> &#123;</span><br><span class="line">    <span class="type">stringBuffer</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">stringBuffer</span>();</span><br><span class="line">    sb.append(s1);</span><br><span class="line">    sb.append(s2);</span><br><span class="line">    <span class="keyword">return</span> sb.tostring();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如上面的sb，就没有发生逃逸，因为这个对象本身没有作为参数传递，也没有被当做方法返回值，并没有赋值给静态变量。</p>
+<p><strong>在Java中，不同的逃逸状态影响JIT
+(即时编译器)的优化策略：</strong></p>
+<ol type="1">
+<li><p><strong>全局逃逸：</strong>
+由于对象可能被多个线程访问，全局逃逸的对象一般不适合进行栈上分配或其他内存优化。但JIT可能会进行其他类型的优化，如<strong>方法内联</strong>或<strong>循环优化</strong>。</p></li>
+<li><p><strong>参数逃逸：</strong>
+这种情况下，对象虽然作为参数传递，但不会被方法外部的代码使用。JIT可以对这些对象进行一些优化，例如<strong>锁消除</strong>。</p></li>
+<li><p><strong>无逃逸：</strong>
+这是最适合优化的情况。JIT可以采取多种优化措施，如在<strong>栈上分配</strong>内存，消除锁甚至完全消除对象分配
+<strong>(标量替换)</strong>。这些优化可以显著提高性能，减少垃圾收集的压力。</p></li>
+</ol>
+<h3 id="方法内联">方法内联</h3>
+<p>方法内联是Java中的一个优化技术，即时编译器JIT用它来提高程序的运行效率。在Java中，方法内联意味着将一个方法的代码直接插入到调用它的地方，从而<strong>避免了方法调用的开销</strong>。这种优化对于小型且频繁调用的方法特别有用。</p>
+<h3 id="锁消除">锁消除</h3>
+<p>锁消除是 JIT
+编译器在编译期间通过分析代码的同步块，判断是否存在锁竞争的可能性。如果<strong>某个锁在多线程环境下不存在竞争，那么它就可以在生成的机器码中消除这些锁操作</strong>，以减少不必要的开销。</p>
+<h3 id="栈上分配">栈上分配</h3>
+<p><strong>栈上分配的好处：</strong></p>
+<ol type="1">
+<li><strong>减少GC压力</strong>：对象分配在栈上，当方法执行完毕后，栈上的内存会自动释放，不需要垃圾回收（GC）来管理，从而减少了GC的压力。</li>
+<li><strong>提高性能</strong>：栈上的内存分配和释放非常高效，因为它只是对栈指针进行简单的移动操作，而堆上的内存管理相对复杂，需要垃圾回收器的参与。</li>
+</ol>
+<blockquote>
+<p><strong>Java中的对象一定在堆上分配内存吗?</strong></p>
+</blockquote>
+<p>不一定，在HotSpot虚拟机中，存在JIT优化的机制，JIT优化中可能会进行逃逸分析，当经过逃逸分析发现某个对象不会逃逸出当前方法（即它只在方法内部使用），那么这个对象就不会被分配到堆上，而是进行<strong>栈上分配</strong>。</p>
+<h3 id="标量替换">标量替换</h3>
+<p><strong>标量</strong>是指一个无法再分解成更小的数据的数据。<strong>Java中的原始数据类型就是标量</strong>。相对的，那些还可以分解的数据叫做聚合量，<strong>Java中的对象就是聚合量</strong>，因为他可以分解成其他聚合量和标量。</p>
+<p>在JIT阶段，如果经过逃逸分析，发现一个对象不会被外界访问的话，那么经过JIT优化，就会把这个对象拆解成若干个其中包含的若干个成员变量来代替。这个过程就是<strong>标量替换</strong>。</p>
+]]></content>
+      <categories>
+        <category>JVM</category>
+      </categories>
+      <tags>
+        <tag>JIT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Redis】持久化机制最全解析</title>
+    <url>/2024/08/10/%E3%80%90Redis%E3%80%91%E6%8C%81%E4%B9%85%E5%8C%96%E6%9C%BA%E5%88%B6%E6%9C%80%E5%85%A8%E8%A7%A3%E6%9E%90/</url>
+    <content><![CDATA[<h2 id="rdb持久化">RDB持久化</h2>
+<p>RDB全称Redis Database Backup
+file（Redis数据备份文件）。通过<strong>将Redis数据集的快照保存到磁盘上的二进制文件中来实现</strong>。生成
+RDB 文件的过程可以通过手动命令或自动触发。</p>
+<h3 id="实现原理">实现原理</h3>
+<p><strong>开始 BGSAVE</strong>：</p>
+<ul>
+<li>Redis 主进程接收到 <code>BGSAVE</code> 命令后，调用
+<code>fork</code>
+创建一个子进程，子进程会先复制主进程的页表（记录虚拟地址与物理地址的映射关系），而不是立即复制实际的内存数据。</li>
+<li>在 fork 完成后，父子进程共享相同的内存页，子进程负责生成 RDB
+文件，主进程可以继续处理客户端请求。</li>
+</ul>
+<p><strong>生成 RDB 文件</strong>：</p>
+<ul>
+<li>子进程根据页表，扫描 Redis
+数据集，将每个键值对序列化为二进制格式，并写入到临时 RDB 文件中。</li>
+<li>序列化后的数据被写入到一个临时 RDB 文件中，以避免影响现有 RDB
+文件的使用。</li>
+<li><strong>写时复制（Copy-On-Write, COW）</strong>：
+<ul>
+<li>在生成 RDB
+文件的过程中，如果主进程执行了写操作（如插入、更新、删除数据），操作系统会触发写时复制机制。COW
+机制会为被修改的内存页创建一个副本，并将写操作应用到这个副本上，而不是直接修改共享的内存页。</li>
+<li>主进程在读取被修改的数据时，会从生成的副本中读取，而子进程则继续读取原始的内存页。这种机制确保了子进程在生成
+RDB
+文件时看到的是一致且稳定的数据快照，而主进程可以不受影响地继续处理新的写操作。</li>
+</ul></li>
+</ul>
+<p><strong>完成 RDB 文件</strong>：</p>
+<ul>
+<li>子进程生成 RDB 文件后，将临时 RDB 文件重命名为正式的 RDB
+文件，确保文件替换过程是原子的。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/fdf7b6cfd054243fcc3bc8a6070ccafa.png"></p>
+<h3 id="手动启用">手动启用</h3>
+<p>Redis 提供了以下两个命令来手动生成 RDB 快照文件：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">save # 同步保存操作，由Redis主进程来执行RDB，会阻塞所有命令</span><br><span class="line">bgsave # 开启子进程执行RDB，避免主进程受到影响</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这里说 Redis 主线程而不是主进程的主要是因为 Redis
+启动之后主要是通过单线程的方式完成主要的工作。如果你想将其描述为 Redis
+主进程，也没毛病。</p>
+</blockquote>
+<h3 id="定时启用">定时启用</h3>
+<p>可以通过配置文件中的 <code>save</code>
+选项进行定时触发RDB持久化。</p>
+<figure class="highlight clojure"><table><tr><td class="code"><pre><span class="line">save <span class="number">900</span> <span class="number">1</span>	#在<span class="number">900</span>秒(<span class="number">15</span>分钟)之后，如果至少有<span class="number">1</span>个key发生变化，Redis就会自动触发bgsave命令创建快照。</span><br><span class="line"></span><br><span class="line">save <span class="number">300</span> <span class="number">10</span>	#在<span class="number">300</span>秒(<span class="number">5</span>分钟)之后，如果至少有<span class="number">10</span>个key发生变化，Redis就会自动触发bgsave命令创建快照。</span><br><span class="line"></span><br><span class="line">save <span class="number">60</span> <span class="number">10000</span>	#在<span class="number">60</span>秒(<span class="number">1</span>分钟)之后，如果至少有<span class="number">10000</span>个key发生变化，Redis就会自动触发bgsave命</span><br></pre></td></tr></table></figure>
+<h2 id="aof持久化">AOF持久化</h2>
+<p>AOF全称为Append Only
+File（追加文件）。通过<strong>将每次写操作记录到AOF文件中来实现</strong>。这种方式的特点是将
+Redis 接收到的每个写命令都追加到文件末尾。</p>
+<h3 id="实现原理-1">实现原理</h3>
+<p>AOF 持久化功能的实现可以简单分为 5 步：</p>
+<ol type="1">
+<li><strong>命令追加（append）</strong>：所有的写命令会追加到 AOF
+缓冲区中。</li>
+<li><strong>文件写入（write）</strong>：将 AOF 缓冲区的数据写入到 AOF
+文件中。这一步需要调用<code>write</code>函数（系统调用），<code>write</code>将数据写入到了系统内核缓冲区之后直接返回了（延迟写）。</li>
+<li><strong>文件同步（fsync）</strong>：AOF 缓冲区根据对应的持久化方式（
+<code>fsync</code> 策略）向硬盘做同步操作。这一步需要调用
+<code>fsync</code> 函数（系统调用）， <code>fsync</code>
+针对单个文件操作，对其进行强制硬盘同步，<code>fsync</code>
+将阻塞直到写入磁盘完成后返回，保证了数据持久化。</li>
+<li><strong>文件重写（rewrite）</strong>：随着 AOF
+文件越来越大，需要定期对 AOF 文件进行重写，达到压缩的目的。</li>
+<li><strong>重启加载（load）</strong>：当 Redis 重启时，可以加载 AOF
+文件进行数据恢复。</li>
+</ol>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/13ba660a72aad283d70bc33744034be0.png"></p>
+<h3 id="启用aof">启用AOF</h3>
+<p>与快照持久化相比，AOF 持久化的实时性更好。默认情况下 Redis 没有开启
+AOF（Redis 6.0 之后默认开启），可以通过 <code>appendonly</code>
+参数开启：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 是否开启AOF，默认是no</span></span><br><span class="line">appendonly <span class="built_in">yes</span></span><br><span class="line"><span class="comment"># AOF文件的名称</span></span><br><span class="line">appendfilename <span class="string">&quot;appendonly.aof&quot;</span></span><br></pre></td></tr></table></figure>
+<h3 id="刷盘策略">刷盘策略</h3>
+<p>开启 AOF 持久化后，每执行一条会更改 Redis 中数据的命令，Redis
+就会将该命令写入到 AOF 缓冲区 <code>server.aof_buf</code>
+中，然后再写入到系统内核缓冲区中，最后根据刷盘策略的配置来决定何时将系统内核缓冲区中的数据<strong>同步到硬盘</strong>中。</p>
+<p>AOF的命令记录的频率也可以通过redis.conf文件来配置。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">表示每执行一次写命令，立即记录到AOF文件</span></span><br><span class="line">appendfsync always</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">写命令执行完先放入AOF缓冲区，然后表示每隔1秒将缓冲区数据写到A0F文件，是默认方案</span></span><br><span class="line">appendfsync everysec</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">写命令执行完先放入AOF缓冲区，由操作系统决定何时将缓冲区内容写回磁盘</span></span><br><span class="line">appendfsync no</span><br></pre></td></tr></table></figure>
+<table>
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 29%">
+<col style="width: 37%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>配置项</th>
+<th>刷盘时机</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>always</strong></td>
+<td>同步刷盘</td>
+<td>可靠性高，几乎不丢数据</td>
+<td>性能影响大</td>
+</tr>
+<tr class="even">
+<td><strong>everysec</strong></td>
+<td>每秒刷盘</td>
+<td>性能适中</td>
+<td>最多丢失1秒数据</td>
+</tr>
+<tr class="odd">
+<td><strong>no</strong></td>
+<td>操作系统控制</td>
+<td>性能最好</td>
+<td>可靠性较差，可能丢失大量数据</td>
+</tr>
+</tbody>
+</table>
+<h3 id="文件重写">文件重写</h3>
+<p>随着时间的推移，AOF
+文件会因为不断追加写命令而变得越来越大，可能会导致磁盘空间不足和恢复速度变慢。可以<strong>通过重新生成一个新的
+AOF
+文件，将当前的数据集以最少的命令集记录下来，从而缩小文件大小</strong>。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/29a69c0ba1e14d99d844b41736bb3387.png"></p>
+<p>AOF 文件重写期间，Redis 还会维护一个 <strong>AOF
+重写缓冲区</strong>，该缓冲区会在子进程创建新 AOF
+文件期间，记录服务器执行的所有写命令。当子进程完成创建新 AOF
+文件的工作之后，服务器会将重写缓冲区中的所有内容<strong>追加到新 AOF
+文件的末尾</strong>，使得新的 AOF
+文件保存的数据库状态与现有的数据库状态一致。最后，服务器用新的 AOF
+文件替换旧的 AOF 文件，以此来完成 AOF 文件重写操作。</p>
+<p>开启 AOF 重写功能，可以调用 <code>bgrewriteaof</code>
+命令手动执行，也可以设置阈值进行自动执行。</p>
+<ul>
+<li><code>auto-aof-rewrite-min-size</code>：如果 AOF
+文件大小小于该值，则不会触发 AOF 重写。默认值为 64 MB</li>
+<li><code>auto-aof-rewrite-percentage</code>：执行 AOF 重写时，当前 AOF
+大小和上一次重写时 AOF 大小的比值。如果当前 AOF
+文件大小增加了这个百分比值，将触发 AOF 重写。将此值设置为 0 将禁用自动
+AOF 重写。默认值为 100。</li>
+</ul>
+<blockquote>
+<p><strong>AOF校验机制了解吗</strong></p>
+</blockquote>
+<p><strong>AOF 校验机制是 Redis 在启动时对 AOF
+文件进行检查</strong>，以判断文件是否完整，是否有损坏或者丢失的数据。</p>
+<p>这个机制的原理其实非常简单，就是通过使用一种叫做
+<strong>校验和（checksum）</strong> 的数字来验证 AOF
+文件。这个校验和是通过对整个 AOF 文件内容进行 CRC64
+算法计算得出的数字。<strong>如果文件内容发生了变化，那么校验和也会随之改变</strong>。因此，Redis
+在启动时会比较<strong>计算出的校验</strong>和与<strong>文件末尾保存的校验和</strong>（计算的时候会把最后一行保存校验和的内容给忽略掉），从而判断
+AOF 文件是否完整。如果发现文件有问题，Redis
+就会拒绝启动并提供相应的错误信息。</p>
+<p>类似地，RDB 文件也有类似的校验机制来保证 RDB
+文件的正确性，这里就不重复进行介绍了。</p>
+<h2 id="如何选择rdb和aof">如何选择RDB和AOF</h2>
+<h3 id="rdbredis-database-file">RDB（Redis Database File）</h3>
+<p><strong>优点：</strong></p>
+<ol type="1">
+<li><strong>持久化速度快</strong>：RDB
+文件在持久化时会生成一个数据快照，可以快速地恢复大规模的数据集。</li>
+<li><strong>文件较小</strong>：RDB 文件是二进制格式的，通常比 AOF
+文件更小，占用的磁盘空间较少。</li>
+<li><strong>恢复速度快</strong>：RDB 文件在恢复数据时，加载速度通常比
+AOF 快，因为 RDB 文件是一个完整的数据快照，不需要逐条回放写操作。</li>
+<li><strong>对性能影响小</strong>：RDB
+持久化是通过子进程完成的，主进程可以继续处理客户端请求，因此对 Redis
+性能影响较小。</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol type="1">
+<li><strong>数据丢失风险高</strong>：因为 RDB
+持久化是定期执行的（如每隔几分钟或根据配置的触发条件），在上一次持久化到下一次持久化之间的数据可能会丢失。</li>
+<li><strong>生成过程消耗资源</strong>：生成 RDB 文件需要 fork
+子进程并占用一定的 CPU 和内存资源，特别是数据量大时会影响性能。</li>
+</ol>
+<h3 id="aofappend-only-file">AOF（Append-Only File）</h3>
+<p><strong>优点：</strong></p>
+<ol type="1">
+<li><strong>数据丢失风险低</strong>：AOF
+通过追加日志记录每次写操作，可以更频繁地持久化数据（甚至可以做到每秒持久化一次），因此数据丢失的风险较低。</li>
+<li><strong>可调的同步策略</strong>：AOF 提供了多种同步策略（如
+<code>always</code>、<code>everysec</code> 和
+<code>no</code>），可以根据需要在性能和数据安全性之间做权衡。</li>
+<li><strong>更人性化</strong>：AOF
+文件是可读的日志文件，方便人类阅读和分析，有助于调试和故障排查。</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol type="1">
+<li><strong>文件较大</strong>：AOF 文件记录了每个写操作，文件大小通常比
+RDB 大很多，占用更多的磁盘空间。</li>
+<li><strong>恢复速度慢</strong>：AOF
+恢复数据时需要回放所有的写操作日志，恢复速度通常比 RDB 慢。</li>
+<li><strong>性能开销较大</strong>：因为 AOF
+需要在每次写操作后追加日志，频繁的磁盘 I/O
+操作会带来一定的性能开销，特别是在同步策略设置为 <code>always</code>
+时。</li>
+</ol>
+<h3 id="综合比较">综合比较</h3>
+<ol type="1">
+<li><strong>数据安全性</strong>：AOF
+提供更高的数据安全性，适用于对数据丢失敏感的场景；RDB
+在数据持久化频率较低时有较高的数据丢失风险。</li>
+<li><strong>性能</strong>：RDB 对 Redis
+性能影响较小，适用于性能要求高的场景；AOF 因为频繁的磁盘 I/O
+操作，对性能有一定的影响。</li>
+<li><strong>恢复速度</strong>：RDB
+恢复速度更快，适用于需要快速恢复大规模数据集的场景；AOF
+需要回放日志，恢复速度较慢。</li>
+<li><strong>磁盘空间</strong>：RDB 文件较小，节省磁盘空间；AOF
+文件较大，占用更多磁盘空间。</li>
+</ol>
+<h2 id="混合持久化">混合持久化</h2>
+<p>Redis 4.0 引入了混合持久化机制，结合了 RDB 和 AOF
+的优点，以提高持久化的效率和可靠性。<strong>混合持久化在重启恢复数据时使用
+RDB 文件的快照来快速加载数据，并且将 AOF
+日志应用于此快照以实现更高的数据恢复精度。</strong></p>
+<h3 id="工作原理">工作原理</h3>
+<ol type="1">
+<li><strong>RDB 快照</strong>：
+<ul>
+<li>Redis 生成 RDB 文件快照，保存整个数据库的二进制数据。</li>
+<li>RDB
+文件的生成是通过子进程完成的，主进程可以继续处理客户端请求。</li>
+</ul></li>
+<li><strong>AOF 日志</strong>：
+<ul>
+<li>除了生成 RDB 文件外，Redis 还会将写操作记录到 AOF 日志中。</li>
+<li>在混合持久化模式下，AOF 文件的初始部分是一个 RDB
+快照，后面紧接着的是增量的 AOF 日志。</li>
+</ul></li>
+<li><strong>持久化过程</strong>：
+<ul>
+<li>当 Redis 进行持久化操作时，它会首先生成一个 RDB
+文件，并将这个文件内容写入 AOF 文件。</li>
+<li>在 AOF 文件中，RDB 文件的内容作为初始部分，然后紧跟着追加的 AOF
+日志。</li>
+</ul></li>
+<li><strong>数据恢复</strong>：
+<ul>
+<li>当 Redis 重启时，它会首先加载 AOF 文件中的 RDB
+部分（即快照）来快速恢复数据。</li>
+<li>然后，它会回放 AOF 文件中 RDB
+部分后的增量日志，以确保数据的一致性和完整性。</li>
+</ul></li>
+</ol>
+<h3 id="优缺点">优缺点</h3>
+<p><strong>优点：</strong></p>
+<ol type="1">
+<li><strong>快速恢复</strong>：使用 RDB
+部分可以快速加载大部分数据，而不需要逐条回放所有写操作日志，极大地提高了数据恢复的速度。</li>
+<li><strong>较高的数据安全性</strong>：结合了 RDB 和 AOF 的优点，RDB
+部分确保了数据的快速恢复，而 AOF
+部分提供了更高的数据持久化频率，降低了数据丢失的风险。</li>
+<li><strong>性能优化</strong>：
+<ul>
+<li>在持久化过程中，RDB
+快照的生成是通过子进程完成的，对主进程处理客户端请求的性能影响较小。</li>
+<li>AOF 的增量日志记录了自上次快照以来的所有写操作，减少了持久化过程中的
+I/O 操作次数，提高了系统性能。</li>
+</ul></li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol type="1">
+<li><strong>配置复杂性</strong>：混合持久化的配置比单独使用 RDB 或 AOF
+更加复杂，需要合理设置参数以实现最佳性能和数据安全性。</li>
+<li><strong>磁盘空间占用</strong>：混合持久化模式下，AOF 文件既包含 RDB
+快照部分又包含增量日志，可能会占用更多的磁盘空间。</li>
+</ol>
+<h3 id="启用混合持久化">启用混合持久化</h3>
+<p>要启用混合持久化，可以在 Redis 配置文件 <code>redis.conf</code>
+中设置以下参数：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启用 AOF 持久化</span></span><br><span class="line">appendonly yes</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">AOF 重写策略</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">在 AOF 文件达到指定大小或比例时触发重写</span></span><br><span class="line">auto-aof-rewrite-percentage 100</span><br><span class="line">auto-aof-rewrite-min-size 64mb</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启用混合持久化</span></span><br><span class="line">aof-use-rdb-preamble yes</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>Redis</category>
+      </categories>
+      <tags>
+        <tag>RDB</tag>
+        <tag>AOF</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Redis集群】集群原理最全解析</title>
+    <url>/2024/08/12/%E3%80%90Redis%E9%9B%86%E7%BE%A4%E3%80%91%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%E9%9B%86%E7%BE%A4%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[<h2 id="主从集群">主从集群</h2>
+<p>单节点Redis的并发能力是有上限的，要进一步提高Redis的并发能力，就需要搭建主从集群，实现读写分离。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/7734b070a0abf4ca05aea435d026df9a.png"></p>
+<h3 id="数据同步概念">数据同步概念</h3>
+<h4 id="replication-id和offset">Replication Id和offset</h4>
+<p>在从节点发起数据同步的请求中，有两个重要的属性：</p>
+<ul>
+<li><code>Replication Id</code>：简称replid，是数据集的标记，id一致则说明是同一数据集。每一个master都有唯一的replid，slave则会继承master节点的replid。</li>
+<li><code>offset</code>：偏移量，随着记录在<code>repl_baklog</code>中的数据增多而逐渐增大。slave完成同步时也会记录当前同步的offset。如果slave的offset小于master的offset，说明slave数据落后于master，需要更新。</li>
+</ul>
+<p><strong>因此slave做数据同步，必须向master声明自己的replication
+id和offset，master才可以判断到底需要同步哪些数据。</strong>
+当从节点发起主从同步请求时，主节点会判断从节点的replid是否一致，如果不一致，说明是第一次请求数据同步。</p>
+<h4 id="repl_baklog缓冲区">repl_baklog缓冲区</h4>
+<p><code>repl_baklog</code>缓冲区是主从同步的重要机制，主节点在生成RDB文件期间会将命令记录到这个<strong>环形缓冲区</strong>中。</p>
+<p>该缓冲区用于<strong>增量同步</strong>，确保从节点的偏移量与主节点保持一致。然而，如果从节点宕机且重启时缓冲区的数据已被覆盖，从节点就无法通过缓冲区恢复全部数据，导致数据不一致。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/6d8fcd0ed32eda58948be44ea1fd27fb.png"></p>
+<h3 id="第一次数据同步">第一次数据同步</h3>
+<ol type="1">
+<li>从节点发起数据同步请求，请求中携带<code>replid</code>和<code>offset</code>两个属性。</li>
+<li>主节点需要判断<code>replid</code>是否与自己一致，如果不一致，说明从节点是第一次申请数据同步，主节点需要生成RDB文件并将RDB文件发送给从节点。由于生成RDB文件的过程是异步的，主节点同时会持续记录在生成RDB文件期间产生的所有命令。</li>
+<li>从节点获取RDB文件后，清空本地数据并加载RDB文件进行数据同步。加载完成后，从节点获取缓存区的命令，执行命令同步数据。</li>
+</ol>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/a1849c13d12ab6d2255cf864a1fb3862.png"></p>
+<h3 id="全量同步">全量同步</h3>
+<p><strong>全量同步</strong>：是指主节点生成RDB文件并发送给从节点，从节点清空本地数据并加载RDB文件的过程。它通常发生在从节点首次连接到主节点或数据不一致的情况下。</p>
+<p>全量同步的发生场景有两种：</p>
+<ol type="1">
+<li><strong>从节点首次连接主节点：</strong>
+当一个新的从节点第一次连接到主节点时，它没有任何数据副本。因此，需要进行全量同步来获取主节点的完整数据集。<strong>全量同步过程：</strong>
+<ol type="1">
+<li>从节点发起数据同步请求，请求中携带<code>replid</code>和<code>offset</code>两个属性。</li>
+<li>主节点需要判断<code>replid</code>是否与自己一致，如果不一致，说明从节点是第一次申请数据同步，主节点需要生成RDB文件并将RDB文件发送给从节点</li>
+<li>从节点获取RDB文件后，清空本地数据并加载RDB文件进行数据同步。</li>
+</ol></li>
+<li><strong>主节点缓冲区超出容量：</strong>
+主节点的<code>repl_baklog</code>缓冲区大小有上限，写满后会覆盖最早的数据。如果从节点断开时间过久，导致尚未备份的数据被覆盖，则主节点不能基于缓冲区做数据同步，只能再次使用全量同步获取RDB的完整数据集。</li>
+</ol>
+<p><strong>全量同步过程：</strong></p>
+<ol type="1">
+<li>从节点发起数据同步请求，请求中携带<code>replid</code>和<code>offset</code>两个属性。</li>
+<li>主节点需要判断<code>replid</code>是否与自己一致，如果不一致，说明从节点是第一次申请数据同步，主节点需要生成RDB文件并将RDB文件发送给从节点</li>
+<li>从节点获取RDB文件后，清空本地数据并加载RDB文件进行数据同步。</li>
+</ol>
+<h3 id="增量同步">增量同步</h3>
+<p><strong>增量同步</strong>：是指主节点在RDB文件生成期间记录的所有命令（写操作）被存储在<code>replication backlog</code>缓冲区中，并在全量同步完成后发送给从节点，从节点执行这些命令的过程。增量同步用于保持主从节点之间的数据一致性。</p>
+<p>增量同步的发生场景有两种：</p>
+<ol type="1">
+<li><p><strong>全量同步后的持续增量同步：</strong>
+在从节点完成初次的全量同步之后，主节点和从节点之间需要保持数据一致性。从节点会不断接收主节点的增量数据以更新其自身的数据状态。</p></li>
+<li><p><strong>从节点宕机重启后的增量同步：</strong>
+当从节点因为故障、宕机或其他原因暂时失联，然后重新启动并重新连接到主节点时，主节点会尝试通过增量同步来恢复数据同步的状态。</p></li>
+</ol>
+<p><strong>增量同步过程：</strong></p>
+<ol type="1">
+<li>从节点发起数据同步请求，请求中携带<code>replid</code>和<code>offset</code>两个属性。</li>
+<li>主节点需要判断<code>replid</code>是否与自己一致，如果一致，说明从节点不是第一次申请数据同步了（即从节点之前进行了全量同步），主节点返回continue，允许从节点获取<code>repl_baklog</code>缓冲区的命令</li>
+<li>从节点持续获取缓存区的命令，执行命令同步数据。</li>
+</ol>
+<h3 id="优化策略">优化策略</h3>
+<p>可以从以下几个方面来优化Redis主从集群：</p>
+<ul>
+<li>在master中配置<code>repl-diskless-sync yes</code>启用无磁盘复制，避免全量同步时的磁盘I/O</li>
+<li>Redis单节点上的内存占用不要太大，减少RDB导致的过多磁盘I/O</li>
+<li>适当提高<code>repl_baklog</code>缓存区的大小，发现slave宕机时尽快实现故障恢复，尽可能避免全量同步</li>
+<li>限制一个master上的slave节点数量，如果实在是太多slave，则可以采用主-从-从链式结构，减少master压力</li>
+</ul>
+<h2 id="哨兵机制">哨兵机制</h2>
+<p>在主从集群中，slave节点即使宕机，也可以从master节点上恢复数据。然而，如果master节点宕机，即使master节点做了持久化处理，在其重启后虽然能够恢复部分数据，但在重启和故障恢复的过程中，<strong>仍然可能会丢失大量数据</strong>，这对系统来说是不可接受的。</p>
+<p>因此，为了解决上述问题，在主从集群的基础上引入了哨兵机制。<strong>哨兵机制的核心作用是监控主从集群中的各个节点，并在检测到master节点宕机时，自动从slave节点中选举一个新的master节点。</strong></p>
+<p><strong>哨兵（Sentinel）机制的作用：</strong></p>
+<ul>
+<li><strong>服务状态监控：</strong>
+Sentinel会不断检查集群中的master和slave节点是否按预期工作</li>
+<li><strong>自动故障恢复：</strong>
+如果master故障，Sentinel会将一个slave提升为master。当故障实例恢复后也以新的master为主</li>
+<li><strong>通知Redis客户端：</strong>
+Sentinel充当Redis客户端的服务发现来源，当集群发生故障转移时，会将最新信息推送给Redis的客户端</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/8051a5eb45d945414477798804c9d068.png"></p>
+<h3 id="服务状态监控">服务状态监控</h3>
+<p>Sentinel基于心跳机制监测服务状态，每隔1秒向集群的每个实例发送ping命令：</p>
+<ul>
+<li><strong>主观下线：</strong>
+如果某sentinel节点发现某实例未在规定时间响应，则认为该实例主观下线。</li>
+<li><strong>客观下线：</strong>
+若超过指定数量(quorum)的sentinel都认为该实例主观下线，则该实例客观下线。quorum值最好超过Sentinel实例数量的一半。</li>
+</ul>
+<h3 id="自动故障恢复">自动故障恢复</h3>
+<h4 id="选举新master节点">选举新master节点</h4>
+<p>当sentinel检测到master节点客观下线时，需要在集群中选择一个slave节点作为新的master，选择依据是这样的：</p>
+<ul>
+<li><strong>节点断开时间长短</strong>：首先会判断slave节点与master节点断开时间长短，如果超过指定值<code>down-after-milliseconds * 10</code>则会排除该slave节点</li>
+<li><strong>优先级判断</strong>：slave从节点有<code>slave-priority</code>参数，越小优先级越高，如果是0则永不参与选举</li>
+<li><strong>数据同步状态</strong>：如果从节点优先级一样，则判断slave节点的offset值，越大说明数据越新，优先级越高</li>
+<li><strong>节点 ID
+大小</strong>：最后是判断slave节点的运行id大小，越小优先级越高，</li>
+</ul>
+<h4 id="进行故障转移">进行故障转移</h4>
+<p>当节点2（master节点）故障后，sentinel选举节点1为新的master节点，故障转移步骤如下:</p>
+<ul>
+<li>sentinel给备选的节点1发送slaveof no one命令，让节点1成为master</li>
+<li>sentinel给其它所有的slave节点发送slaveof 192.168.150.101
+7002命令，让这些slave成为新master的从节点，开始从新的master上同步数据。</li>
+<li>最后，sentinel将故障节点标记为slave，当节点2恢复后会自动成为新的master的slave节点</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/412dea73ace8d948e1a84f01c3febdfe.png"></p>
+<h3 id="通知redis客户端">通知Redis客户端</h3>
+<p>在Sentinel集群监管下的Redis主从集群，其节点会因为自动故障转移而发生变化，Redis的客户端必须感知这种变化及时更新连接信息。Spring的RedisTemplate底层利用<code>lettuce</code>实现了节点的感知和自动切换。</p>
+<ol type="1">
+<li>在pom文件中引入redis的starter依赖</li>
+</ol>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-data-redis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>然后在配置文件application.yml中指定sentinel相关信息</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line"> <span class="attr">redis:</span></span><br><span class="line">  <span class="attr">sentinel:</span></span><br><span class="line">   <span class="attr">master:</span> <span class="string">mymaster</span> <span class="comment">#指定master名称</span></span><br><span class="line">   <span class="attr">nodes:</span> <span class="comment">#指定redis-sentinel集群信息</span></span><br><span class="line">    <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.150</span><span class="number">.101</span><span class="string">:27001</span></span><br><span class="line">    <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.150</span><span class="number">.101</span><span class="string">:27002</span></span><br><span class="line">    <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.150</span><span class="number">.101</span><span class="string">:27003</span></span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>配置读写分离</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> LettuceClientConfigurationBuilderCustomizer <span class="title function_">configurationBuilderCustomizer</span><span class="params">()</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> configBuilder -&gt; configBuilder.readFrom(ReadFroM.REPLICA_PREFERRED);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的ReadFrom是配置Redis的读取策略，是一个枚举，包括下面选择:</p>
+<ul>
+<li><strong>MASTER：</strong> 从主节点读取</li>
+<li><strong>MASTER_PREFERRED：</strong>
+优先从master节点读取，master不可用才读取replica</li>
+<li><strong>REPLICA：</strong> 从slave(replica)节点读取</li>
+<li><strong>REPLICA_PREFERRED：</strong>
+优先从slave(replica)节点读取，所有的slave都不可用才读取master</li>
+</ul>
+<h2 id="分片集群">分片集群</h2>
+<p>主从复制和哨兵机制虽然解决了Redis的高可用性和高并发读的问题，但仍然面临以下两个挑战：</p>
+<ol type="1">
+<li><strong>海量数据存储的问题</strong>：单个Redis实例的内存和存储容量有限，无法处理海量数据。</li>
+<li><strong>高并发写入的问题</strong>：单个主节点在高并发写入的场景下容易成为性能瓶颈。</li>
+</ol>
+<p>Redis中的分片集群（Sharded
+Cluster）是一种将数据分布在多个Redis节点上的方式。通过将数据水平分片，分片集群能够在数据量增加时提升集群的存储容量，同时将写入压力分散到多个master节点上，提升整体性能。</p>
+<p><strong>Redis 分片集群的核心作用：</strong></p>
+<ul>
+<li><strong>数据水平扩展：</strong>
+通过将数据分片存储在多个节点上，Redis
+集群能够扩展到多个实例，以应对大规模数据存储和高并发请求。</li>
+<li><strong>负载均衡：</strong>
+将请求均匀分布到不同的分片节点上，避免单点压力过大，确保系统性能的稳定性。</li>
+<li><strong>高可用性：</strong> 通过主从复制和自动故障恢复机制，Redis
+集群能够在某个节点发生故障时，继续提供服务，确保系统的高可用性。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/9dceb428c1f7304d335bca94e42c4fb1.png"></p>
+<h3 id="重要概念">重要概念</h3>
+<h4 id="散列插槽">散列插槽</h4>
+<p>Redis 集群通过<strong>哈希槽</strong>（Hash
+Slot）机制来分配数据到不同的分片节点上。整个哈希空间分为 16384
+个槽，每个键根据其哈希值被分配到一个特定的槽中，而槽则由集群中的各个matser节点持有。</p>
+<p>数据key不是与节点绑定，而是与插槽绑定。redis会根据key的有效部分计算插槽值，分两种情况：</p>
+<ul>
+<li>如果key中包含<code>&#123;&#125;</code>，且<code>&#123;&#125;</code>中至少包含1个字符，<code>&#123;&#125;</code>中的部分是有效部分</li>
+<li>如果key中不包含<code>&#123;&#125;</code>，整个key都是有效部分</li>
+</ul>
+<p>例如：key是num，那么就根据num计算，如果是{modox}num，则根据modox计算。计算方式是利用<code>CRC16</code>算法得到一个hash值，然后对16384取余，得到的结果就是插槽的slot值。</p>
+<blockquote>
+<p><strong>Redis客户端如何进行数据访问？</strong>
+根据键的哈希值确定数据所在的分片节点，然后直接与该节点通信。</p>
+<p><strong>如何将同一类数据保存在同一个Redis节点上？</strong>
+只需设置一个统一的有效部分，如{shopId}</p>
+</blockquote>
+<h4 id="配置纪元">配置纪元</h4>
+<p>配置纪元的作用是标识和跟踪集群配置的版本，<strong>确保集群中的所有节点在主节点故障转移和配置变更时保持一致</strong>。</p>
+<p><strong>1.配置纪元是只增不减的整数</strong>：</p>
+<ul>
+<li>每个主节点都有一个自身维护的配置纪元
+(<code>clusterNode.configEpoch</code>)，表示该主节点的版本。这个配置纪元是集群变更时用于标识和协调的关键因素。</li>
+<li>每个主节点的配置纪元都不同，以确保集群内的节点可以正确识别和处理最新的配置变更。</li>
+</ul>
+<p><strong>2.从节点会复制主节点的配置纪元</strong>：</p>
+<ul>
+<li>当从节点与其对应的主节点同步时，它会复制该主节点的配置纪元。这样在主节点发生故障时，从节点可以使用这个配置纪元参与选举并成为新的主节点。</li>
+</ul>
+<p><strong>3.全局配置纪元</strong>：</p>
+<ul>
+<li>整个集群维护一个全局的配置纪元
+(<code>clusterState.currentEpoch</code>)，记录集群内所有主节点的配置纪元中的最大版本号。这个全局纪元会在集群发生关键事件（如故障转移、添加/删除节点）时增加，以确保集群状态的一致性。</li>
+</ul>
+<p><strong>4.选举时选择纪元数最大的从节点</strong>：</p>
+<ul>
+<li>在故障转移过程中，集群会优先选择配置纪元最大的从节点作为新的主节点。因为这个从节点的数据更可能是最新的，并且它在选举中更有可能获得其他主节点的支持。</li>
+</ul>
+<h3 id="服务状态监控-1">服务状态监控</h3>
+<p>Redis分片集群的各个节点通过<code>ping/pong</code>进行消息通信，转播槽的信息和节点状态信息，故障发现也是通过这个动作实现的，类似于<code>sentinel</code>，有主观下线和客观下线。</p>
+<ul>
+<li><strong>主观下线（PFAIL）：</strong> 集群中的每个节点都会定期通过
+PING-PONG 消息与其他节点通信。如果一个节点在指定时间内没有响应其他节点的
+PING 请求，该节点会被标记为主观下线。</li>
+<li><strong>客观下线（FAIL）：</strong> 如果多个节点都将同一个节点标记为
+PFAIL，那么通过投票机制，该节点将被标记为客观下线（FAIL）。这个状态会在集群中广播，所有节点都认同该节点已不可用。</li>
+</ul>
+<h3 id="故障恢复">故障恢复</h3>
+<h4 id="选举新的master节点">选举新的master节点</h4>
+<p>Redis 分片集群和 Sentinel 机制在选举新的 master
+节点时规则基本相同，唯一的区别在于节点断开时间的处理方式不同。</p>
+<ul>
+<li><strong>节点断开时间长短</strong>：每个从节点检查与故障主节点的断线时间，断开时间超过<code>cluster-node-timeout * cluster-slave-validity-factor</code>则取消资格。cluster-slave-validity-factor
+: 默认是10</li>
+<li><strong>优先级判断</strong>：slave从节点有<code>slave-priority</code>参数，越小优先级越高，如果是0则永不参与选举</li>
+<li><strong>数据同步状态</strong>：如果从节点优先级一样，则判断slave节点的offset值，越大说明数据越新，优先级越高</li>
+<li><strong>配置纪元：</strong>
+在故障转移过程中，集群会优先选择配置纪元最大的从节点作为新的主节点。因为配置纪元越大的从节点，数据更可能是新的。</li>
+</ul>
+<h4 id="进行故障转移-1">进行故障转移</h4>
+<p>当新的 master 节点选举完成后，Redis
+集群会自动进行故障转移，具体包括以下步骤：</p>
+<ol type="1">
+<li><strong>提升新的 master 节点</strong>：Redis 集群通过内部命令
+<code>SLAVEOF NO ONE</code> 将选中的从节点提升为新的 master 节点。</li>
+<li><strong>更新哈希槽映射</strong>：Redis
+集群会自动更新哈希槽与节点的映射关系，新的 master 节点将执行
+<code>CLUSTER DELSLOTS</code> 操作撤销故障主节点负责的槽，并执行
+<code>CLUSTER ADDSLOTS</code> 把这些槽委派给自己。</li>
+<li><strong>重新配置和广播</strong>：Redis
+集群将剩余的从节点重新配置为新 master 节点的从节点，并广播新的 master
+信息给所有节点，确保集群内所有节点都更新哈希槽映射，并将新 master
+的信息同步到其他节点。</li>
+<li><strong>节点重连</strong>：如果故障的 master
+节点恢复上线，它通常会被重新配置为新的 master
+的从节点，并同步数据以确保与新 master 保持数据一致性。</li>
+</ol>
+<h3 id="通知redis客户端-1">通知Redis客户端</h3>
+<p>RedisTemplate底层同样基于lettuce实现了分片集群的支持，而使用的步骤与哨兵模式基本一致。</p>
+<ol type="1">
+<li>引入redis的starter依赖</li>
+<li>配置分片集群地址</li>
+<li>配置读写分离</li>
+</ol>
+<p>与哨兵模式相比，只有yaml配置文件的配置方式存在差异，如下：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line"> <span class="attr">redis:</span></span><br><span class="line">  <span class="attr">cluster:</span></span><br><span class="line">   <span class="attr">nodes:</span> <span class="comment"># 指定分片集群的每一个节点信息</span></span><br><span class="line">    <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.150</span><span class="number">.101</span><span class="string">:7001</span></span><br><span class="line">    <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.150</span><span class="number">.101</span><span class="string">:7002</span></span><br><span class="line">    <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.150</span><span class="number">.101</span><span class="string">:7003</span></span><br><span class="line">    <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.150</span><span class="number">.101</span><span class="string">:8001</span></span><br><span class="line">    <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.150</span><span class="number">.101</span><span class="string">:8002</span></span><br><span class="line">    <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.150</span><span class="number">.101</span><span class="string">:8003</span></span><br></pre></td></tr></table></figure>
+<h3 id="集群伸缩">集群伸缩</h3>
+<p>Redis
+集群提供了灵活的节点扩容和收缩方案。在不影响集群对外服务的情况下，可以为集群添加节点进行扩容也可以下线部分节点进行缩容，对节点进行灵活上下线控制，原理可抽象为<strong>槽和对应数据在不同节点之间灵活移动。</strong></p>
+<h4 id="集群扩容">集群扩容</h4>
+<p><strong>1.添加节点：</strong></p>
+<p>Redis分片集群提供了为现有集群添加新节点的，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">redis-cli --cluster add-node new_host:new_port existing_host:existing_port</span><br><span class="line">--cluster-slave</span><br><span class="line">--cluster-master-id &lt;arg&gt;</span><br></pre></td></tr></table></figure>
+<p>如果需要直接指定新节点为某一master的从节点，可使用如下命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">redis-cli --cluster add-node &lt;新节点IP&gt;:&lt;端口&gt; &lt;现有节点IP&gt;:&lt;端口&gt; --cluster-slave --cluster-master-id &lt;主节点ID&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>2.迁移插槽：</strong></p>
+<p>可通过<code>reshard</code>命令将当前节点的散列插槽分配给其他节点。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">redis-cli --cluster reshard &lt;当前节点IP&gt;:&lt;端口&gt;</span><br></pre></td></tr></table></figure>
+<p>接着Redis会提示需要移动多少插槽，自行输入即可。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">How many slots do you want to move (from 1 to 16384)?</span><br></pre></td></tr></table></figure>
+<p>然后需要输入接收插槽的节点ID，确认后即可实现插槽的迁移</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">What is the receiving node ID?</span><br></pre></td></tr></table></figure>
+<p><strong>3.添加从节点：</strong></p>
+<p>由于新的master节点相比其他主节点目前还没有从节点，因此该节点不具备故障转移的能力。</p>
+<p>可以在从节点下使用<code>cluster replicate</code>命令为主节点添加对应从节点（在分片集群下slaveof命令添加从节点的操作不再支持）。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cluster replicate &lt;主节点ID&gt;</span><br></pre></td></tr></table></figure>
+<p>从节点内部除了对主节点发起全量复制之外，还需要更新本地节点的集群相关状态。</p>
+<h4 id="集群缩容">集群缩容</h4>
+<p><strong>1.迁移插槽：</strong></p>
+<p>缩容操作需要非常谨慎，因为如果下线的节点持有插槽，直接删除可能会引起数据一致性问题，因此需要将槽迁移给其他节点后才能安全下线，流程同上。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">redis-cli --cluster reshard &lt;当前节点IP&gt;:&lt;端口&gt;</span><br></pre></td></tr></table></figure>
+<p>接着Redis会提示需要移动多少插槽，自行输入即可。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">How many slots do you want to move (from 1 to 16384)?</span><br></pre></td></tr></table></figure>
+<p>然后需要输入接收插槽的节点ID，确认后即可实现插槽的迁移</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">What is the receiving node ID?</span><br></pre></td></tr></table></figure>
+<p><strong>2.忘记节点：</strong></p>
+<p>在一个可用的节点上执行删除节点的命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">redis-cli --cluster del-node &lt;可用的节点IP&gt;:&lt;可用的节点端口&gt; &lt;需要删除的节点ID&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="手动故障转移">手动故障转移</h3>
+<p>在 Redis
+集群中，手动故障转移允许管理员主动介入，以便在发现主节点故障时，迅速将其替换为副本节点，确保系统的持续可用性和稳定性。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/9cf6e902f3f0988f2f8e3964e21bd5a5.png"></p>
+<p>此外，手动数据迁移还支持三种不同模式：</p>
+<ul>
+<li><strong>缺省：</strong> 默认的流程，如图1~6步</li>
+<li><strong>force：</strong> 省略了对offset的一致性校验</li>
+<li><strong>takeover：</strong>
+直接执行第5步，忽略数据一致性、忽略master状态和其它master的意见</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Redis</category>
+      </categories>
+      <tags>
+        <tag>主从集群</tag>
+        <tag>哨兵机制</tag>
+        <tag>分片集群</tag>
       </tags>
   </entry>
 </search>
