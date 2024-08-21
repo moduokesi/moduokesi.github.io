@@ -3841,4 +3841,125 @@ PFAIL，那么通过投票机制，该节点将被标记为客观下线（FAIL�
         <tag>分片集群</tag>
       </tags>
   </entry>
+  <entry>
+    <title>【设计模式】单例模式详解</title>
+    <url>/2024/08/21/%E3%80%90%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%91%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E8%AF%A6%E8%A7%A3/</url>
+    <content><![CDATA[<h2 id="简介">1.简介</h2>
+<p><strong>单例模式</strong>是一种创建型设计模式，它确保<strong>一个类在内存中只有一个实例</strong>，并提供全局访问点来共享该实例。在程序中，如果需要频繁使用同一个对象且它们的作用相同，单例模式可以避免频繁创建对象，减少内存开销。</p>
+<p>单例模式主要有两种类型：</p>
+<ul>
+<li>懒汉式：在<strong>需要使用</strong>时才去创建该对象的单例</li>
+<li>饿汉式：在<strong>类加载</strong>时就已经创建好该单例对象，等待被程序使用</li>
+</ul>
+<h2 id="懒汉式">2.懒汉式</h2>
+<p>懒汉式创建对象的方法是在程序使用对象前，判断对象是否为空（是否被实例化），如果为空则创建该对象的实例，如果不为空直接返回该对象的实例即可。</p>
+<h3 id="非线程安全">非线程安全</h3>
+<p>使用 <code>static</code>
+关键字修饰对象，表示该对象属于类本身，而不是类的某个实例。在应用程序的整个生命周期中，该类只会存在一个这样的实例。当多线程访问该类时，可以通过类获取这个静态对象，从而避免重复创建新对象。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton singleton;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (singleton == <span class="literal">null</span>) &#123;</span><br><span class="line">            singleton = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="线程安全">线程安全</h3>
+<p>上述方法在多线程创建对象的时候是有问题的。如果两个线程同时判断singleton为空，那么它们都会执行<code>singleton = new Singleton();</code>语句创建一个实例，这就变成双例了。</p>
+<p>解决方法也很简单，给获取实例的方法<code>getInstance()</code>加锁即可。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(Singleton.class) &#123;   </span><br><span class="line">        <span class="keyword">if</span> (singleton == <span class="literal">null</span>) &#123;</span><br><span class="line">            singleton = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> singleton;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但是这种方法也存在问题：<strong>每次去获取对象都需要获取互斥锁，在高并发场景下，可能会多线程阻塞的问题。</strong></p>
+<p>优化方案是：如果没有实例化对象则加锁创建，如果已经实例化了，则不需要加锁，直接获取实例。</p>
+<h3 id="双重校验锁">双重校验锁</h3>
+<p>在单例模式中，双重校验锁可以确保只有在第一次访问单例对象时才会进行实例化，并且在多线程环境下能够保证单例对象的唯一性。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton singleton;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (singleton == <span class="literal">null</span>) &#123; <span class="comment">// 多个线程判断类是否实例化，如果已经被实例化，直接return即可</span></span><br><span class="line">            <span class="keyword">synchronized</span>(Singleton.class) &#123; <span class="comment">// 多线程争抢该锁进行实例化</span></span><br><span class="line">                <span class="keyword">if</span> (singleton == <span class="literal">null</span>) &#123; <span class="comment">// 保证后续的锁进来后，不需要再实例化</span></span><br><span class="line">                    singleton = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>详细解释下这段代码的执行流程：</p>
+<ol type="1">
+<li>多个线程执行<code>getInstance()</code>方法后，进入<code>if (singleton == null)</code>语句块，判断类是否已经被实例化了，如果已经被实例化，直接返回对象，无需继续创建对象。</li>
+<li>如果 <code>singleton</code> 为
+null，多个线程争抢该锁进行实例化，同一时刻只有一个线程可以进入同步代码块去创建对象。</li>
+<li>再次判断该类是否被实例化，这一步确保了上一个线程在进入同步块后创建了对象，当前线程也不会重复创建实例。</li>
+</ol>
+<h3 id="防止指令重排">防止指令重排</h3>
+<p>尽管我们使用双重校验锁的方案保证了<strong>线程安全</strong>并提升了<strong>性能</strong>，但由于JVM<code>指令重排序</code>的存在，在多线程创建单例时仍然可能存在问题。</p>
+<p>当JVM执行<code>new Singleton()</code>创建一个对象时，会经过三个步骤：</p>
+<ol type="1">
+<li>为singleton分配内存空间。</li>
+<li>初始化singleton对象，将对象的成员变量赋值。</li>
+<li>将内存空间的引用赋值给 <code>singleton</code> 变量。</li>
+</ol>
+<p><strong>当发生指令重排序时，这个顺序可能会发生变化，导致未完成初始化（即对象的构造方法可能尚未执行完毕，某些属性可能未被赋值）的对象被其他线程访问，如果这些线程使用了该对象的成员变量，就会导致NPE。</strong></p>
+<blockquote>
+<p><strong>具体场景：</strong></p>
+</blockquote>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408211840672.png"></p>
+<p>当<strong>线程A</strong>进入同步块并执行<code>singleton= new Singleton()</code>时，由于指令重排，创建对象的顺序变成：</p>
+<ol type="1">
+<li>为singleton分配内存空间。</li>
+<li>将内存空间的引用赋值给 <code>singleton</code> 变量。</li>
+<li>初始化singleton对象，将对象的成员变量赋值。</li>
+</ol>
+<p>这时候<strong>线程B</strong>在第一次检查<code>singleton == null</code>时得到的结果是<code>false</code>，因为<code>instance</code>已经不再是<code>null</code>（已经指向了内存地址），于是直接返回了这个未初始化的<strong>半成品对象</strong>。</p>
+<p>由于<code>singleton</code>指向的对象尚完成初始化，当<strong>线程B</strong>在访问该对象尚未初始化的成员变量时，就会导致空指针异常<code>NullPointerException</code>。</p>
+<blockquote>
+<p><strong>解决方案：</strong></p>
+</blockquote>
+<p>只需加上<code>volatile</code>关键字即可，使用<code>volatile</code>修饰变量，可以保证其指令执行的顺序与程序指明的顺序一致，不会发生顺序变换。</p>
+<p>完整代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Singleton singleton;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (singleton == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span>(Singleton.class) &#123;</span><br><span class="line">                <span class="keyword">if</span> (singleton == <span class="literal">null</span>) &#123;</span><br><span class="line">                    singleton = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="饿汉式">3.饿汉式</h2>
+<p>饿汉式在<strong>类加载</strong>时就已经创建好单例对象，因此在程序调用时可以<strong>直接返回</strong>该对象。也就是说，我们在调用时直接获取单例对象即可，而不需要在调用时再去创建实例。</p>
+<p>由于饿汉式在类加载过程中就由JVM创建了单例，因此<strong>不存在线程安全问题</strong>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Singleton</span> <span class="variable">singleton</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="破坏单例模式">4.破坏单例模式</h2>
+<p>无论是使用了<code>双重校验锁+volatile关键字</code>的懒汉式还是饿汉式，都无法防止<strong>反射和序列化</strong>破坏单例模式（创建多个对象），具体演示代码如下：</p>
+<blockquote>
+<p><strong>反射破坏单例模式</strong></p>
+</blockquote>
+<p>这个原理很简单，利用反射可以<strong>强制访问</strong>类的私有构造器，从而创建另一个对象</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="comment">// 获取类的显式构造器</span></span><br><span class="line">    Constructor&lt;Singleton&gt; construct = Singleton.class.getDeclaredConstructor();</span><br><span class="line">    <span class="comment">// 可访问私有构造器</span></span><br><span class="line">    construct.setAccessible(<span class="literal">true</span>); </span><br><span class="line">    <span class="comment">// 利用反射构造新对象</span></span><br><span class="line">    <span class="type">Singleton</span> <span class="variable">obj1</span> <span class="operator">=</span> construct.newInstance(); </span><br><span class="line">    <span class="comment">// 通过正常方式获取单例对象</span></span><br><span class="line">    <span class="type">Singleton</span> <span class="variable">obj2</span> <span class="operator">=</span> Singleton.getInstance(); </span><br><span class="line">    System.out.println(obj1 == obj2); <span class="comment">// false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>序列化破坏单例模式</strong></p>
+</blockquote>
+<p>首先使用将单例对象序列化为文件流或其他形式，再使用反序列化的手段从流中读取对象。</p>
+<p>当使用<code>readObject()</code>方法时，一定会创建一个新的对象。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="comment">// 创建输出流</span></span><br><span class="line">    <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;Singleton.file&quot;</span>));</span><br><span class="line">    <span class="comment">// 将单例对象写到文件中</span></span><br><span class="line">    oos.writeObject(Singleton.getInstance());</span><br><span class="line">    <span class="comment">// 从文件中读取单例对象</span></span><br><span class="line">    <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;Singleton.file&quot;</span>);</span><br><span class="line">    <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span>  <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file));</span><br><span class="line">    <span class="type">Singleton</span> <span class="variable">newInstance</span> <span class="operator">=</span> (Singleton) ois.readObject();</span><br><span class="line">    <span class="comment">// 判断是否是同一个对象</span></span><br><span class="line">    System.out.println(newInstance == Singleton.getInstance()); <span class="comment">// false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="枚举类">5.枚举类</h2>
+<p>枚举类不仅能<strong>确保线程安全性</strong>，还可以<strong>防止反序列化破坏</strong>和<strong>反射攻击</strong>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line">    INSTANCE;  <span class="comment">// 唯一的实例</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 示例方法，可以在单例实例中添加其他方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doSomething</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Singleton instance is doing something.&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestSingleton</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 获取单例实例</span></span><br><span class="line">        <span class="type">Singleton</span> <span class="variable">singleton</span> <span class="operator">=</span> Singleton.INSTANCE;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 调用单例实例的方法</span></span><br><span class="line">        singleton.doSomething();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 验证多次获取的实例是相同的</span></span><br><span class="line">        <span class="type">Singleton</span> <span class="variable">anotherInstance</span> <span class="operator">=</span> Singleton.INSTANCE;</span><br><span class="line">        System.out.println(<span class="string">&quot;Are both instances the same? &quot;</span> + (singleton == anotherInstance));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>枚举类的优点：</p>
+<ol type="1">
+<li><strong>线程安全</strong>：枚举类的实例在 JVM 加载时由 JVM
+保证，只会实例化一次，因此枚举的单例实现天然是线程安全的。</li>
+<li><strong>防止反序列化破坏</strong>：默认情况下，反序列化一个枚举类型时，会通过类加载器加载枚举类，从而保证每个枚举类型在
+JVM 中仅存在一个实例。因此枚举类型可以防止反序列化导致的单例破坏。</li>
+<li><strong>防止反射攻击</strong>：反射攻击是指通过反射机制来调用私有构造器从而创建多个实例的情况，但在枚举类型中，这种操作会抛出
+<code>IllegalArgumentException</code>，从而有效地防止了反射攻击。</li>
+</ol>
+<h2 id="对比">6.对比</h2>
+<h3 id="懒汉式-1"><strong>懒汉式</strong></h3>
+<ul>
+<li><strong>实例化时机</strong>：在第一次调用<code>getInstance()</code>方法时，才会创建单例实例。这意味着如果程序一直没有调用这个方法，单例实例将永远不会被创建。</li>
+<li><strong>优点</strong>：延迟加载（Lazy
+Loading），只有在需要时才创建实例，节省了系统资源。</li>
+<li><strong>缺点</strong>：首次创建实例时可能会有性能开销。在多线程环境下，如果没有适当的同步机制，可能会导致线程安全问题，如重复创建实例。</li>
+</ul>
+<h3 id="饿汉式-1">饿汉式</h3>
+<ul>
+<li><strong>实例化时机</strong>：在类加载时就创建单例实例。无论是否调用<code>getInstance()</code>方法，类加载时都会创建实例。</li>
+<li><strong>优点</strong>：实现简单，类加载时就完成了实例化，避免了多线程同步问题，因为JVM在类加载时确保了线程的安全性。</li>
+<li><strong>缺点</strong>：即使单例实例从未被使用，也会在程序启动时创建，可能会浪费系统资源，尤其是在实例化过程较重或单例实例不常用的情况下。</li>
+</ul>
+<h3 id="枚举类-1">枚举类</h3>
+<ul>
+<li><strong>实例化时机</strong>：在枚举类被加载时创建单例实例，与饿汉式类似，枚举类型的实例会在类加载时被创建，并且JVM会确保只有一个实例存在。</li>
+<li><strong>优点：</strong>
+<ul>
+<li><strong>线程安全</strong>：枚举类型在Java中是天然线程安全的，JVM保证了枚举实例的唯一性，无需额外的同步控制。</li>
+<li><strong>防止反序列化破坏单例</strong>：枚举类在反序列化时不会创建新的实例，保证了单例的唯一性。</li>
+<li><strong>防止反射攻击</strong>：枚举类在Java中不允许通过反射创建实例，因此可以防止反射攻击破坏单例。</li>
+</ul></li>
+<li><strong>缺点</strong>：如果单例类需要继承其他类或实现某些接口，枚举类不太适合。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+      <tags>
+        <tag>单例模式</tag>
+      </tags>
+  </entry>
 </search>
