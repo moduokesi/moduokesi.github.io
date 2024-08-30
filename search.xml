@@ -495,10 +495,10 @@ OOM。</li>
 </ul>
 ]]></content>
       <categories>
-        <category>项目开发</category>
+        <category>并发编程</category>
       </categories>
       <tags>
-        <tag>多线程</tag>
+        <tag>线程池</tag>
       </tags>
   </entry>
   <entry>
@@ -3960,6 +3960,279 @@ Loading），只有在需要时才创建实例，节省了系统资源。</li>
       </categories>
       <tags>
         <tag>单例模式</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【并发编程】从AQS机制到同步工具类</title>
+    <url>/2024/08/30/%E3%80%90%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E3%80%91%E4%BB%8EAQS%E6%9C%BA%E5%88%B6%E5%88%B0%E5%90%8C%E6%AD%A5%E5%B7%A5%E5%85%B7%E7%B1%BB/</url>
+    <content><![CDATA[<h1 id="aqs机制">AQS机制</h1>
+<p>Java 中常用的锁主要有两类，一种是 Synchronized 修饰的锁，被称为 Java
+内置锁或监视器锁。另一种就是在 JUC 包中的各类同步器，包括
+ReentrantLock（可重入锁）、Semaphore（信号量）、CountDownLatch 等。</p>
+<p>所有的同步器都是基于AQS机制来构建的，而 AQS
+类的核心数据结构是一种名为<strong>CLH锁</strong>的变体。</p>
+<h2 id="clh锁">CLH锁</h2>
+<p>CLH锁是一种<strong>基于链表的自旋锁</strong>，它通过维护一个隐式的等待队列来实现线程的公平性和高效性。CLH锁的核心思想是每个线程在进入临界区时都会在队列尾部排队，并且自旋等待前驱节点的状态变化。CLH
+锁的特点是，它将等待线程的状态信息保存在前驱节点中，而不是在本线程中，这样就避免了过多的缓存一致性流量。</p>
+<h3 id="隐式双向链表">隐式双向链表</h3>
+<p><strong>加锁过程：</strong></p>
+<ol type="1">
+<li><strong>初始化</strong>：CLH 锁初始化时，<code>Tail</code>
+指向一个状态为 <code>false</code> 的空节点。</li>
+<li><strong>线程入队：</strong>
+<ul>
+<li>线程尝试获取锁时，创建一个状态为 <code>true</code>
+的新节点，表示正在等待锁。</li>
+<li>线程通过 CAS 操作将新节点插入队列尾部，并更新 <code>Tail</code>
+指针。</li>
+</ul></li>
+<li><strong>轮询前驱节点状态</strong>：线程不断轮询其前驱节点的状态，直到前驱节点的状态变为
+<code>false</code>，表示可以获取锁。</li>
+</ol>
+<p><strong>解锁过程：</strong></p>
+<ol type="1">
+<li><strong>释放锁</strong>：线程完成临界区访问后，将当前节点的状态设置为
+<code>false</code>，表示释放锁。</li>
+<li><strong>后继节点获取锁</strong>：后继节点检测到前驱节点状态变化，获取锁并进入临界区。</li>
+</ol>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408292334794.png"></p>
+<h2 id="aqs对clh锁的改造">AQS对CLH锁的改造</h2>
+<p>CLH锁存在缺点：</p>
+<ul>
+<li>自旋操作，当锁持有时间长时会带来较大的 CPU 开销。</li>
+<li>基本的 CLH 锁功能单一，不改造不能支持复杂的功能。</li>
+</ul>
+<p>Java 的 AbstractQueuedSynchronizer（AQS）借鉴了 CLH
+锁的思想，并在此基础上做了诸多改进，使其更适合构建高效、可扩展的同步器。以下是
+AQS 对 CLH 锁所做的一些主要改造：</p>
+<h3 id="显式双向链表"><strong>显式双向链表</strong></h3>
+<p>AQS
+使用了显式的双向链表来维护等待队列，而不是隐式的单向链表。这样改进的好处是，它允许
+AQS
+更方便地处理队列中的节点操作，比如<strong>取消、唤醒特定节点</strong>等。</p>
+<p>AQS 加锁过程：</p>
+<ul>
+<li><strong>初始化</strong>：AQS
+初始化时，等待队列为空，<code>head</code> 和 <code>tail</code> 指针均为
+<code>null</code>。</li>
+<li><strong>线程入队</strong>：
+<ul>
+<li>线程尝试获取锁时，会检查当前锁的状态（<code>state</code>）。如果锁已被占用，线程会创建一个新的节点（<code>Node</code>），表示自己需要等待锁。</li>
+<li>线程通过 CAS 操作将新节点原子性地插入到等待队列的尾部，并更新
+<code>tail</code> 指针指向新节点。</li>
+<li>如果队列为空，当前节点会成为队列中的第一个节点。</li>
+</ul></li>
+</ul>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408292333728.png"></p>
+<ul>
+<li><strong>线程阻塞与等待</strong>：如果当前线程无法立即获取锁（<code>state</code>
+不为 0），线程会进入阻塞状态，调用 <code>LockSupport.park()</code>
+挂起自己，直到被唤醒为止。</li>
+</ul>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408292333021.png"></p>
+<p>AQS 解锁过程：</p>
+<ol type="1">
+<li><strong>释放锁</strong>：持有锁的线程完成临界区的操作后，会调用
+<code>release(int arg)</code> 方法将 <code>state</code> 变量设置为
+0，表示锁已释放。</li>
+<li><strong>唤醒后继节点</strong>：AQS 会调用
+<code>LockSupport.unpark(Thread)</code> 来唤醒后继节点的线程，使其从
+<code>park()</code> 的阻塞状态中恢复。</li>
+<li><strong>后继节点获取锁</strong>：被唤醒的后继节点线程会重新尝试获取锁，通过
+<code>CAS</code> 操作将 <code>state</code> 从 0 更新为
+1。如果成功获取锁，线程将进入临界区执行任务。</li>
+</ol>
+<h3 id="多种同步模式"><strong>多种同步模式</strong></h3>
+<p>AQS
+提供了独占锁（exclusive）和共享锁（shared）两种模式。例如，<code>ReentrantLock</code>
+使用的是独占模式，而 <code>Semaphore</code> 和
+<code>CountDownLatch</code> 使用的是共享模式。</p>
+<p>一般来说，自定义同步器的共享方式要么是独占，要么是共享，他们也只需实现钩子方法中的<code>tryAcquire-tryRelease</code>或<code>tryAcquireShared-tryReleaseShared</code>中的一种即可。但
+AQS
+也支持自定义同步器同时实现独占和共享两种方式，如<code>ReentrantReadWriteLock</code>。</p>
+<h3 id="同步状态变量"><strong>同步状态变量</strong></h3>
+<p>AQS 使用一个 <code>int</code> 型变量（称为同步状态
+<code>state</code>）来表示锁的状态，而不是像 CLH
+锁那样依赖前驱节点的布尔变量。AQS 通过 CAS
+操作来修改这个状态，确保线程安全。</p>
+<ul>
+<li><strong>ReentrantLock
+的可重入性</strong>：<code>ReentrantLock</code> 通过内部的
+<code>state</code> 变量表示锁的占用状态。初始 <code>state</code> 为
+0，表示未锁定。当线程 A 调用 <code>lock()</code> 时，通过
+<code>tryAcquire()</code> 方法尝试获取锁并将 <code>state</code> 加
+1。若获取成功，线程 A 可以多次获取同一锁，<code>state</code>
+会累加，体现可重入性。释放时，<code>state</code> 减 1，直到回到
+0，锁才真正释放，其他线程才有机会获取锁。</li>
+<li><strong>CountDownLatch
+的倒计时</strong>：<code>CountDownLatch</code> 使用 <code>state</code>
+变量表示剩余的倒计时数。初始 <code>state</code> 为 N，表示 N
+个子线程。每个子线程执行完任务后调用
+<code>countDown()</code>，<code>state</code> 减
+1。所有子线程执行完毕（<code>state</code> 变为
+0）后，主线程被唤醒，继续执行后续操作。</li>
+</ul>
+<h2 id="实现同步器">实现同步器</h2>
+<ul>
+<li><strong>AQS 的设计</strong>：AQS
+提供了一个基础的框架和队列管理功能，但具体的同步逻辑并没有在 AQS
+中实现，而是留给具体的同步器来定义。这就是模板方法模式的典型应用：AQS
+提供了模板方法，这些模板方法依赖于子类实现的钩子方法。</li>
+<li><strong>重写钩子方法</strong>：具体的同步器，如
+<code>ReentrantLock</code>、<code>Semaphore</code>，会通过其内部定义的
+<code>Sync</code> 类（继承自
+AQS）来重写这些钩子方法。这些重写的方法决定了锁的行为（如是否公平、是否可重入、许可的数量等）。</li>
+</ul>
+<blockquote>
+<p><strong>什么是钩子方法？</strong>
+钩子方法是一种被声明在抽象类中的方法，一般使用 <code>protected</code>
+关键字修饰，它可以是空方法（由子类实现），也可以是默认实现的方法。模板设计模式通过钩子方法控制固定步骤的实现。</p>
+<p>除了这些钩子方法，AQS类中其他方法都是final关键字修饰的，无法被重写。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//独占方式。尝试获取资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//独占方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//共享方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">tryReleaseShared</span><span class="params">(<span class="type">int</span>)</span></span><br><span class="line"><span class="comment">//该线程是否正在独占资源。只有用到condition才需要去实现它。</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">isHeldExclusively</span><span class="params">()</span></span><br></pre></td></tr></table></figure>
+<h1 id="常见同步工具类">常见同步工具类</h1>
+<h2 id="reentrantlock">ReentrantLock</h2>
+<p><strong>ReentrantLock是一种可重入的互斥锁，允许同一个线程在持有锁的情况下多次获取锁。它提供了更灵活的锁机制，可以显式地获取和释放锁，还支持公平锁和非公平锁的选择。通常用来实现线程间的同步，防止多个线程同时访问共享资源。</strong></p>
+<p><code>ReentrantLock</code> 有一个内部类
+<code>Sync</code>，<code>Sync</code> 继承
+AQS，添加锁和释放锁的大部分操作实际上都是在 <code>Sync</code>
+中实现的。<code>Sync</code> 有<strong>公平锁</strong>
+<code>FairSync</code> 和<strong>非公平锁</strong>
+<code>NonfairSync</code> 两个子类。</p>
+<h3 id="公平锁非公平锁">公平锁/非公平锁</h3>
+<ol type="1">
+<li>抽象类<code>Sync</code>继承自AbstractQueuedSynchronizer，实现了AQS的部分方法；</li>
+<li><code>NonfairSync</code>继承自<code>Sync</code>，实现了Sync中的方法，主要用于<strong>非公平锁</strong>的获取；</li>
+<li><code>FairSync</code>继承自<code>Sync</code>，实现了Sync中的方法，主要用于<strong>公平锁</strong>的获取。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Sync</span> <span class="keyword">extends</span> <span class="title class_">AbstractQueuedSynchronizer</span> &#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">NonfairSync</span> <span class="keyword">extends</span> <span class="title class_">Sync</span> &#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">FairSync</span> <span class="keyword">extends</span> <span class="title class_">Sync</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>可以通过构造方法实现公平锁或非公平锁。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Sync sync;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 默认构造方法，ReentrantLock默认是非公平锁</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">ReentrantLock</span><span class="params">()</span> &#123;</span><br><span class="line">    sync = <span class="keyword">new</span> <span class="title class_">NonfairSync</span>();</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 自己可选择使用公平锁还是非公平锁，传入true是公平锁，传入false是非公平锁</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">ReentrantLock</span><span class="params">(<span class="type">boolean</span> fair)</span> &#123;</span><br><span class="line">    sync = fair ? <span class="keyword">new</span> <span class="title class_">FairSync</span>() : <span class="keyword">new</span> <span class="title class_">NonfairSync</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>公平锁和非公平锁只有两处不同：</p>
+<ul>
+<li><p><strong>公平锁：</strong>在调用<code>lock()</code>后，首先就会调用
+CAS
+进行一次抢锁，如果这个时候恰巧锁没有被占用，那么直接就获取到锁返回了。但是公平锁会先判断等待列中是否有处于等待状态的线程，如果有的话，就乖乖加入到等待线程中去排队，而不能直接插队获取锁。</p></li>
+<li><p><strong>非公平锁：</strong>在调用<code>lock()</code>中的第一次CAS
+失败后，调用的是<code>nonfairTryAcquire()</code>非公平方法，如果发现锁这个时候被释放了（state
+== 0），非公平锁就会直接 CAS
+抢锁，不会管当前等待队列中有没有等待线程。但是公平锁会判断等待队列是否有线程处于等待状态，如果有则不去抢锁，乖乖排到后面。</p></li>
+</ul>
+<h3 id="可中断锁">可中断锁</h3>
+<p>可中断锁与不可中断锁的区别在于：线程尝试获取锁操作失败后，在等待过程中，如果该线程被其他线程中断了，它是如何响应中断请求的。<code>lock</code>方法会忽略中断请求，继续获取锁直到成功；而<code>lockInterruptibly</code>则直接抛出中断异常来立即响应中断，由上层调用者处理中断。</p>
+<ul>
+<li><code>lock()</code>适用于锁获取操作不受中断影响的情况，此时可以忽略中断请求正常执行加锁操作，因为该操作仅仅记录了中断状态（通过<code>Thread.currentThread().interrupt()</code>操作，只是恢复了中断状态为true，并没有对中断进行响应)。</li>
+<li>如果要求被中断线程不能参与锁的竞争操作，则应该使用<code>lockInterruptibly</code>方法，一旦检测到中断请求，立即返回不再参与锁的竞争并且取消锁获取操作（即finally中的cancelAcquire操作）</li>
+</ul>
+<h3 id="可重入锁">可重入锁</h3>
+<p>可重入是指任意线程在获取到锁之后能够再次获取该锁而不会被锁阻塞，该特性的首先需要解决以下两个问题：</p>
+<ul>
+<li><strong>线程再次获取锁：</strong>所需要去识别获取锁的线程是否为当前占据锁的线程，如果是，则再次获取成功；</li>
+<li><strong>锁的最终释放：</strong>线程重复n次获取了锁，随后在第n次释放该锁后，其它线程能够获取到该锁。锁的最终释放要求锁对于获取进行计数自增，计数表示当前线程被重复获取的次数，而被释放时，计数自减，当计数为0时表示锁已经成功释放。</li>
+</ul>
+<p>首先会通过<code>compareAndSetState(int, int)</code>方法来尝试修改同步状态，如果修改成功则表示获取到了锁，然后调用<code>setExclusiveOwnerThread(Thread)</code>方法来设置获取到锁的线程。</p>
+<p>该方法继承自AbstractOwnableSynchronizer类，它的主要作用就是<strong>记录获取到独占锁的线程</strong>，AOS类的定义很简单：</p>
+<p><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractOwnableSynchronizer</span></span><br><span class="line">    <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">3737899427754241961L</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">AbstractOwnableSynchronizer</span><span class="params">()</span> &#123; &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// The current owner of exclusive mode synchronization.</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> Thread exclusiveOwnerThread;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">setExclusiveOwnerThread</span><span class="params">(Thread thread)</span> &#123;</span><br><span class="line">        exclusiveOwnerThread = thread;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> Thread <span class="title function_">getExclusiveOwnerThread</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> exclusiveOwnerThread;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="countdownlatch">CountDownLatch</h2>
+<p><strong>CountDownLatch是一个计数器，它允许一个或多个线程等待其它线程完成操作后再继续执行，通常用来实现一个线程等待其它多个线程完成操作之后再继续执行的操作。</strong></p>
+<p>CountDownLatch内部维护了一个计数器，该计数器通过CountDownLatch的构造方法指定。当调用<code>await()</code>方法时，它将一直阻塞，直到计数器变为0。当其它线程执行完指定的任务后，可以调用<code>countDown()</code>方法将计数器减一。当计数器减为0，所有的线程将同时被唤醒，然后继续执行。</p>
+<h3 id="常用方法">常用方法</h3>
+<blockquote>
+<ul>
+<li><strong>CountDownLatch(int
+count)：</strong>CountDownLatch的构造方法，可通过count参数指定计数次数，但是要大于等于0，小于0会抛IIegalArgumentException异常。</li>
+<li><strong>void
+await()：</strong>如果计数器不等于0，会一直阻塞（在线程没被打断的情况下）。</li>
+<li><strong>boolean await(long timeout,TimeUnit
+unit)：</strong>除非线程被中断，否则会一直阻塞，直至计数器减为0或超出指定时间timeout，当计数器为0返回true，当超过指定时间，返回false。</li>
+<li><strong>void
+countDown()：</strong>调用一次，计数器就减1，当等于0时，释放所有线程。如果计数器的初始值就是0，那么就当没有用CountDownLatch吧。</li>
+<li><strong>long
+getCount()：</strong>返回当前计数器的数量，可以用来测试和调试。</li>
+</ul>
+</blockquote>
+<h3 id="使用实例">使用实例</h3>
+<p>定义线程任务，实现<code>Runnable</code>接口</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CountWork</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> CountDownLatch countDownLatch;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;执行任务&quot;</span>);</span><br><span class="line">        countDownLatch.countDown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义测试类，使用for循环执行任务，知道任务结束完毕后打印结果。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CountDownLatchTest</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="type">CountDownLatch</span> <span class="variable">countDownLatch</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CountDownLatch</span>(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">CountWork</span> <span class="variable">countWork</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CountWork</span>(countDownLatch);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Thread</span>(countWork).start();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        countDownLatch.await();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;所有任务执行完毕&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>执行结果：</strong></p>
+<p>可以发现，当所有任务执行完毕后，才执行了测试类后续的打印任务。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408301746656.png"></p>
+<p>但是如果使用构造函数创建了4个计数<code>new CountDownLatch(4)</code>，但实际只有3个线程，则测试类阻塞，无法打印结果。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408301752103.png"></p>
+<h2 id="cyclicbarrier">CyclicBarrier</h2>
+<p><strong>CyclicBarrier是一个同步屏障，它允许多个线程相互等待，直到到达某个公共屏障点，才能继续执行。通常用来实现多个线程在同一个屏障处等待，然后再一起继续执行的操作。</strong></p>
+<p>CyclicBarrier也维护了一个类似计数器的变量，通过CyclicBarrier的构造函数指定，需要大于0，否则抛IllegalArgumenException异常。当线程到达屏障位置时，调用await()方法进行阻塞，直到所有线程到达屏障位置时，所有线程才会被释放，而屏障将会被重置为初始值以便下次使用。</p>
+<h3 id="常用方法-1">常用方法</h3>
+<blockquote>
+<ul>
+<li><strong>CyclicBarrier(int
+parties)：</strong>CyclicBarrier的构造方法，可通过parties参数指定需要到达屏障的线程个数，但是要大于0，否则会抛IllegalArgumentException异常。</li>
+<li><strong>CyclicBarrier(int parties,Runnable
+barrierAction)：</strong>另一个构造方法，parties作用同上，barrierAction表示最后一个到达屏障点的线程要执行的逻辑。</li>
+<li><strong>int
+await()：</strong>表示线程到达屏障点，并等待其它线程到达，返回值表示当前线程在屏障中的位置（第几个到达的）。</li>
+<li><strong>int await(long timeout,TimeUnit
+unit)：</strong>与await()类似，但是设置了超时时间，如果超过指定的时间后，仍然还有线程没有到达屏障点，则等待的线程会被唤醒并执行后续操作。</li>
+<li><strong>void
+reset()：</strong>重置屏障状态，即将屏障计数器重置为初始值。</li>
+<li><strong>int getParties()：</strong>获取需要同步的线程数量。</li>
+<li><strong>int
+getNumberWaiting()：</strong>获取当前正在等待的线程数量。</li>
+</ul>
+</blockquote>
+<h3 id="使用实例-1">使用实例</h3>
+<p>定义线程执行的任务，当线程执行完打印任务后，阻塞等待其他线程。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BarrierTask</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> CyclicBarrier barrier;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; 正在执行&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            barrier.await();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException | BrokenBarrierException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义最终执行的业务逻辑</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FinalTask</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;所有线程执行完毕&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义测试类，当所有线程执行到屏障后，触发最终的业务逻辑。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CyclicBarrierTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">CyclicBarrier</span> <span class="variable">cyclicBarrier</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CyclicBarrier</span>(<span class="number">4</span>, <span class="keyword">new</span> <span class="title class_">FinalTask</span>());</span><br><span class="line"></span><br><span class="line">        <span class="type">BarrierTask</span> <span class="variable">barrierTask</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BarrierTask</span>(cyclicBarrier);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= <span class="number">4</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Thread</span>(barrierTask, <span class="string">&quot;线程-&quot;</span> + i).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>执行结果：</strong></p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408301808915.png"></p>
+<h3 id="对比countdownlatch">对比CountDownLatch</h3>
+<ul>
+<li>CyclicBarrier维护<strong>线程</strong>的计数，而CounDownLatch维护<strong>任务</strong>的计数。</li>
+<li><strong>可重用性：</strong>两者最明显的差异就是可重用性。CyclicBarrier所有线程都到达屏障后，计数会重置为初始值。而CountDownLatch永远不会重置。</li>
+</ul>
+<h2 id="semaphore">Semaphore</h2>
+<p><strong>Semaphore是一个计数信号量，它允许多个线程同时访问共享资源，并通过计数器来控制访问数量。它通常用来实现一个线程需要等待获取一个许可证才能访问共享资源，或者需要释放一个许可证才能完成的操作。</strong></p>
+<p>Semaphore维护了一个内部计数器（许可permits），主要有两个操作，分别对应Semaphore的acquire和release方法。acquire方法用于获取资源，当计数器大于0时，将计数器减1；当计数器等于0时，将线程阻塞。release方法用于释放资源，将计数器加1，并唤醒一个等待中的线程。</p>
+<h3 id="常用方法-2">常用方法</h3>
+<blockquote>
+<ul>
+<li><strong>Semaphore(int
+permits)：</strong>构造方法，permits表示Semaphore中的许可数量，它决定了同时可以访问某个资源的线程数量。</li>
+<li><strong>Semaphore(int permits,boolean
+fair)：</strong>构造方法，当fair为ture，设置为公平信号量。</li>
+<li><strong>void
+acquire()：</strong>获取一个许可，如果没有许可，则当前线程被阻塞，直到有许可。如果有许可该方法会将许可数量减1。</li>
+<li><strong>void acquire(int
+permits)：</strong>获取指定数量的许可，获取成功同样将许可减去指定数量，失败阻塞。</li>
+<li><strong>void
+release()：</strong>释放一个许可，将许可数加1。如果有其他线程正在等待许可，则唤醒其中一个线程。</li>
+<li><strong>void release(int n)：</strong>释放n个许可。</li>
+<li><strong>int availablePermits()：</strong>当前可用许可数。</li>
+</ul>
+</blockquote>
+<h3 id="使用实例-2">使用实例</h3>
+<p>信号量的构造方法传入参数为5，设置六个进程获取这5个资源。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SemaphoreTest</span> &#123;</span><br><span class="line">    Semaphore park;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SemaphoreTest</span><span class="params">(<span class="type">int</span> permits)</span> &#123;</span><br><span class="line">        park = <span class="keyword">new</span> <span class="title class_">Semaphore</span>(permits);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">enter</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        park.acquire();</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; 进入&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">leave</span><span class="params">()</span> &#123;</span><br><span class="line">        park.release();</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; 驶出&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">SemaphoreTest</span> <span class="variable">test</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SemaphoreTest</span>(<span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= <span class="number">6</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    test.enter();</span><br><span class="line">                    Thread.sleep(<span class="number">100</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                &#125;</span><br><span class="line">                test.leave();</span><br><span class="line">            &#125;, <span class="string">&quot;车牌号&quot;</span> + i).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>返回结果：</strong></p>
+<p>可以发现同一时刻只有五个线程获取到资源，当有资源释放时（车牌号5
+驶出），其他线程才能获取资源（车牌号6 进入）。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202408301706432.png"></p>
+]]></content>
+      <categories>
+        <category>并发编程</category>
+      </categories>
+      <tags>
+        <tag>AQS机制</tag>
+        <tag>ReentrantLock</tag>
+        <tag>CountDownLatch</tag>
+        <tag>CyclicBarrier</tag>
+        <tag>Semaphore</tag>
       </tags>
   </entry>
 </search>
