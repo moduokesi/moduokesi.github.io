@@ -4405,7 +4405,15 @@ Word）</strong>：对象指向它的类元数据的指针，JVM可以通过该�
 <li><p><strong>偏向锁加锁成功：</strong>如果同一线程再次访问该对象的
 <code>synchronized</code> 块，JVM 检查 <code>Mark Word</code> 中的线程
 ID，如果与当前线程的 ID
-匹配，则认为该线程已经持有了锁，无需执行任何额外操作，直接进入同步块。这避免了加锁和解锁的开销。</p></li>
+匹配，则认为该线程已经持有了锁，无需执行任何额外操作，直接进入同步块。这避免了加锁和解锁的开销；如果JVM
+发现<code>Mark Word</code> 中的线程 ID
+与当前线程不符，偏向锁就会被撤销。偏向锁撤销的过程包括：</p>
+<ul>
+<li>偏向锁升级为轻量级锁：JVM 会暂停持有偏向锁的线程，撤销偏向锁，将
+<code>Mark Word</code>
+更新为指向轻量级锁的状态，并将锁记录在新的线程的栈中。</li>
+<li>新线程继续尝试获取锁：如果当前没有其他线程竞争锁，新的线程将获取轻量级锁；否则，锁将进一步升级为重量级锁。</li>
+</ul></li>
 </ul>
 <p><strong>偏向锁的释放过程：</strong></p>
 <ul>
@@ -4417,13 +4425,7 @@ ID，如果与当前线程的 ID
 块，可以直接重用这个锁而无需加锁操作。</p></li>
 <li><p><strong>锁撤销（偏向锁失效）：</strong>如果另一线程尝试访问同一个对象的<code>synchronized</code>块，JVM
 发现<code>Mark Word</code> 中的线程 ID
-与当前线程不符，偏向锁就会被撤销。偏向锁撤销的过程包括：</p>
-<ul>
-<li>偏向锁升级为轻量级锁：JVM 会暂停持有偏向锁的线程，撤销偏向锁，将
-<code>Mark Word</code>
-更新为指向轻量级锁的状态，并将锁记录在新的线程的栈中。</li>
-<li>新线程继续尝试获取锁：如果当前没有其他线程竞争锁，新的线程将获取轻量级锁；否则，锁将进一步升级为重量级锁。</li>
-</ul></li>
+与当前线程不符，偏向锁就会升级为轻量级锁。</p></li>
 </ul>
 <h3 id="轻量级锁">轻量级锁</h3>
 <p><code>轻量级锁</code>是相对基于OS的互斥量实现的重量级锁而言的，它的本意是在没有多线程竞争的前提下，减少传统的重量级锁使用OS的互斥量而带来的性能消耗。</p>
@@ -4575,6 +4577,348 @@ monitor(锁)并复位变量的值，以便其他线程进入获取 monitor(锁)�
       <tags>
         <tag>volatile</tag>
         <tag>synchronized</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【常用集合】深入浅出Map集合</title>
+    <url>/2024/09/29/%E3%80%90%E5%B8%B8%E7%94%A8%E9%9B%86%E5%90%88%E3%80%91%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAMap%E9%9B%86%E5%90%88/</url>
+    <content><![CDATA[<h2 id="hashmap">HashMap</h2>
+<p>HashMap 主要用来存放键值对，它基于哈希表的 Map 接口实现，是常用的
+Java 集合之一，是非线程安全的。</p>
+<p><code>HashMap</code> 可以存储 null 的 key 和 value，但 null
+作为键只能有一个，null 作为值可以有多个。</p>
+<h3 id="底层实现">底层实现</h3>
+<p>通过 key 的 <code>hashCode</code> 经扰动函数处理得到 hash 值，并通过
+<code>hash &amp; (length - 1)</code>
+确定存储位置（length为数组的长度）。若位置已有元素，比较 hash 值和
+key，相同则覆盖，不同则用链表解决冲突。扰动函数用于优化
+<code>hashCode()</code> 实现，减少哈希碰撞。</p>
+<h4 id="存储结构"><strong>存储结构</strong></h4>
+<blockquote>
+<p><strong>为什么要使用红黑树？</strong>https://www.yuque.com/hollis666/qfgwk3/zx609g</p>
+</blockquote>
+<ul>
+<li>在 JDK 1.8 之前，<code>HashMap</code> 采用 <strong>链地址法</strong>
+来解决哈希冲突，即将数组与链表结合使用。当多个元素的哈希值映射到同一个桶位时，<code>HashMap</code>
+会在该桶位置创建一个链表，所有冲突的元素都以链表的形式存储。在插入新元素时，<code>HashMap</code>
+使用
+<strong>头插法</strong>，将新元素插入链表的开头位置，以此处理哈希冲突。</li>
+<li>在 JDK 1.8 之后，<code>HashMap</code>
+解决哈希冲突的方式进行了优化，仍然采用 <strong>数组+链表</strong>
+的结构，但引入了 <strong>红黑树</strong>
+来提高性能。当某个桶位上的链表长度超过阈值（默认
+8），并且哈希表桶的长度大于64时，链表会转换为红黑树，从而将链表的查询元素的时间复杂度由
+O(n) 降低为 O(log n)。这样，当哈希冲突较多时，<code>HashMap</code>
+仍然能够保持较高的查询和插入效率。</li>
+</ul>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202409181054262.png" style="zoom: 25%;"></p>
+<h4 id="数据插入方式">数据插入方式</h4>
+<p>在 JDK 1.7 及之前的版本中，<code>HashMap</code>
+在多线程环境下进行扩容时，由于使用<strong>头插法</strong>重排链表，<strong>多个线程同时操作同一桶位的链表</strong>可能导致节点指向错误，形成环形链表，从而引发死循环。</p>
+<p>为了解决这个问题，JDK1.8 版本的 HashMap
+采用了<strong>尾插法</strong>来避免链表倒置，使得插入的节点永远都是放在链表的末尾，避免了链表中的环形结构。</p>
+<h4 id="长度取值">长度取值</h4>
+<p><code>HashMap</code> 默认的初始化大小为
+16。之后每次扩充，容量变为原来的 2 倍。并且， <code>HashMap</code>
+总是使用 2 的幂作为哈希表的大小。长度采用 2
+的幂，是因为二进制位操作<code>&amp;</code>相对于取模运算<code>%</code>能够提高效率。<strong>位运算直接对内存数据操作，不需要转换成10进制进行取模运算。</strong></p>
+<p><strong>公式（<code>hash % length == hash &amp; (length - 1)</code>成立的前提是Hash表的长度是
+2 的 n 次方</strong>。</p>
+<h3 id="并发安全问题">并发安全问题</h3>
+<h4 id="死锁问题">死锁问题</h4>
+<p>在 JDK 1.7 及之前的版本中，<code>HashMap</code>
+在多线程环境下进行扩容时，由于使用<strong>头插法</strong>重排链表，<strong>多个线程同时操作同一桶位的链表</strong>可能导致节点指向错误，形成环形链表，从而引发死循环。</p>
+<p>为了解决这个问题，JDK1.8 版本的 HashMap
+采用了<strong>尾插法</strong>来避免链表倒置，使得插入的节点永远都是放在链表的末尾，避免了链表中的环形结构。</p>
+<h4 id="其他问题">其他问题</h4>
+<ul>
+<li>多线程put的时候，size的个数和真正的个数不一样</li>
+<li>多线程put的时候，可能会把上一个put的值覆盖掉</li>
+<li>当既有get操作，又有扩容操作的时候，有可能数据刚好被扩容换了桶，导致get不到数据</li>
+<li>和其他不支持并发的集合一样，HashMap也采用了<code>fail-fast</code>操作，当多个线程同时put和get的时候，会抛出并发异常</li>
+</ul>
+<h3 id="扩容机制">扩容机制</h3>
+<h4 id="触发扩容">触发扩容</h4>
+<p><code>HashMap</code>
+中的容量阈值（<code>threshold</code>）是由当前数组容量与负载因子相乘得到的<code>capacity * loadFactor</code>。当
+<code>HashMap</code>
+中的元素数量超过这个阈值时，会触发扩容操作。默认的负载因子为
+<code>0.75</code>，数组的初始容量为 <code>16</code>。</p>
+<h4 id="扩容过程">扩容过程</h4>
+<p>在扩容过程中，<code>HashMap</code>
+会创建一个新的数组，容量是原数组的两倍。所有原数组的元素都会被重新分配到这个新数组中。</p>
+<h4 id="节点迁移">节点迁移</h4>
+<ul>
+<li><strong>桶元素重新映射：</strong>如果桶中只有一个元素，没有形成链表，则将原来的桶引用置为null，同时，将该元素进行<code>rehash</code>即可。</li>
+<li><strong>链表重新链接：</strong>扩容后的数据迁移实际上是部分的，一些元素保持原位置，而另一些元素则会被迁移到新的位置。这种优化减少了不必要的数据移动，提升了扩容操作的效率。
+<ol type="1">
+<li><strong>保持原位置</strong>：对于某个元素，如果
+<code>hash &amp; oldLength == 0</code>，那么该元素在扩容后的新数组中仍然保留在原位置。</li>
+<li><strong>移动到新位置</strong>：如果
+<code>hash &amp; oldLength != 0</code>，那么该元素在扩容后的新数组中的位置将从
+<code>index</code> 变为 <code>index + oldLength</code>。</li>
+</ol></li>
+<li><strong>取消树化：</strong>类似于上述链表的重新链接，当重新链接操作完毕后，会判断两个哈希桶上的链表长度是否小于等于6，如果满足条件，会将红黑树取消树化，退化成链表。</li>
+</ul>
+<p>示例：旧哈希桶长度为8，有a、b、c、d四个元素，存储在下标为3的哈希桶上。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">hash(a)=<span class="number">3</span>;  hash(a)&amp;<span class="number">7</span>=<span class="number">3</span>;</span><br><span class="line">hash(b)=<span class="number">11</span>; hash(b)&amp;<span class="number">7</span>=<span class="number">3</span>;</span><br><span class="line">hash(c)=<span class="number">27</span>; hash(c)&amp;<span class="number">7</span>=<span class="number">3</span>;</span><br><span class="line">hash(d)=<span class="number">59</span>; hash(d)&amp;<span class="number">7</span>=<span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+<p>如果扩容为16，由于<code>hash(a)&amp;8=0;</code>无需移动，其他的不为零的元素移动到<code>index + oldLength = 3 + 8 = 11</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">hash(a)=<span class="number">3</span>;  hash(a)&amp;<span class="number">8</span>=<span class="number">0</span>; hash(a)&amp;<span class="number">15</span>=<span class="number">3</span>;</span><br><span class="line">hash(b)=<span class="number">11</span>; hash(b)&amp;<span class="number">8</span>=<span class="number">8</span>; hash(b)&amp;<span class="number">15</span>=<span class="number">11</span></span><br><span class="line">hash(c)=<span class="number">27</span>; hash(c)&amp;<span class="number">8</span>=<span class="number">8</span>; hash(c)&amp;<span class="number">15</span>=<span class="number">11</span></span><br><span class="line">hash(d)=<span class="number">59</span>; hash(d)&amp;<span class="number">8</span>=<span class="number">8</span>; hash(d)&amp;<span class="number">15</span>=<span class="number">11</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>为什么HashMap的负载因子设置为0.75？</strong></p>
+<ul>
+<li><strong>性能和空间的平衡：</strong>
+<ul>
+<li>负载因子过低（例如
+0.5），意味着更频繁地扩容，虽然哈希冲突会减少，但空间利用率较低，增加了内存消耗。</li>
+<li>负载因子过高（例如
+1.0），虽然提高了空间利用率，但增加了哈希冲突的概率，降低了查找和插入的效率。</li>
+</ul></li>
+<li><strong>数学依据：</strong>
+<ul>
+<li>负载因子选择为0.75（3/4），可以保证临界值
+<code>threshold = loacFactor * capacity</code>为整数。</li>
+</ul></li>
+</ul>
+</blockquote>
+<h2 id="concurrenthashmap">ConcurrentHashMap</h2>
+<h3 id="底层实现-1">底层实现</h3>
+<h4 id="同hashmap">同HashMap</h4>
+<h4 id="线程安全">线程安全</h4>
+<ul>
+<li><strong>JDK1.8之前：</strong>
+<ul>
+<li><strong>使用分段锁</strong>：在 JDK 1.7
+及之前，<code>ConcurrentHashMap</code>
+通过<strong>分段锁机制</strong>来实现线程安全。它将整个哈希表分为多个段（<code>Segment</code>），每个段内部维护一个独立的哈希表和锁。当对
+<code>ConcurrentHashMap</code>
+进行并发操作时，不同的线程可以同时操作不同的段，从而提高并发性。</li>
+<li><strong>Segment 是继承了 ReentrantLock
+的子类</strong>：每个段都有自己独立的可重入锁，而操作的同步性依赖于
+<code>Segment</code> 的锁机制。</li>
+</ul></li>
+<li><strong>JDK1.8之后：</strong>
+<ul>
+<li><strong>移除了分段锁</strong>：在 JDK 1.8
+中，<code>ConcurrentHashMap</code>
+不再使用分段锁。相反，它直接使用了一个<code>Node&lt;K, V&gt;[]</code><strong>数组</strong>来存储键值对，并且通过<strong>更细粒度的锁</strong>和<strong>无锁操作</strong>来实现线程安全。</li>
+<li><strong>CAS
+操作</strong>：在插入和删除节点时，<code>ConcurrentHashMap</code> 使用
+CAS（Compare-And-Swap）来确保并发安全。例如，当向一个空桶中插入第一个节点时，<code>ConcurrentHashMap</code>
+会使用 CAS 操作直接插入，这样可以避免锁的使用。</li>
+<li><strong><code>Synchronized</code>
+锁</strong>：在一些复杂操作（如链表或红黑树的插入或删除）中，<code>ConcurrentHashMap</code>
+使用 <code>synchronized</code>
+来锁定特定的桶（<code>Node</code>），而不是整个段或整个哈希表。这种方式虽然引入了锁，但锁的粒度非常小，只会锁定冲突的桶，因此可以大大减少锁竞争。</li>
+</ul></li>
+<li><strong>并发度：</strong>
+<ul>
+<li>JDK1.8之前，最大并发度是<code>Segment</code>的个数，默认是 16。</li>
+<li>JDK1.8之后，最大并发度是<code>Node&lt;K, V&gt;[]</code>数组的大小，并发度更大。</li>
+</ul></li>
+</ul>
+<h3 id="为什么key和value都不能为null">为什么key和value都不能为null?</h3>
+<p><code>null</code>是一个特殊的值，表示没有对象或没有引用。</p>
+<ul>
+<li><code>key</code>为null：
+<ul>
+<li><strong>防止异常</strong>：如果键为
+<code>null</code>，哈希计算过程中会抛出
+<code>NullPointerException</code>。</li>
+</ul></li>
+<li><code>value</code>为null：
+<ul>
+<li><strong>简化实现</strong>：在并发条件下无需对null值进行特殊处理，减少条件分支，提高可维护性。</li>
+<li><strong>避免二义性</strong>：如果使用<code>get(key)</code>方法获取的<code>value</code>为null，则可能该
+<code>key</code> 存在，但其对应的值是 <code>null</code>；或者该
+<code>key</code> 不存在。</li>
+</ul></li>
+</ul>
+<h3 id="保证复合操作的原子性">保证复合操作的原子性</h3>
+<p><code>ConcurrentHashMap</code>
+是线程安全的，这意味着它能够保证在多线程环境下对其进行并发读写操作时，不会出现数据不一致的情况。此外，它也避免了
+JDK 1.7 及之前版本的 <code>HashMap</code> 中，在多线程操作时可能导致的
+<strong>死循环问题</strong>。然而，<strong>线程安全</strong> 不等于
+<strong>原子性</strong>，尤其是在涉及多个操作的情况下，<strong><code>ConcurrentHashMap</code>
+并不能确保所有的复合操作都是原子性的</strong>。</p>
+<blockquote>
+<p><strong>复合操作：</strong>是指由多个基本操作（如
+<code>put</code>、<code>get</code>、<code>remove</code>、<code>containsKey</code>
+等）组合而成的操作。</p>
+<p>例如：如果多个线程同时调用 <code>containsKey</code>
+进行检查并随后调用
+<code>put</code>，在第一个线程判断某个键不存在时，另一个线程可能已经插入了该键，这样第一个线程的操作就会覆盖另一个线程的结果，导致数据不一致。</p>
+</blockquote>
+<p>为了解决复合操作的原子性问题，<code>ConcurrentHashMap</code>
+提供了一些内置的<strong>原子复合操作方法</strong>。这些方法能够确保整个操作过程在并发环境下是原子性的，即要么全部成功，要么全部失败，不会出现中间状态。</p>
+<ul>
+<li><strong><code>putIfAbsent(K key, V value)</code></strong>
+<ul>
+<li>如果指定的键 <code>key</code> 尚未存在于
+<code>ConcurrentHashMap</code> 中，则将其对应的值设置为
+<code>value</code>。该操作是原子性的，能够确保在并发情况下，只有第一个插入的线程成功，后续插入将被忽略。</li>
+<li>这种操作特别适合用于避免重复插入。</li>
+</ul></li>
+<li><strong><code>computeIfPresent(K key, BiFunction&lt;? super K, ? super V, ? extends V&gt; remappingFunction)</code></strong>
+<ul>
+<li>只有当指定的键 <code>key</code> 存在时，才会根据提供的
+<code>remappingFunction</code>
+计算新值并更新。如果键不存在，则不执行任何操作。该方法同样确保了计算和更新的原子性。</li>
+</ul></li>
+</ul>
+<h2 id="map对比">Map对比</h2>
+<h3 id="hashmap和hashtable的区别">HashMap和Hashtable的区别</h3>
+<ul>
+<li><strong>线程是否安全：</strong> <code>HashMap</code>
+是非线程安全的，<code>Hashtable</code> 是线程安全的,因为
+<code>Hashtable</code> 内部的方法基本都经过<code>synchronized</code>
+修饰。</li>
+<li><strong>效率：</strong> 因为线程安全的问题，<code>HashMap</code>
+要比 <code>Hashtable</code> 效率高一点。另外，<code>Hashtable</code>
+基本被淘汰，不要在代码中使用它；</li>
+<li><strong>对 Null key 和 Null value 的支持：</strong>
+<code>HashMap</code> 可以存储 null 的 key 和 value，但 null
+作为键只能有一个，null 作为值可以有多个；Hashtable 不允许有 null 键和
+null 值，否则会抛出 <code>NullPointerException</code>。</li>
+<li><strong>初始容量大小和每次扩充容量大小的不同：</strong> ①
+创建时如果不指定容量初始值，<code>Hashtable</code> 默认的初始大小为
+11，之后每次扩充，容量变为原来的 2n+1。<code>HashMap</code>
+默认的初始化大小为 16。之后每次扩充，容量变为原来的 2 倍。②
+创建时如果给定了容量初始值，那么 <code>Hashtable</code>
+会直接使用你给定的大小，而 <code>HashMap</code> 会将其扩充为 2
+的幂次方大小。也就是说 <code>HashMap</code> 总是使用 2
+的幂作为哈希表的大小。</li>
+<li><strong>底层数据结构：</strong> JDK1.8 以后的 <code>HashMap</code>
+在解决哈希冲突时有了较大的变化，当链表长度大于阈值（默认为
+8）时，将链表转化为红黑树（将链表转换成红黑树前会判断，如果当前数组的长度小于
+64，那么会选择先进行数组扩容，而不是转换为红黑树），以减少搜索时间（后文中我会结合源码对这一过程进行分析）。<code>Hashtable</code>
+没有这样的机制。</li>
+</ul>
+<blockquote>
+<p><strong>Hashtable、HashMap和ConcurrentHashMap的区别</strong></p>
+</blockquote>
+<p><strong>详见：https://www.yuque.com/hollis666/qfgwk3/lbfr7s</strong></p>
+<h3 id="hashmap和hashset的区别">HashMap和HashSet的区别</h3>
+<p><code>HashSet</code> 底层就是基于 <code>HashMap</code> 实现的。</p>
+<table>
+<colgroup>
+<col style="width: 38%">
+<col style="width: 61%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><code>HashMap</code></th>
+<th style="text-align: center;"><code>HashSet</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">实现了 <code>Map</code> 接口</td>
+<td style="text-align: center;">实现 <code>Set</code> 接口</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">存储键值对</td>
+<td style="text-align: center;">仅存储对象</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">调用 <code>put()</code>向 map
+中添加元素</td>
+<td style="text-align: center;">调用 <code>add()</code>方法向
+<code>Set</code> 中添加元素</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><code>HashMap</code> 使用键（Key）计算
+<code>hashcode</code></td>
+<td style="text-align: center;"><code>HashSet</code> 使用成员对象来计算
+<code>hashcode</code> 值，对于两个对象来说 <code>hashcode</code>
+可能相同，所以<code>equals()</code>方法用来判断对象的相等性</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hashmap和treemap的区别">HashMap和TreeMap的区别</h3>
+<p><code>TreeMap</code> 和<code>HashMap</code>
+都继承自<code>AbstractMap</code>
+，但是需要注意的是<code>TreeMap</code>它还实现了<code>NavigableMap</code>接口和<code>SortedMap</code>
+接口。</p>
+<p><img src="https://oss.javaguide.cn/github/javaguide/java/collection/treemap_hierarchy.png"></p>
+<p>实现 <code>NavigableMap</code> 接口让 <code>TreeMap</code>
+有了对集合内元素的搜索的能力。</p>
+<p>实现<code>SortedMap</code>接口让 <code>TreeMap</code>
+有了对集合中的元素根据键排序的能力。默认是按 key
+的升序排序，不过我们也可以指定排序的比较器。</p>
+<h3 id="concurrenthashmap-和-hashtable-的区别">ConcurrentHashMap 和
+Hashtable 的区别</h3>
+<p><strong>底层数据结构</strong></p>
+<ul>
+<li>JDK1.7 的 <code>ConcurrentHashMap</code> 底层采用
+<strong>分段的数组+链表</strong> 实现，JDK1.8 采用的数据结构跟
+<code>HashMap1.8</code>
+的结构一样采用<strong>数组+链表/红黑二叉树</strong>。</li>
+<li><code>Hashtable</code> 一直采用的是 <strong>数组+链表</strong>
+的形式，数组是 HashMap
+的主体，链表则是主要为了解决哈希冲突而存在的；</li>
+</ul>
+<p><strong>实现线程安全的方式（重要）</strong></p>
+<ul>
+<li><strong>ConcurrentHashMap：</strong>
+<ul>
+<li><strong>移除了分段锁</strong>：在 JDK 1.8
+中，<code>ConcurrentHashMap</code>
+不再使用分段锁。相反，它直接使用了一个<strong>Node数组</strong>来存储键值对，并且通过<strong>更细粒度的锁</strong>和<strong>无锁操作</strong>来实现线程安全。</li>
+<li><strong>CAS
+操作</strong>：在插入和删除节点时，<code>ConcurrentHashMap</code> 使用
+CAS（Compare-And-Swap）来确保并发安全。例如，当向一个空桶中插入第一个节点时，<code>ConcurrentHashMap</code>
+会使用 CAS 操作直接插入，这样可以避免锁的使用。</li>
+<li><strong><code>Synchronized</code>
+锁</strong>：在一些复杂操作（如链表或红黑树的插入或删除）中，<code>ConcurrentHashMap</code>
+使用 <code>synchronized</code>
+来锁定特定的桶（<code>Node</code>），而不是整个段或整个哈希表。这种方式虽然引入了锁，但锁的粒度非常小，只会锁定冲突的桶，因此可以大大减少锁竞争。</li>
+</ul></li>
+<li><strong>Hashtable：</strong>
+<ul>
+<li><strong>使用全表锁（Synchronized）</strong>：<code>Hashtable</code>
+通过对每个操作（如
+<code>put</code>、<code>get</code>、<code>remove</code> 等）加上
+<code>synchronized</code>
+来保证线程安全，但它使用的是全表锁，导致每次操作都必须锁住整个对象。这会导致多个线程在访问不同元素时也会被阻塞，增加锁竞争，降低并发性能。</li>
+<li><strong>性能瓶颈</strong>：全表锁机制使得即使线程操作不同的键，仍会被串行化。在高并发场景中，锁的竞争严重影响吞吐量，导致性能大幅下降。</li>
+</ul></li>
+</ul>
+<h3 id="如何解决hash冲突">如何解决Hash冲突？</h3>
+<p><strong>详见：</strong>https://www.yuque.com/hollis666/qfgwk3/pogt662wy87z24dr</p>
+<p><strong>1.开放定址法</strong></p>
+<ul>
+<li>开放定址法就是一旦发生了冲突，就去寻找下一个空的散列地址，只要散列表足够大，空的散列地址总能找到，并将记录存入。</li>
+<li>常见的开放寻址技术有线性探测、二次探测和双重散列。</li>
+<li>这种方法的缺点是可能导致“聚集”问题，降低哈希表的性能。</li>
+</ul>
+<p><strong>2.链地址法</strong></p>
+<ul>
+<li><p>每个哈希桶(bucket)指向一个链表。当发生冲突时，新的元素将被添加到这个链表的末尾。</p></li>
+<li><p>在Java中，HashMap就是通过这种方式来解决哈希冲突的。Java8之前，HashMap使用链表来实现)</p></li>
+<li><p>从Java
+8开始，当链表长度超过一定阈值时，链表会转换为红黑树，以提高搜索效率。</p></li>
+</ul>
+<p><strong>3.再哈希法</strong></p>
+<ul>
+<li>当哈希地址发生冲突用其他的函数计算另一个哈希函数地址，直到冲突不再产生为止。</li>
+<li>这种方法需要额外的计算，但可以有效降低冲突率。</li>
+</ul>
+<p><strong>4.建立公共溢出区</strong></p>
+<ul>
+<li>将哈希表分为基本表和溢出表两部分，发生冲突的元素都放入溢出表中。</li>
+</ul>
+<p><strong>5.一致性hash</strong></p>
+<ul>
+<li>主要用于分布式系统中，如分布式缓存。它通过将数据均匀分布到多个节点上来减少冲突</li>
+</ul>
+]]></content>
+      <categories>
+        <category>常用集合</category>
+      </categories>
+      <tags>
+        <tag>HashMap</tag>
+        <tag>ConcurrentHashMap</tag>
       </tags>
   </entry>
 </search>

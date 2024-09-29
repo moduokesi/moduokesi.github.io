@@ -6,7 +6,7 @@
   <link href="https://moduokesi.top/atom.xml" rel="self"/>
   
   <link href="https://moduokesi.top/"/>
-  <updated>2024-09-10T07:12:25.738Z</updated>
+  <updated>2024-09-29T09:03:11.916Z</updated>
   <id>https://moduokesi.top/</id>
   
   <author>
@@ -17,11 +17,41 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>【常用集合】深入浅出Map集合</title>
+    <link href="https://moduokesi.top/2024/09/29/%E3%80%90%E5%B8%B8%E7%94%A8%E9%9B%86%E5%90%88%E3%80%91%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAMap%E9%9B%86%E5%90%88/"/>
+    <id>https://moduokesi.top/2024/09/29/%E3%80%90%E5%B8%B8%E7%94%A8%E9%9B%86%E5%90%88%E3%80%91%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAMap%E9%9B%86%E5%90%88/</id>
+    <published>2024-09-29T09:03:21.000Z</published>
+    <updated>2024-09-29T09:03:11.916Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;hashmap&quot;&gt;HashMap&lt;/h2&gt;
+&lt;p&gt;HashMap 主要用来存放键值对，它基于哈希表的 Map 接口实现，是常用的
+Java 集合之一，是非线程安全的。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;HashMap&lt;/code&gt; 可以存储 null 的 key</summary>
+        
+      
+    
+    
+    
+    <category term="常用集合" scheme="https://moduokesi.top/categories/%E5%B8%B8%E7%94%A8%E9%9B%86%E5%90%88/"/>
+    
+    
+    <category term="HashMap" scheme="https://moduokesi.top/tags/HashMap/"/>
+    
+    <category term="ConcurrentHashMap" scheme="https://moduokesi.top/tags/ConcurrentHashMap/"/>
+    
+  </entry>
+  
+  <entry>
     <title>【并发编程】全面解析volatile和synchronized关键字</title>
     <link href="https://moduokesi.top/2024/09/10/%E3%80%90%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E3%80%91%E5%85%A8%E9%9D%A2%E8%A7%A3%E6%9E%90volatile%E5%92%8Csynchronized%E5%85%B3%E9%94%AE%E5%AD%97/"/>
     <id>https://moduokesi.top/2024/09/10/%E3%80%90%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E3%80%91%E5%85%A8%E9%9D%A2%E8%A7%A3%E6%9E%90volatile%E5%92%8Csynchronized%E5%85%B3%E9%94%AE%E5%AD%97/</id>
     <published>2024-09-10T07:12:31.000Z</published>
-    <updated>2024-09-10T07:12:25.738Z</updated>
+    <updated>2024-09-29T09:00:34.829Z</updated>
     
     
       
@@ -529,31 +559,6 @@ RDB</summary>
     <category term="数据复制" scheme="https://moduokesi.top/tags/%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6/"/>
     
     <category term="MapStruct" scheme="https://moduokesi.top/tags/MapStruct/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【项目开发】Java调用Python方法一文详解</title>
-    <link href="https://moduokesi.top/2024/04/26/%E3%80%90%E9%A1%B9%E7%9B%AE%E5%BC%80%E5%8F%91%E3%80%91Java%E8%B0%83%E7%94%A8Python%E6%96%B9%E6%B3%95/"/>
-    <id>https://moduokesi.top/2024/04/26/%E3%80%90%E9%A1%B9%E7%9B%AE%E5%BC%80%E5%8F%91%E3%80%91Java%E8%B0%83%E7%94%A8Python%E6%96%B9%E6%B3%95/</id>
-    <published>2024-04-26T08:23:20.000Z</published>
-    <updated>2024-07-13T15:15:24.723Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2</summary>
-        
-      
-    
-    
-    
-    <category term="项目开发" scheme="https://moduokesi.top/categories/%E9%A1%B9%E7%9B%AE%E5%BC%80%E5%8F%91/"/>
-    
-    
-    <category term="调用python" scheme="https://moduokesi.top/tags/%E8%B0%83%E7%94%A8python/"/>
     
   </entry>
   
