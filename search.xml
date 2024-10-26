@@ -5688,7 +5688,7 @@ Boot还支持通过命令行参数、环境变量等方式注入配置，以便�
       <tags>
         <tag>源码解析</tag>
         <tag>自动装配</tag>
-        <tag>starterji&#39;zhi</tag>
+        <tag>starter机制</tag>
       </tags>
   </entry>
   <entry>
