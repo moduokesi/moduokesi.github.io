@@ -6,7 +6,7 @@
   <link href="https://moduokesi.top/atom.xml" rel="self"/>
   
   <link href="https://moduokesi.top/"/>
-  <updated>2024-10-26T07:19:26.485Z</updated>
+  <updated>2024-11-05T03:12:34.682Z</updated>
   <id>https://moduokesi.top/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>【分布式】分布式锁设计与Redisson源码解析</title>
+    <link href="https://moduokesi.top/2024/11/05/%E3%80%90%E5%88%86%E5%B8%83%E5%BC%8F%E3%80%91%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E8%AE%BE%E8%AE%A1/"/>
+    <id>https://moduokesi.top/2024/11/05/%E3%80%90%E5%88%86%E5%B8%83%E5%BC%8F%E3%80%91%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E8%AE%BE%E8%AE%A1/</id>
+    <published>2024-11-05T03:12:31.000Z</published>
+    <updated>2024-11-05T03:12:34.682Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1</summary>
+        
+      
+    
+    
+    
+    <category term="分布式" scheme="https://moduokesi.top/categories/%E5%88%86%E5%B8%83%E5%BC%8F/"/>
+    
+    
+    <category term="Redisson" scheme="https://moduokesi.top/tags/Redisson/"/>
+    
+    <category term="分布式锁" scheme="https://moduokesi.top/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/"/>
+    
+  </entry>
   
   <entry>
     <title>【SpringBoot】万字源码解析——启动流程</title>
@@ -540,32 +567,6 @@ RDB</summary>
     <category term="RabbitMQ" scheme="https://moduokesi.top/tags/RabbitMQ/"/>
     
     <category term="消息可靠性" scheme="https://moduokesi.top/tags/%E6%B6%88%E6%81%AF%E5%8F%AF%E9%9D%A0%E6%80%A7/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【SpringBoot】随机盐值+双重SHA256加密实战</title>
-    <link href="https://moduokesi.top/2024/07/08/%E3%80%90SpringBoot%E3%80%91%E9%9A%8F%E6%9C%BA%E7%9B%90%E5%80%BC+%E5%8F%8C%E9%87%8DSHA256%E5%8A%A0%E5%AF%86%E5%AE%9E%E6%88%98/"/>
-    <id>https://moduokesi.top/2024/07/08/%E3%80%90SpringBoot%E3%80%91%E9%9A%8F%E6%9C%BA%E7%9B%90%E5%80%BC+%E5%8F%8C%E9%87%8DSHA256%E5%8A%A0%E5%AF%86%E5%AE%9E%E6%88%98/</id>
-    <published>2024-07-08T15:12:15.000Z</published>
-    <updated>2024-07-13T15:36:49.108Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2 id=&quot;sha-256和salt&quot;&gt;1.SHA-256和Salt&lt;a id=&quot;why&quot;&gt;&lt;/a&gt;&lt;/h2&gt;
-&lt;h3</summary>
-        
-      
-    
-    
-    
-    <category term="项目开发" scheme="https://moduokesi.top/categories/%E9%A1%B9%E7%9B%AE%E5%BC%80%E5%8F%91/"/>
-    
-    
-    <category term="密码加密" scheme="https://moduokesi.top/tags/%E5%AF%86%E7%A0%81%E5%8A%A0%E5%AF%86/"/>
     
   </entry>
   
