@@ -2838,7 +2838,7 @@ Server 层的数据传输量。</strong></p>
 <figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 开启MySQL慢日志查询开关</span></span><br><span class="line"><span class="string">slow_query_log=1</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置慢日志的时间为1秒，SQL语句执行时间超过1秒，就会视为慢查询，记录到慢查询日志中</span></span><br><span class="line"><span class="string">long_query_time=2</span></span><br></pre></td></tr></table></figure>
 <p>配置完成后，重启MySQL服务保证配置生效。</p>
 <p>慢查询日志一般的返回结果如下：</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Time:2024-08-01T12:00:00.123456Z</span></span><br><span class="line"><span class="comment"># User@Host: root[root] @ localhost [] Id: 	8</span></span><br><span class="line"><span class="comment"># Query time:2.345678 Lock_time:0.012345 Rows sent:10 Rows examined: 100</span></span><br><span class="line"><span class="string">SET</span> <span class="string">timestamp=1650000000;</span></span><br><span class="line"><span class="string">SELECT</span> <span class="string">*</span> <span class="string">FROM</span> <span class="string">orders</span> <span class="string">WHERE</span> <span class="string">status</span> <span class="string">=&#x27;pending&quot;</span> <span class="string">ORDER</span> <span class="string">BY</span> <span class="string">gmt</span> <span class="string">created</span> <span class="string">DEsc;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Time:2024-08-01T12:00:00.123456Z</span></span><br><span class="line"><span class="comment"># User@Host: root[root] @ localhost [] Id: 	8</span></span><br><span class="line"><span class="comment"># Query time:2.345678 Lock_time:0.012345 Rows sent:10 Rows examined: 100</span></span><br><span class="line"><span class="string">SET</span> <span class="string">timestamp=1650000000;</span></span><br><span class="line"><span class="string">SELECT</span> <span class="string">*</span> <span class="string">FROM</span> <span class="string">orders</span> <span class="string">WHERE</span> <span class="string">status</span> <span class="string">=&#x27;pending&#x27;</span> <span class="string">ORDER</span> <span class="string">BY</span> <span class="string">gmt</span> <span class="string">created</span> <span class="string">DESC;</span></span><br></pre></td></tr></table></figure>
 <p>需要关注以下内容：</p>
 <ul>
 <li><p><strong>Query_time（查询时间）</strong>：查询执行的总时间，单位为秒。是关键的指标，用于判断查询的性能。</p></li>
@@ -2877,6 +2877,11 @@ Server 层的数据传输量。</strong></p>
 <p><strong>查看CPU信息</strong></p>
 </blockquote>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SHOW PROFILE CPU FOR QUERY query_id;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>典型返回</strong></p>
+</blockquote>
+<p><strong>Status</strong>表示查询的不同执行阶段。<strong>Duration</strong>即每个阶段所用的时间。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+--------------------+----------+</span><br><span class="line">| Status             | Duration |</span><br><span class="line">+--------------------+----------+</span><br><span class="line">| starting           | 0.000002 |</span><br><span class="line">| waiting for data   | 0.000001 |</span><br><span class="line">| executing          | 0.003000 |</span><br><span class="line">| sending data       | 0.000003 |</span><br><span class="line">+--------------------+----------+</span><br></pre></td></tr></table></figure>
 <h2 id="explain执行计划">explain执行计划</h2>
 <p><code>explain</code> 是 MySQL 提供的一种用于分析和调试 SQL
 查询的工具。</p>
@@ -2967,18 +2972,16 @@ Server 层的数据传输量。</strong></p>
 <h4 id="type重要">type（重要）</h4>
 <p>查询执行的类型，描述了查询是如何执行的。常见的类型如下，这些类型的性能从最优到最差排序为：<code>system &gt; const &gt; eq_ref &gt; ref &gt; range &gt; index &gt; ALL</code></p>
 <ul>
-<li><strong>system</strong>：如果表使用的引擎对于表行数统计是精确的（如：MyISAM），且表中只有一行记录的情况下，访问方法是
+<li><strong>system</strong>：如果表使用的引擎对于表行数统计是精确的（如MyISAM），且表中只有一行记录的情况下，访问方法是
 system ，是 const 的一种特例。</li>
-<li><strong>const</strong>：表中最多只有一行匹配的记录，一次查询就可以找到，常用于使用主键或唯一索引的所有字段作为查询条件。</li>
-<li><strong>eq_ref</strong>：当连表查询时，前一张表的行在当前这张表中只有一行与之对应。是除了
-system 与 const 之外最好的 join
-方式，常用于<strong>使用主键或唯一索引</strong>的所有字段作为连表条件。</li>
-<li><strong>ref</strong>：使用普通索引作为查询条件，查询结果可能找到多个符合条件的行。</li>
-<li><strong>range</strong>：对索引列进行范围查询，执行计划中的 key
-列表示哪个索引被使用了。</li>
-<li><strong>index</strong>：查询遍历了整棵索引树，与 ALL
-类似，只不过扫描的是索引，而索引一般在内存中，速度更快。</li>
-<li><strong>ALL</strong>：全表扫描。</li>
+<li><strong>const</strong>：常数索引扫描，表中只有一行匹配的记录，一次查询就可以找到，常用于使用主键或唯一索引的所有字段作为查询条件。</li>
+<li><strong>eq_ref</strong>：唯一索引扫描。在连接查询时，被连接表针对连接表中的每一行只会返回最多一行结果。它是除了
+<code>system</code> 和 <code>const</code>
+之外最优的连接方式，通常用于使用主键或唯一索引的所有字段作为连接条件。</li>
+<li><strong>ref</strong>：普通索引扫描，会扫描索引树的一部分来查找匹配的行。</li>
+<li><strong>range</strong>：范围扫描，只会遍历索引树的一个范围来查找匹配的行。</li>
+<li><strong>index</strong>：全索引扫描，会遍历整个索引树来查找匹配的行。</li>
+<li><strong>ALL</strong>：全表扫描，将遍历整张表来查找匹配的行。</li>
 </ul>
 <h4 id="possible_keys">possible_keys</h4>
 <p>possible_keys 列表示 MySQL 执行查询时可能用到的索引。如果这一列为
@@ -2986,6 +2989,8 @@ NULL ，则表示没有索引可以使用。</p>
 <h4 id="key重要">key（重要）</h4>
 <p>key 列表示 MySQL 实际使用到的索引。如果为
 NULL，则表示未用到索引。</p>
+<h4 id="key_len重要">key_len（重要）</h4>
+<p>key 列表示 MySQL 实际使用到的索引的长度。</p>
 <h4 id="extra重要">Extra（重要）</h4>
 <p>这列包含了 MySQL 解析查询的额外信息，通过这些信息，可以更准确的理解
 MySQL 到底是如何执行查询的。常见的值如下：</p>
@@ -2995,7 +3000,9 @@ index</strong>：表明查询使用了覆盖索引，不用回表，查询效率
 <li><strong>Using index
 condition</strong>：表示查询优化器选择使用了<strong>索引下推</strong>这个特性。</li>
 <li><strong>Using where</strong>：表明查询使用了 WHERE
-子句进行条件过滤。一般在没有使用到索引的时候会出现。</li>
+子句进行条件过滤，通常是因为使用非索引列查询或者未使用覆盖索引。</li>
+<li><strong>Using where; Using
+index</strong>：查询的列使用了覆盖索引，但where筛选条件不是联合索引的前导列或者只是前导列的一个范围。</li>
 <li><strong>Using
 filesort</strong>：在排序时使用了文件排序而不是索引排序，通常是因为无法使用索引进行排序。</li>
 <li><strong>Using temporary</strong>：MySQL
@@ -3010,8 +3017,28 @@ Loop)</strong>：连表查询的方式，表示当被驱动表的没有使用索
 <p>根据<code>explain</code>执行计划的返回结果，我们可以根据以下字段进行sql优化：</p>
 <ul>
 <li>通过<code>key</code>和<code>key_len</code>检査<strong>是否命中了索引</strong>（索引本身存在是否有失效的情况）</li>
-<li>通过<code>type</code>字段查看sql是否有进一步的优化空间，是否存在<strong>全索引扫描或全表扫描</strong></li>
-<li>通过<code>extra</code>字段判断，是否出现了回表的情况，如果出现了，可以尝试添加索引或修改返回字段来修复</li>
+<li>通过<code>type</code>字段查看sql是否有进一步的优化空间，<strong>是否存在全索引扫描或全表扫描</strong></li>
+<li>通过<code>extra</code>字段判断，<strong>是否出现了回表的情况</strong>，如果出现了，可以尝试添加索引或修改返回字段来修复</li>
+</ul>
+<h3 id="索引不合理">索引不合理</h3>
+<ul>
+<li>回表查询，查询的字段没有使用覆盖索引，需要回表查询数据。</li>
+<li>索引失效，如查询条件中使用了函数或者运算、OR连接条件中没有使用索引、不符合最左匹配原则、使用了前导通配符、查询条件使用了隐式的类型转换等。</li>
+</ul>
+<h3 id="多表join">多表join</h3>
+<ol type="1">
+<li>在内存中做关联，可以先从数据库中把数据查询出来，然后在代码中进行二次查询，进行数据的关联。</li>
+<li>数据冗余，可以把一些重要的数据在表中做冗余，避免使用多表查询。</li>
+</ol>
+<h3 id="查询字段过多">查询字段过多</h3>
+<ul>
+<li>查询无关字段，比如使用了<code>select *</code>查询了无关字段。</li>
+<li>如果确实需要查询大量字段，可以考虑做分库分表。</li>
+</ul>
+<h3 id="数据库连接数不足">数据库连接数不足</h3>
+<ul>
+<li>业务量太大，可以用分库减少单库的业务压力。</li>
+<li>存在一些慢SQL和长事务导致的，需要具体分析。</li>
 </ul>
 <h2 id="深分页优化查询">深分页优化查询</h2>
 <h3 id="传统分页">传统分页</h3>
