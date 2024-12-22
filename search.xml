@@ -6812,4 +6812,451 @@ IoC（满足开闭原则）</h1>
         <tag>策略模式</tag>
       </tags>
   </entry>
+  <entry>
+    <title>一文详解五大分布式ID实现方案</title>
+    <url>/2024/12/22/%E3%80%90%E5%88%86%E5%B8%83%E5%BC%8F%E3%80%91%E5%88%86%E5%B8%83%E5%BC%8FID/</url>
+    <content><![CDATA[<h1 id="分布式id">分布式ID</h1>
+<p><strong>分布式 ID</strong>
+是在分布式环境中生成全局唯一标识符的技术，确保在不同节点生成的 ID
+不会冲突。常用于<strong>数据库主键</strong>、<strong>订单号</strong>等场景。</p>
+<p>分布式 ID
+是分布式系统中不可或缺的一环，其设计直接影响系统的性能和稳定性。在实际应用中，可以根据业务需求选择合适的生成方案，如高并发场景优先选择雪花算法，有序性需求可选
+Redis 或号段模式。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202411211113892.png" style="zoom: 25%;"></p>
+<p><strong>分布式 ID</strong> 需要满足下面几个特性：</p>
+<ul>
+<li><p><strong>全局唯一</strong>：每个ID在整个分布式系统中必须是全局唯一的，不能出现重复。</p></li>
+<li><p><strong>高性能&amp;高可用</strong>：在高并发的情况下，分布式ID生成系统需要具备高可用性和低延迟，能够快速生成ID。</p></li>
+<li><p><strong>有序性</strong>：ID
+的有序性可以提升数据库的写入效率，以便排序或提高数据库性能。</p></li>
+<li><p><strong>安全性</strong>：需要保证 ID
+无法被轻易猜测，避免数据库信息被泄露。</p></li>
+</ul>
+<h1 id="数据库自增主键">数据库自增主键</h1>
+<p><strong>数据库的自增主键</strong>（<code>AUTO_INCREMENT</code>）是数据库层面提供的一种功能，能够自动为新插入的记录生成一个递增的整数主键。利用这种特性，应用程序可以通过插入一条记录获取唯一的
+ID。</p>
+<h2 id="实现方法">实现方法</h2>
+<p><strong>1. 创建数据库表</strong></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `sequence_id` (</span><br><span class="line">  `id` <span class="type">bigint</span>(<span class="number">20</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `stub` <span class="type">char</span>(<span class="number">10</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">&#x27;&#x27;</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`),</span><br><span class="line">  <span class="keyword">UNIQUE</span> KEY `stub` (`stub`)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>id</code> 字段：作为主键，保证 <code>id</code>
+字段全局唯一，并通过
+<code>AUTO_INCREMENT</code>，自增生成唯一的<strong>分布式
+ID</strong>。</li>
+<li><code>stub</code>
+字段：设为唯一索引（<code>UNIQUE KEY</code>），无实际业务意义，仅用于支持
+<code>REPLACE INTO</code> 操作。强制插入数据时不能有重复值。</li>
+</ul>
+<p><strong>2. 执行事务生成并获取唯一ID</strong></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line">REPLACE <span class="keyword">INTO</span> sequence_id (stub) <span class="keyword">VALUES</span> (<span class="string">&#x27;stub&#x27;</span>);</span><br><span class="line"><span class="keyword">SELECT</span> LAST_INSERT_ID();</span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>开启事务：利用事务的隔离性，防止其他线程获取到当前的分布式ID，破坏分布式ID的唯一性。</li>
+<li><code>REPLACE INTO</code> 语义：如果 <code>stub</code>
+值已经存在，则删除该行并插入新行；如果 <code>stub</code>
+值不存在，则直接插入新行。通过 <code>REPLACE INTO</code>
+插入元素，生成自增主键ID。</li>
+<li><code>SELECT LAST_INSERT_ID()</code>
+作用：返回当前会话最后一次生成的自增主键值。</li>
+</ul>
+<p>通过执行事务，可以获取到数据库生成的唯一ID：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202411211941941.png"></p>
+<p>此时 <code>sequence_id</code> 表的数据如下：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202411211941301.png"></p>
+<h2 id="优缺点">优缺点</h2>
+<p>使用数据库自增主键生成分布式ID的方案实现简单，适合中小型系统，以下是优缺点：</p>
+<blockquote>
+<p><strong>优点</strong>：</p>
+</blockquote>
+<ul>
+<li><strong>唯一性</strong>：在同一个数据库实例内是唯一的，天然保证了 ID
+不会重复；在数据库集群模式下，需要额外设计步长+偏移量的方案，保证唯一性。</li>
+<li><strong>有序性</strong>：在数据库存储时，自增 ID 的有序性可以减少 B+
+树索引的分裂，提高写入性能；但在数据库集群模式下，不能保证分布式ID严格有序。</li>
+</ul>
+<blockquote>
+<p><strong>缺点</strong>：</p>
+</blockquote>
+<ul>
+<li><strong>性能问题</strong>：频繁的 <code>INSERT</code>
+操作会引发锁的竞争，降低数据库性能；每次获取分布式 ID
+都要访问数据库，查询受到磁盘I/O的限制。</li>
+<li><strong>可用性问题</strong>：存在单点故障问题，如果负责生成 ID
+的数据库实例宕机，整个系统将无法生成新 ID。</li>
+<li><strong>数据膨胀问题</strong>：频繁的写操作会导致数据库的二进制日志快速膨胀，影响复制和备份效率。</li>
+<li><strong>信息泄露问题</strong>：自增 ID
+直接暴露数据插入的顺序，可能导致业务敏感信息（如用户量、交易量）被推测。</li>
+</ul>
+<h1 id="数据库号段模式">数据库号段模式</h1>
+<p><strong>号段模式</strong>是一种高效生成分布式唯一ID的方案，适用于分布式系统中需要高性能、全局唯一ID的场景。号段模式通常依赖于数据库，通过将分配到的号段缓存到内存中，直接从号段中取值生成ID，避免频繁访问数据库。</p>
+<blockquote>
+<p><strong>号段</strong>：将一批连续的数字ID作为一个号段，例如
+<code>[1001, 2000]</code>。客户端从号段中依次分配ID，直到用完，再申请新的号段。</p>
+</blockquote>
+<h2 id="实现方法-1">实现方法</h2>
+<p><strong>1. 创建数据库表</strong></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> sequence_id_generator (</span><br><span class="line">    biz_type <span class="type">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,      <span class="comment">-- 业务类型，如订单ID、用户ID等</span></span><br><span class="line">    max_id <span class="type">BIGINT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,            <span class="comment">-- 当前号段的最大值</span></span><br><span class="line">    step <span class="type">INT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,                 <span class="comment">-- 步长（每次分配的号段大小）</span></span><br><span class="line">    version <span class="type">INT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,              <span class="comment">-- 乐观锁版本号，防止并发问题</span></span><br><span class="line">    <span class="keyword">PRIMARY</span> KEY (biz_type)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>表中各个字段的含义如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">biz_type</td>
+<td>业务类型，用于区分不同业务的ID生成规则</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">max_id</td>
+<td>当前号段的最大值，表示分配的ID范围上限</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">step</td>
+<td>每次申请号段时的步长，为实际可用的ID数量</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">version</td>
+<td>版本号，申请新的号段时根据版本号进行并发控制</td>
+</tr>
+</tbody>
+</table>
+<p><strong>2. 初始化数据</strong></p>
+<p>在使用号段模式分配ID之前，需要先在数据库中初始化数据，方便后续客户端的取用号段。</p>
+<p>这里将初始的号段最大值 <code>max_id</code> 设置为 0，步长
+<code>step</code> 设置为 100，版本号 <code>version</code> 设置为 0。</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `sequence_id_generator`(`biz_type`, `max_id`, `step`, `version`) </span><br><span class="line"><span class="keyword">VALUES</span> (<span class="number">101</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p><strong>3. 获取分布式ID</strong></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> `max_id`, `step`,`version` </span><br><span class="line"><span class="keyword">FROM</span> `sequence_id_generator` </span><br><span class="line"><span class="keyword">WHERE</span> `biz_type` <span class="operator">=</span> <span class="number">101</span>;</span><br></pre></td></tr></table></figure>
+<p>返回结果如下：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202411212052736.png" style="zoom: 67%;"></p>
+<p>分配的号段 <code>[max_id + 1, max_id + step]</code>
+为分布式ID的可用范围。申请到号段的线程会将该号段缓存起来，直接在内存中取用号段中的数据作为分布式ID，从而避免访问数据库。（如果使用的是数据库自增主键的方案，就需要查询
+<code>step</code> 次数据库，影响性能）</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202411212101483.png" style="zoom:25%;"></p>
+<p><strong>4. 生成分布式ID</strong></p>
+<p>如果某一业务类型的号段用尽时，需要从数据库中申请新的号段。在应用层执行
+<code>UPDATE</code>
+语句时需要使用乐观锁，防止并发情况下多个线程申请到相同的号段。</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> sequence_id_generator </span><br><span class="line"><span class="keyword">SET</span> max_id <span class="operator">=</span> max_id <span class="operator">+</span> step, version <span class="operator">=</span> version <span class="operator">+</span> <span class="number">1</span> </span><br><span class="line"><span class="keyword">WHERE</span> biz_type <span class="operator">=</span> <span class="number">101</span> <span class="keyword">AND</span> version <span class="operator">=</span> #&#123;version&#125;;</span><br></pre></td></tr></table></figure>
+<p>数据库更新结果：</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202411212120632.png"></p>
+<h2 id="优缺点-1">优缺点</h2>
+<blockquote>
+<p><strong>优点：</strong></p>
+</blockquote>
+<ul>
+<li><strong>唯一性</strong>：依靠 <code>MySQL</code>
+数据库的行级锁和应用层的乐观锁，保证相同业务类型
+<code>biz_type</code>下号段分配的唯一性。</li>
+<li><strong>有序性</strong>：每个号段分配的 ID
+都是单调递增的，这对于某些需要有序 ID
+的场景（如订单号、时间戳排序等）非常适用。</li>
+<li><strong>高性能</strong>：相较于<strong>数据库自增主键</strong>的方案，ID
+分配主要在内存中完成，只有在号段用尽时才访问数据库申请新的号段，大大提高了生成效率。</li>
+</ul>
+<blockquote>
+<p><strong>缺点</strong>：</p>
+</blockquote>
+<ul>
+<li><strong>乐观锁重试问题</strong>：在高并发情况下，客户端申请号段时，乐观锁可能频繁失败，需要多次重试才能成功获取号段，增加了分配延迟。</li>
+<li><strong>可用性问题</strong>：存在单点故障问题，如果负责生成号段的数据库实例宕机，整个系统将无法生成新
+ID。</li>
+<li><strong>信息泄露问题</strong>：自增 ID
+直接暴露数据插入的顺序，可能导致业务敏感信息（如用户量、交易量）被推测。</li>
+</ul>
+<h1 id="redis的incr命令">Redis的incr命令</h1>
+<p><code>Redis</code> 的 <code>INCR</code> 命令是一种简单高效的分布式 ID
+生成方案。通过 <code>Redis</code>
+的<strong>单线程模型</strong>来保证分布式 ID 的唯一性，而
+<code>INCR</code> 命令则保证了分布式 ID 的有序性。</p>
+<blockquote>
+<p><strong>单线程模型</strong>：<code>Redis</code>
+的单线程模型保证多个客户端执行 <code>INCR</code>
+命令时，同一时刻只会有一个线程执行 <code>INCR</code>
+命令，因此避免了并发安全问题。</p>
+</blockquote>
+<h2 id="实现方法-2">实现方法</h2>
+<p><strong>1. 初始化数据</strong></p>
+<p>首先设置分布式 ID 的初始结构，后续直接取用 <code>seq_id</code> 对应的
+<code>value</code>值作为分布式 ID。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SET seq_id 1</span><br></pre></td></tr></table></figure>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202411231606213.png" style="zoom: 33%;"></p>
+<p><strong>2. 生成分布式ID</strong></p>
+<p>对于单机模式下的 <code>Redis</code>，由于只存在一个
+<code>Redis</code> 节点，直接使用 <code>INCR</code>
+命令即可保证有序性。</p>
+<p>对于集群模式下的 <code>Redis</code>，由于存在多个 <code>Redis</code>
+节点，因此需要给每个节点设置<strong>不同的初始偏移量</strong>，并使用
+<code>INCRBY</code>
+命令<strong>指定集群中所有节点数量的步长</strong>来保证全局唯一性。（也可以使用<strong>哈希插槽</strong>将生成的分布式
+ID 的键固定到同一个节点，将问题转化单机模式，<code>Redis</code>
+集群模式讲解<a href="https://blog.csdn.net/k123456kah/article/details/141125941?ops_request_misc=%257B%2522request%255Fid%2522%253A%25229c435857282114ad3fa5bddcb8d72d10%2522%252C%2522scm%2522%253A%252220140713.130102334.pc%255Fblog.%2522%257D&amp;request_id=9c435857282114ad3fa5bddcb8d72d10&amp;biz_id=0&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~blog~first_rank_ecpm_v1~rank_v31_ecpm-2-141125941-null-null.nonecase&amp;utm_term=Redis&amp;spm=1018.2226.3001.4450">详见此处</a>）</p>
+<p>比如集群中共存在3个节点A、B、C，可以指定A的初始值为0，B的初始值为1，C的初始值为2，步长设置为3。这样每个节点生成的分布式ID为
+<code>初始偏移量 + 访问次数 * 步长</code>，防止不同节点生成重复的分布式ID，保证
+ID 的全局唯一性。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">自增命令</span></span><br><span class="line">INCR seq_id</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">指定步长自增</span></span><br><span class="line">INCRBY seq_id 3</span><br></pre></td></tr></table></figure>
+<p><strong>3. 获取分布式ID</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">GET seq_id</span><br></pre></td></tr></table></figure>
+<h2 id="优缺点-2">优缺点</h2>
+<blockquote>
+<p><strong>优点：</strong></p>
+</blockquote>
+<ul>
+<li><strong>唯一性</strong>：单机模式下依赖于 <code>Redis</code>
+的单线程模型，可以保证
+ID的唯一性；在集群模式，可以通过<strong>哈希插槽</strong>固定键到某个节点，或者通过<strong>步长+偏移量</strong>实现分布式
+ID 的生成。</li>
+<li><strong>有序性</strong>：在 <code>Redis</code>
+单机模式或者在集群模式使用<strong>哈希插槽</strong>固定键到某个节点时，可以保证
+ID 是严格有序的。</li>
+<li><strong>高性能</strong>：<code>Redis</code>
+是内存数据库，<code>INCR</code> 操作非常快，延迟一般在微秒级，单节点 QPS
+可达十万级别。</li>
+<li><strong>高可用</strong>：通过部署 <code>Redis</code>
+分片集群，可以解决单点故障问题，保证某些节点故障后分布式 ID
+生成服务依旧可用。</li>
+</ul>
+<blockquote>
+<p><strong>缺点</strong>：</p>
+</blockquote>
+<ul>
+<li><strong>非严格有序</strong>：在分布式场景下，为了保证ID
+的唯一性，通常通过<strong>步长+偏移量</strong>生成 ID，但这导致生成的 ID
+不是严格有序的。</li>
+<li><strong>信息泄露问题</strong>：自增 ID
+直接暴露数据插入的顺序，可能导致业务敏感信息（如用户量、交易量）被推测。</li>
+</ul>
+<h1 id="uuid">UUID</h1>
+<p><strong>UUID (Universally Unique Identifier)</strong>
+是一种通用唯一标识符，其目的是为分布式系统中的所有元素生成唯一的标识符，在大多数情况下具有全球唯一性。UUID
+的长度为 <code>128</code> 位（<code>16</code> 字节 ），通常用
+<code>32</code> 个十六进制数字表示。</p>
+<p>按照十六进制的数字个数划分，UUID的长度构成为
+<code>8-4-4-4-12</code>，一共 32 个数字。以下为 UUID 的示例：</p>
+<figure class="highlight tex"><table><tr><td class="code"><pre><span class="line">550e8400-e29b-41d4-a716-446655440000</span><br></pre></td></tr></table></figure>
+<p>UUID 的内部结构分为 5 个主要部分，每部分基于不同的位数：</p>
+<ol type="1">
+<li><strong>时间低位</strong>（前 8 个字符）：共 32
+位，表示时间戳的地位部分。</li>
+<li><strong>时间中位</strong>（占 4 个字符）：共 16
+位，表示时间戳的中间部分。</li>
+<li><strong>时间高位及版本号</strong>（占 4 个字符）：共 16 位，由前 4
+位版本号和后 12 位的时间戳高位部分组成。</li>
+<li><strong>变体及序列号</strong>（占 4 个字符）：共 16 位，前 3
+位表示变体，后 13 位表示序列号。</li>
+<li><strong>节点</strong>（占 12 个字符）：共 48
+位，表示节点信息，通常是设备的 MAC 地址或随机数。</li>
+</ol>
+<p>UUID 的生成方式由其 <strong>版本号（Version）</strong> 和
+<strong>变体（Variant）</strong> 决定，本文主要关注不同版本下 UUID。</p>
+<h2 id="uuid版本">UUID版本</h2>
+<p>UUID
+的五个版本各有用途，但最常用的是<strong>版本一</strong>和<strong>版本四</strong>。<strong>版本三</strong>和<strong>版本五</strong>更适合生成基于命名空间的确定性标识符，而<strong>版本二</strong>因适用范围窄，在现代系统中已很少使用。</p>
+<ul>
+<li><p><strong>版本一：基于时间戳和节点地址的 UUID</strong></p>
+<p>通过计算当前时间戳、时钟序列号和机器的 MAC 地址生成。</p>
+<ul>
+<li>由于使用了 MAC 地址，可以保证在全球范围内唯一性。</li>
+<li>包含生成时间信息，时间戳可以用作生成时间的标识。</li>
+<li>依赖硬件 MAC 地址，可能会暴露设备信息，存在隐私风险。</li>
+</ul></li>
+<li><p><strong>版本二：DCE 安全的 UUID</strong></p>
+<p>类似于版本一，但是依赖于早期的 DCE
+（分布式计算环境）环境，增加了一些安全特性，在现代系统中很少使用。</p></li>
+<li><p><strong>版本三：基于命名空间的UUID（MD5）</strong></p>
+<p>通过对名字（如字符串）和命名空间（如 URL）的组合计算 MD5 哈希值，并将
+MD5 哈希值的部分位替换为版本号和变体标志生成。</p>
+<ul>
+<li>相同命名空间中相同名字生成的 UUID 保持一致。</li>
+<li>哈希算法确定性强，适用于需要固定标识符的场景。</li>
+<li>使用 MD5 算法，安全性较弱。</li>
+</ul></li>
+<li><p><strong>版本四：基于随机数的UUID</strong></p>
+<p>UUID 的 128 位数据大部分由随机数生成。</p>
+<ul>
+<li>无需依赖硬件或时间信息，生成速度快。</li>
+<li>碰撞概率极低，即使生成 10¹² 个 UUID，也几乎不会发生冲突。</li>
+<li>不包含设备或时间信息，隐私性较好。</li>
+</ul></li>
+<li><p><strong>版本五：基于命名空间的UUID（SHA1）</strong></p>
+<p>与版本三类似，但使用更安全的 SHA-1 哈希算法代替 MD5。</p>
+<ul>
+<li><p>同样的命名空间和名字生成的 UUID 一致。</p></li>
+<li><p>SHA-1 比 MD5 更安全，但仍然存在一定的碰撞风险（对于 UUID
+应用影响有限）。</p></li>
+</ul></li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 10%">
+<col style="width: 72%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>UUID版本</th>
+<th>重复条件</th>
+<th>重复概率</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>版本1</strong></td>
+<td>如果两个设备具有相同的 MAC
+地址、相同的时钟序列，并在同一时刻生成，则可能重复。</td>
+<td><strong>几乎不可能</strong></td>
+</tr>
+<tr class="even">
+<td><strong>版本2</strong></td>
+<td>如果两个设备使用相同的本地标识符（UID/GID）和相同时间戳，可能重复（需要运行在
+DCE 环境）。</td>
+<td><strong>几乎不可能</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>版本3</strong></td>
+<td><strong>相同命名空间</strong>和<strong>相同名字</strong>才会重复；不同命名空间或名字不会重复。</td>
+<td><strong>确定性重复</strong></td>
+</tr>
+<tr class="even">
+<td><strong>版本5</strong></td>
+<td><strong>相同命名空间</strong>和<strong>相同名字</strong>才会重复；不同命名空间或名字不会重复。</td>
+<td><strong>确定性重复</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>版本4</strong></td>
+<td>由于随机数生成碰撞（在生成量极大时，如接近 <span class="math inline">\(2^{64}\)</span> 时可能发生）。</td>
+<td><strong>极低概率</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="优缺点-3">优缺点</h2>
+<blockquote>
+<p><strong>优点</strong>：</p>
+</blockquote>
+<ul>
+<li><strong>唯一性</strong>：使用不同的算法生成，<strong>几乎可以保证</strong>在全球范围内唯一，避免了多台机器之间主键冲突的问题。</li>
+<li><strong>无需网络请求</strong>：UUID
+生成过程完全依赖本地算法，无需访问数据库或其他第三方服务，不依赖于网络请求，降低了延迟。</li>
+<li><strong>高可用</strong>：UID
+生成过程完全依赖本地算法，无需依赖于第三方服务。</li>
+<li><strong>不可预测</strong>：UUID
+没有明确的序列信息，能够在一定程度上保护数据隐私，不易被外界推测业务数据规模或增长趋势。</li>
+</ul>
+<blockquote>
+<p><strong>缺点</strong>：</p>
+</blockquote>
+<ul>
+<li><strong>存储开销大</strong>：UUID的长度为128位（16字节），存储时会占用较多空间，尤其是在数据库中作为主键时，会增加索引的存储成本。</li>
+<li><strong>不具体有序性</strong>：UUID生成通常是随机的（如版本四），插入数据库时会导致索引频繁分裂或重排，降低写入性能。</li>
+</ul>
+<h1 id="雪花算法">雪花算法</h1>
+<p><strong>雪花算法（Snowflake 算法）</strong>是 Twitter
+开源的分布式唯一 ID 生成算法，主要用于分布式系统中生成全球唯一的、有序的
+64 位长整型 ID。它能够在高并发环境下快速生成高效、唯一的
+ID，并确保生成的 ID 大致有序。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202411231700176.png"></p>
+<ul>
+<li><strong>符号位(1bit)</strong>：预留的符号位，始终为0，占用1位。</li>
+<li><strong>时间戳(41bit)</strong>：记录生成 ID
+时的时间戳，精确到毫秒级别，可以容纳的毫秒数是2的41次幂，可以支持大约 69
+年的时间跨度。</li>
+<li><strong>数据中心标识(5bit)</strong>：可以用来区分不同的数据中心。</li>
+<li><strong>机器标识(5bit)</strong>：可以用来区分不同的机器。</li>
+<li><strong>序列号(12bit)</strong>：表示同一毫秒内生成的 ID
+的序号，单台机器每毫秒可以生成 4096 个唯一ID。</li>
+</ul>
+<p>默认的雪花算法是 64
+bit，具体的长度可以自行配置。如果希望运行更久，增加<strong>时间戳</strong>的位数；如果需要支持更多节点部署，增加<strong>标识位</strong>的长度；如果并发很高，增加<strong>序列号</strong>的位数。</p>
+<h2 id="防止时钟回拨">防止时钟回拨</h2>
+<p><strong>雪花算法生成的唯一ID依赖于当前系统时间戳。</strong>如果发生<strong>时钟回拨</strong>（系统时间向后调整），导致新的时间戳与之前生成
+ID 时的时间戳重复，可能会造成分布式 ID 不唯一的问题。</p>
+<ol type="1">
+<li><strong>等待策略</strong>：使用一个变量 <code>lastTimestamp</code>
+记录上次生成 ID
+的时间戳。当检测到时钟回拨时，服务可以暂时拒绝生成新的ID，等待系统时钟恢复到正常状态（至少大于或等于上次生成ID时的时间戳）。这种策略可以确保ID的严格递增性，但可能会在时钟调整期间暂停服务，对系统性能造成一定的影响。</li>
+<li><strong>序列号持久化</strong>：雪花算法原本设计中序列号是在内存中自增的，为了避免时钟回拨导致的序列号重置问题，可以将序列号持久化存储到磁盘上。这样即使服务重启或时钟回拨，服务也能继续从上次持久化的序列号开始自增，从而避免ID重复。这种策略可以在一定程度上容忍时钟回拨，但可能会影响ID的绝对时间戳准确性。</li>
+</ol>
+<h2 id="保证标识位唯一">保证标识位唯一</h2>
+<p><strong>雪花算法生成的唯一ID依赖于标识位</strong>。在集群模式下产生重复
+ID，需要以下两个前提条件：</p>
+<ol type="1">
+<li>服务通过集群的方式部署，其中部分机器标识位一致。（比如在 K8s
+中，多个 Pod 使用相同的配置镜像启动，而镜像中未动态生成唯一标识）</li>
+<li>在高并发场景下，不同实例或业务在同一毫秒内生成了相同的序列号，由于机器标识位一致，导致生成的
+ID 出现冲突。</li>
+</ol>
+<p>由此可知，<strong>只要能够保证标识位不重复，那么雪花算法生成的分布式ID也不会重复。</strong></p>
+<h3 id="预分配">预分配</h3>
+<p>在应用启动之前，统计当前服务的节点数量，人工去申请标识位。</p>
+<p>这种方案适合服务节点数量基本不变或者服务节点数量少的情况，但是如果服务节点较多，或者经常需要扩缩容时，预分配是无法满足ID不重复的要求的。</p>
+<h3 id="动态分配">动态分配</h3>
+<p>将标识位存放在
+Redis、Zookeeper、MySQL等中间件中，在服务启动时动态的请求标识位。</p>
+<p>如果要保证分布式ID在<strong>服务内唯一</strong>，将标识位直接存放在服务所使用的
+Redis
+节点即可；如果要保证分布式ID的<strong>全局唯一</strong>，则多个服务需要使用同一个
+Redis 节点保证唯一性。</p>
+<p>数据中心标识和机器标识的组合为 <code>32 * 32</code>，即可以存储
+<code>1024</code>
+个服务节点，如果节点数超过了这个数量，则可以扩展标识位，或者选用其他开源的分布式ID框架。</p>
+<h3 id="具体方案">具体方案</h3>
+<p>下面将用 <code>Redis</code>
+展示<strong>服务内唯一</strong>的标识号分配实现方案</p>
+<p><strong>1. 设计键值结构</strong></p>
+<p>使用 <code>Redis</code> 中的 <code>Hash</code> 结构，<code>KEY</code>
+为，键值对为 <code>datacenterId</code> 、<code>workerId</code>
+及其对应生成的标识号。</p>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202412221308554.png" style="zoom: 25%;"></p>
+<p><strong>2.标识号自增逻辑</strong></p>
+<p>通过 <code>Lua</code> 脚本从 <code>Redis</code>
+中获取标识位，具体的执行逻辑为：</p>
+<ol type="1">
+<li><strong>检查 Hash 是否存在</strong>：如果 Redis 中不存在
+<code>id_key</code> 这个 Hash，则初始化 <code>id_key</code>，并将
+<code>dataCenterId</code> 和 <code>workerId</code> 设置为 0。</li>
+<li><strong>判断 Hash 是否已存在</strong>：
+<ul>
+<li>如果 <code>id_key</code> 已存在，检查 <code>dataCenterId</code> 和
+<code>workerId</code> 是否都达到最大值（31）。</li>
+<li>若条件满足，则将 <code>dataCenterId</code> 和 <code>workerId</code>
+都重置为 0，并返回。</li>
+</ul></li>
+<li><strong>分配策略</strong>：<code>dataCenterId</code> 和
+<code>workerId</code> 的排列组合一共有 1024 种可能性，在分配时优先分配
+<code>workerId</code>。</li>
+<li><strong>分配逻辑</strong>：
+<ul>
+<li>检查 <code>workerId</code> 是否小于 31。若满足条件，则对
+<code>workerId</code> 自增并返回。</li>
+<li>如果 <code>workerId</code> 等于 31，则将 <code>dataCenterId</code>
+自增，同时将 <code>workerId</code> 重置为 0，并返回。</li>
+</ul></li>
+</ol>
+<h2 id="优缺点-4">优缺点</h2>
+<blockquote>
+<p><strong>优点</strong>：</p>
+</blockquote>
+<ul>
+<li><strong>高性能高可用</strong>：生成时不依赖于数据库，完全在内存中生成，每秒钟能生成数百万的自增ID。</li>
+<li><strong>ID自增</strong>：在单个进程中，生成的ID是自增的，可以用作数据库主键做范围查询。但是需要注意的是，在集群中是没办法保证顺序一定是递增的。</li>
+</ul>
+<blockquote>
+<p><strong>缺点</strong>：</p>
+</blockquote>
+<ul>
+<li><strong>重复ID问题</strong>：雪花算法依赖于时间戳，在获取时间的时候，如果出现时间回拨问题，服务器上的时间突然倒退到之前的时间，会造成
+ID 重复的问题。</li>
+<li><strong>依赖机器ID不灵活</strong>：每个节点的机器ID和数据中心ID都是硬编码在代码中的，在分布式环境如果节点出现故障或者需要扩容，更改机器ID和数据中心ID需要重新编译代码。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>分布式</category>
+      </categories>
+      <tags>
+        <tag>雪花算法</tag>
+        <tag>UUID</tag>
+      </tags>
+  </entry>
 </search>
