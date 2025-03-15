@@ -5847,7 +5847,7 @@ META-INF/spring.factories</h3>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span>(var6.hasNext()) &#123;</span><br><span class="line">    Map.Entry&lt;?, ?&gt; entry = (Map.Entry)var6.next();</span><br><span class="line">    <span class="type">String</span> <span class="variable">factoryTypeName</span> <span class="operator">=</span> ((String)entry.getKey()).trim();</span><br><span class="line">    String[] factoryImplementationNames = StringUtils.commaDelimitedListToStringArray((String)entry.getValue());</span><br><span class="line">    String[] var10 = factoryImplementationNames;</span><br><span class="line">    <span class="type">int</span> <span class="variable">var11</span> <span class="operator">=</span> factoryImplementationNames.length;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">var12</span> <span class="operator">=</span> <span class="number">0</span>; var12 &lt; var11; ++var12) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">factoryImplementationName</span> <span class="operator">=</span> var10[var12];</span><br><span class="line">        ((List)result.computeIfAbsent(factoryTypeName, (key) -&gt; &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ArrayList</span>();</span><br><span class="line">        &#125;)).add(factoryImplementationName.trim());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
-        <category>Spring</category>
+        <category>Spring源码</category>
       </categories>
       <tags>
         <tag>源码解析</tag>
@@ -6059,7 +6059,7 @@ Boot还支持通过命令行参数、环境变量等方式注入配置，以便�
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootTest(classes = ProjectApplication.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StarterTest</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ThreadPoolExecutor threadPoolExecutor;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">threadPoolTest</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;核心线程数：&quot;</span> + threadPoolExecutor.getCorePoolSize());</span><br><span class="line">        System.out.println(<span class="string">&quot;最大线程数：&quot;</span> + threadPoolExecutor.getMaximumPoolSize());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
-        <category>Spring</category>
+        <category>Spring源码</category>
       </categories>
       <tags>
         <tag>源码解析</tag>
@@ -6813,7 +6813,7 @@ IoC（满足开闭原则）</h1>
       </tags>
   </entry>
   <entry>
-    <title>一文详解五大分布式ID实现方案</title>
+    <title>【分布式】一文详解五大分布式ID实现方案</title>
     <url>/2024/12/22/%E3%80%90%E5%88%86%E5%B8%83%E5%BC%8F%E3%80%91%E5%88%86%E5%B8%83%E5%BC%8FID/</url>
     <content><![CDATA[<h1 id="分布式id">分布式ID</h1>
 <p><strong>分布式 ID</strong>
@@ -7257,6 +7257,226 @@ ID 重复的问题。</li>
       <tags>
         <tag>雪花算法</tag>
         <tag>UUID</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【Linux扫盲】Vim命令不会用？看这篇就对了！Vim最佳实践参考手册</title>
+    <url>/2025/01/25/%E3%80%90Linux%E6%89%AB%E7%9B%B2%E3%80%91Vim%E5%91%BD%E4%BB%A4%E4%B8%8D%E4%BC%9A%E7%94%A8%EF%BC%9F%E7%9C%8B%E8%BF%99%E7%AF%87%E5%B0%B1%E5%AF%B9%E4%BA%86%EF%BC%81Vim%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E5%8F%82%E8%80%83%E6%89%8B%E5%86%8C/</url>
+    <content><![CDATA[<h1 id="概览">概览</h1>
+<p>Vim
+是一种高度可配置的文本编辑器，广泛用于程序开发以及其他文本编辑任务。它是
+Unix 系统上 Vi 编辑器的增强版，提供了许多强大的功能。</p>
+<p>在 Linux 系统上执行 <code>vim [文件名]</code> 命令，即可进入到 vim
+编辑器，开始编辑指定的文件。 # 常用模式 vim 共有以下常用的五种模式： -
+<strong>普通模式（normal
+mode)</strong>：默认的模式，主要用于浏览文件，使用各种快捷键进行导航、复制、粘贴、删除等操作。在任意模式下按
+<code>Esc</code> 键返回到普通模式。 - <strong>插入模式（Insert
+mode)</strong>：用于输入和编辑文本。普通模式按下 <code>i</code>
+键可进入。 - <strong>命令模式（command
+mode)</strong>：用于执行命令，如保存、退出、查找。普通模式按下
+<code>:</code> 键可进入。 - 可视模式（visual
+mode）：用于选择文本块，进行批量操作。普通模式按 <code>v</code>
+键可进入字符模式，逐字符选择；按 <code>V</code> 进入行模式，逐行选择；按
+<code>Ctrl+v</code> 进入块模式，选择矩形块。 - 替换模式（replace
+mode）：用于替换已有文本，输入的每个字符都会替换光标所在位置的字符。普通模式按下
+<code>R</code> 键可进入。 <img src="https://i-blog.csdnimg.cn/direct/5bf5479510aa45f4828e760f0a2b5dd8.png" alt="在这里插入图片描述"></p>
+<p>对于初学者，应该重点掌握普通模式、插入模式和命令模式，养成不需要输入时立即返回普通模式、多使用快捷键和经常保存文件的习惯。
+## 普通模式 <strong>普通模式</strong>是默认的模式，启动 Vim
+后就进入到普通模式中，主要用于浏览文件，使用各种快捷键进行导航、复制、粘贴、删除等操作。在任意模式下按
+<code>Esc</code> 键返回到普通模式。 ### 移动光标 | 快捷键 | 作用 | |
+------ | ------ | | 向左箭头键(←) | 光标向左移动一个字符 | |
+向右箭头键(→) | 光标向右移动一个字符 | | 向上箭头键(↑) |
+光标向上移动一个字符 | | 向下箭头键(↓) | 光标向下移动一个字符 | |
+组合按键(数字+方向键) | 按下(30↓)，向下移动30行 | | ctrl + f |
+forward，向上移动一页 | | ctrl + b | backward，向下移动一页 | | ctrl + u
+| up，向上移动半页 | | ctrl + d | down，向下移动半页 | | 0 或 Home |
+光标移动到本行第一个字符 | | $ 或 End | 光标移动到本行最后一个字符 | | G
+| Go，移动到文本最后一行 | | 数字+G | 移动到指定行数 | | gg |
+移动到文本第一行，相当于1G | | 数字+回车| 向下移动指定行数| ### 删除操作
+| 快捷键 | 作用 | | ------ | ------ | | d0 |
+删除从本行首个字符到光标之间的文本 | | d$ |
+删除从光标到本行最后字符之间的文本 | | dG |
+删除光标所在行到最后一行的所有文本 | | d+数字+G |
+删除光标所在行到指定数字行的所有文本 | | dd（常用） |
+删除光标所在的一整行 | | 数字+dd | 向后删除指定数量的行 | ### 复制粘贴 |
+快捷键 | 作用 | | ------ | ------ | | y0 |
+复制从本行首个字符到光标之间的文本 | | y$ |
+复制从光标到本行最后字符之间的文本 | | yG |
+复制光标所在行到最后一行的所有文本 | | y+数字+G |
+复制光标所在行到指定数字行的所有文本 | | yy（常用） |
+复制光标所在的一整行 | | 数字+yy | 向后复制指定数量的行 | | p |
+将已复制的文本粘贴到光标下一行 | | P | 将已复制的文本粘贴到光标上一行 |
+### 查询操作 | 快捷键 | 作用 | | ------ | ------ | | /word |
+从光标之下搜索 "word" 字符串 | | ?word | 从光标之上搜索 "word" 字符串 |
+| n | 搜索下一个匹配的字符串 | | N | 与 n 的搜索方向相反 | ### 撤销复原
+| 快捷键 | 作用 | | ------ | ------ | | u（常用）| 撤销操作，相当于
+Windows 中的 ctrl + z | | ctrl+r（常用） | 恢复操作，相当于 Windows 中的
+ctrl + y | ## 插入模式
+<strong>插入模式</strong>用于输入和编辑文本。在普通模式下按下
+<code>i</code> 键可以进入插入模式。在插入模式下，Vim
+的行为类似于其他文本编辑器，用户可以直接输入文本。 ### 常用快捷键 |
+快捷键 | 作用 | | ------ | ------ | | ctrl+t | 增加光标所在行的整行缩进
+| | ctrl+d | 减少光标所在行的整行缩进 | ## 命令模式
+<strong>命令模式</strong>用于执行命令，如保存、退出、查找。在普通模式按下
+<code>:</code> 键可进入插入模式。 ### 常用快捷键 | 快捷键 | 作用 | |
+------ | ------ | | :w | write，保存编辑的文本 | | :w! |
+如果文件为只读文件，强制保存 | | :q | quit，退出 | | :q! |
+如果修改过文件，强制退出不保存 | | :wq | 保存文件并退出 | | :wq! |
+如果文件为只读文件，强制保存并退出 | | :set nu | 显示每一行的行号 | |
+:set nonu | 取消显示行号 | | :%d（常用） | 全文删除，删除全部文本 | |
+:%s/old/new/g | 全文替换，将old替换为new | # 最佳实践 ## 界面示意
+在普通模式下，输入一个32G，定位到第32行。 <img src="https://i-blog.csdnimg.cn/direct/b39d823e7e324a1eb18df6e7e25650c8.png" alt="在这里插入图片描述"></p>
+<p>当前所处模式均可以在底行查看，如命令模式： <img src="https://i-blog.csdnimg.cn/direct/d44bd0ae588e4d759db09330ed253cb0.png" alt="在这里插入图片描述"></p>
+<h2 id="常见场景">常见场景</h2>
+<p>以下案例仅为简单场景，实际的场景往往更加复杂，在实际开发中可以利用
+vim 的快捷键灵活处理。 ### 直接创建并编辑文件 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">使用vim命令创建一个start.sh脚本并进入编辑，无需使用<span class="built_in">touch</span>命令创建</span></span><br><span class="line">vim start.sh</span><br></pre></td></tr></table></figure> ###
+误操作，文本需要全部复原 <figure class="highlight txt"><table><tr><td class="code"><pre><span class="line"># 一直按u，直到全部恢复</span><br><span class="line">u</span><br></pre></td></tr></table></figure> 底行显示
+<code>Already at oldest change</code>，表明已经撤销了全部的更改操作。
+<img src="https://i-blog.csdnimg.cn/direct/11afc4dfce084b0e8c1ba71fa2aa2d47.png" alt="在这里插入图片描述"></p>
+<figure class="highlight txt"><table><tr><td class="code"><pre><span class="line"># 在命令模式下按:q!，强制退出不保存</span><br><span class="line">:q!</span><br></pre></td></tr></table></figure>
+<h3 id="代码执行报错需要定位指定行号的代码">代码执行报错，需要定位指定行号的代码</h3>
+<p>运行py脚本时，第6行报错 <img src="https://i-blog.csdnimg.cn/direct/a1835cda15834459a8aa66439445cf81.png" alt="在这里插入图片描述"></p>
+<figure class="highlight txt"><table><tr><td class="code"><pre><span class="line"># 在普通模式下使用32G，移动到第32行查看问题</span><br><span class="line">32G</span><br></pre></td></tr></table></figure>
+<h3 id="查找文件中所有匹配的字符串在第几行">查找文件中所有匹配的字符串在第几行</h3>
+<p>查找全文中的"word"字符串 <figure class="highlight txt"><table><tr><td class="code"><pre><span class="line"># 使用 : 进入命令模式，使用 :set nu 显示所有行号</span><br><span class="line">:set nu</span><br><span class="line"># 普通模式下使用 gg 或 1G 回到第一行</span><br><span class="line">gg</span><br><span class="line"># 按下 /word，并按多次 n 查找匹配的 word 及其行号</span><br><span class="line">/word</span><br><span class="line">n</span><br></pre></td></tr></table></figure> ###
+删除全部文本，替换新内容进去 <figure class="highlight txt"><table><tr><td class="code"><pre><span class="line"># 在命令模式下执行:%d，</span><br><span class="line">:%d</span><br><span class="line"># 按下 i 进入编辑模式，使用 p 键粘贴内容</span><br><span class="line">p</span><br></pre></td></tr></table></figure></p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Vim</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【SpringBoot】最佳实践——JWT结合Redis实现双Token无感刷新</title>
+    <url>/2025/03/15/%E3%80%90SpringBoot%E3%80%91%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E2%80%94%E2%80%94JWT%E7%BB%93%E5%90%88Redis%E5%AE%9E%E7%8E%B0%E5%8F%8CToken%E6%97%A0%E6%84%9F%E5%88%B7%E6%96%B0/</url>
+    <content><![CDATA[<h1 id="jwt概览">JWT概览</h1>
+<h2 id="jwt概念">JWT概念</h2>
+<p><code>JWT</code><font style="color:rgba(0, 0, 0, 0.9);">是全称是</font><code>JSON WEB TOKEN</code><font style="color:rgba(0, 0, 0, 0.9);">，是一个开放标准，用于将各方数据信息作为JSON格式进行对象传递，可以对数据进行可选的数字加密，可使用</font><code>RSA</code><font style="color:rgba(0, 0, 0, 0.9);">或</font><code>ECDSA</code><font style="color:rgba(0, 0, 0, 0.9);">进行公钥/私钥签名。</font><code>JWT</code><font style="color:rgba(0, 0, 0, 0.9);">最常见的使用场景就是缓存当前用户登录信息，当用户登录成功之后，拿到</font><code>JWT</code><font style="color:rgba(0, 0, 0, 0.9);">，之后用户的每一个请求在请求头携带上</font><code>Authorization</code><font style="color:rgba(0, 0, 0, 0.9);">字段来辨别区分请求的用户信息。且不需要额外的资源开销。</font></p>
+<h2 id="jwt组成部分">JWT组成部分</h2>
+<p>JWT通常由一个头部（Header）、一个负载（Payload）和一个签名（Signature）三部分组成，这三部分之间用点（.）分隔。所以，一个完整的JWT看起来像这样：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">xxxxx.yyyyy.zzzzz</span><br></pre></td></tr></table></figure>
+<p>下面我们来详细解析每一部分：</p>
+<h3 id="头部header">头部(header)</h3>
+<p>头部用于<strong>描述令牌的元数据</strong>，通常包含令牌的类型（即JWT）和所使用的签名算法（如HMAC
+SHA256）。</p>
+<ul>
+<li><code>typ</code>：表示令牌的类型，JWT令牌统一写为"JWT"。</li>
+<li><code>alg</code>：表示签名使用的算法，例如HMAC SHA256或RSA。</li>
+</ul>
+<p>头部信息会被进行Base64编码，形成JWT的第一部分。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span>  </span><br><span class="line">  <span class="attr">&quot;typ&quot;</span><span class="punctuation">:</span> <span class="string">&quot;JWT&quot;</span><span class="punctuation">,</span>  </span><br><span class="line">  <span class="attr">&quot;alg&quot;</span><span class="punctuation">:</span> <span class="string">&quot;HS256&quot;</span>  </span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<h3 id="负载payload">负载(payload)</h3>
+<p>负载包含了JWT的声明，<strong>即传递的数据，这些数据通常包括用户信息和其他相关数据</strong>。声明有三种类型：注册的声明、公共的声明和私有的声明。</p>
+<ul>
+<li><strong>注册的声明</strong>：这是一组预定义的声明，它们不是强制的，但是推荐使用，以提供一组有用的、可互操作的声明。如：<code>iat</code>（签发时间）、<code>exp</code>（过期时间）、<code>aud</code>（接收方）、<code>sub</code>（用户唯一标识）、<code>jti</code>（JWT唯一标识）等。</li>
+<li><strong>公共的声明</strong>：可以定义任何名称，但应避免与注册的声明名称冲突。</li>
+<li><strong>私有的声明</strong>：是提供者和消费者之间共同定义的声明。</li>
+</ul>
+<p>负载同样会被Base64编码，形成JWT的第二部分。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span>  </span><br><span class="line">  <span class="attr">&quot;sub&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1234567890&quot;</span><span class="punctuation">,</span>  </span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;John Doe&quot;</span><span class="punctuation">,</span>  </span><br><span class="line">  <span class="attr">&quot;jti&quot;</span><span class="punctuation">:</span> <span class="string">&quot;unique-jwt-id&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;admin&quot;</span><span class="punctuation">:</span> <span class="keyword">true</span>  </span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<h3 id="签名signature">签名(signature)</h3>
+<p>签名将头部和负载用指定的算法进行签名，<strong>验证JWT的真实性和完整性</strong>。当接收者收到JWT时，他们可以使用相同的算法和密钥（对于HMAC算法）或使用公钥（对于RSA或ECDSA算法）验证签名。如果两个签名匹配，那么JWT就是有效的。</p>
+<p>签名的过程如下：</p>
+<ul>
+<li>先将Base64编码后的头部和负载数据用点号（<code>.</code>）连接起来。</li>
+<li>使用指定的签名算法（例如，HMAC
+SHA256、RSA、ECDSA）和密钥对连接后的字符串进行签名。</li>
+<li>将生成的签名部分进行Base64Url编码，形成JWT的第三部分。</li>
+</ul>
+<p>签名部分也是经过Base64Url编码的，形成JWT的第三部分。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">HMACSHA256(</span><br><span class="line">    base64UrlEncode(header) + <span class="string">&quot;.&quot;</span> +</span><br><span class="line">    base64UrlEncode(payload)<span class="punctuation">,</span></span><br><span class="line">    secret)</span><br></pre></td></tr></table></figure>
+<p>注意：虽然Base64Url编码不是加密方式，但它可以确保JWT的字符串格式是紧凑的，并且容易在URL、POST参数或HTTP头部中传输。</p>
+<h1 id="技术方案设计">技术方案设计</h1>
+<h2 id="单点登录sso">单点登录(SSO)</h2>
+<ul>
+<li><strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">单点登录（Single
+Sign-On,
+SSO）</font></strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">
+是一种身份认证机制，允许用户通过</font><strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">一次登录</font></strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">即可访问多个相互信任的应用系统，而无需重复输入认证信息。</font></li>
+</ul>
+<h2 id="双token机制"><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">双Token机制</font></h2>
+<ul>
+<li><strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">AccessToken</font></strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);"></font>
+<ul>
+<li><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">短期有效（如30分钟），用于接口访问。</font></li>
+<li><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">客户端每次请求API时携带。</font></li>
+<li><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">不持久化存储，仅通过签名验证合法性。</font></li>
+</ul></li>
+<li><strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">RefreshToken</font></strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);"></font>
+<ul>
+<li><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">用于获取新的Access
+Token，有效期长（如3天）。</font></li>
+<li><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">仅在刷新令牌时传输，不直接访问业务API。</font></li>
+<li><strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">必须持久化存储（如Redis）</font></strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">，服务端可主动使其失效。</font></li>
+</ul></li>
+<li><strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">签名算法</font></strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">：使用RSA非对称加密算法，减少内存占用，防止篡改，并方便后续拓展子系统。</font></li>
+</ul>
+<h2 id="无感刷新token">无感刷新Token</h2>
+<ul>
+<li>客户端将由于AccesssToken过期失败的请求存储起来，携带RefreshToken成功刷新Token后，将存储的失败请求重新发起，以此达到用户无感的体验。</li>
+<li>服务端根据RefreshToken解析出userId和deviceId后，去Redis中查询存储的RefreshToken并进行比对，成功后生成新的AT和RT并返回</li>
+</ul>
+<h2 id="多端会话管理">多端会话管理</h2>
+<ul>
+<li><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">同一账号在不同设备登录时，为每个设备生成独立的RefreshToken。</font></li>
+<li><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">Redis中以
+</font><code>userId:deviceId</code><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">为键存储RefreshToken，过期时间设置为RefreshToken的过期时间。</font></li>
+</ul>
+<h2 id="废弃令牌移除">废弃令牌移除</h2>
+<ul>
+<li>Redis中以<font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">
+</font><code>blacklist:token</code><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">
+为键存储</font>AccessToken黑名单，键值对的过期时间设置为AccessToken的剩余有效期。</li>
+<li>直接删除Redis中的<font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">RefreshToken。</font></li>
+</ul>
+<h1 id="最佳实践">最佳实践</h1>
+<h2 id="总体流程">总体流程</h2>
+<p><img src="https://modox.oss-cn-hangzhou.aliyuncs.com/img/202503151628723.png"></p>
+<h2 id="jwt工具类">JWT工具类</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// JWT工具类</span></span><br><span class="line"><span class="keyword">import</span> io.jsonwebtoken.*;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Value;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"><span class="keyword">import</span> java.util.Date;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JwtUtil</span> &#123;</span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;jwt.secret&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String secret;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;jwt.access.expiration&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> accessExpiration;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;jwt.refresh.expiration&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> refreshExpiration;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">generateAccessToken</span><span class="params">(String username)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Jwts.builder()</span><br><span class="line">        .setSubject(username)</span><br><span class="line">        .setIssuedAt(<span class="keyword">new</span> <span class="title class_">Date</span>())</span><br><span class="line">        .setExpiration(<span class="keyword">new</span> <span class="title class_">Date</span>(System.currentTimeMillis() + accessExpiration))</span><br><span class="line">        .signWith(SignatureAlgorithm.HS512, secret)</span><br><span class="line">        .compact();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">generateRefreshToken</span><span class="params">(String username)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Jwts.builder()</span><br><span class="line">        .setSubject(username)</span><br><span class="line">        .setIssuedAt(<span class="keyword">new</span> <span class="title class_">Date</span>())</span><br><span class="line">        .setExpiration(<span class="keyword">new</span> <span class="title class_">Date</span>(System.currentTimeMillis() + refreshExpiration))</span><br><span class="line">        .signWith(SignatureAlgorithm.HS512, secret)</span><br><span class="line">        .compact();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">validateToken</span><span class="params">(String token)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Jwts.parser().setSigningKey(secret).parseClaimsJws(token);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getUsernameFromToken</span><span class="params">(String token)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody().getSubject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="redis服务类">Redis服务类</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Redis服务类</span></span><br><span class="line"><span class="keyword">import</span> org.springframework.data.redis.core.StringRedisTemplate;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RedisService</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> StringRedisTemplate redisTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">RedisService</span><span class="params">(StringRedisTemplate redisTemplate)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.redisTemplate = redisTemplate;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">saveRefreshToken</span><span class="params">(String refreshToken, String username)</span> &#123;</span><br><span class="line">        redisTemplate.opsForValue().set(<span class="string">&quot;refresh_token:&quot;</span> + refreshToken, username, <span class="number">7</span>, TimeUnit.DAYS);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isRefreshTokenValid</span><span class="params">(String refreshToken)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> redisTemplate.hasKey(<span class="string">&quot;refresh_token:&quot;</span> + refreshToken);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">deleteRefreshToken</span><span class="params">(String refreshToken)</span> &#123;</span><br><span class="line">        redisTemplate.delete(<span class="string">&quot;refresh_token:&quot;</span> + refreshToken);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addToBlacklist</span><span class="params">(String accessToken, <span class="type">long</span> expirationMs)</span> &#123;</span><br><span class="line">        redisTemplate.opsForValue().set(<span class="string">&quot;blacklist:&quot;</span> + accessToken, <span class="string">&quot;invalid&quot;</span>, expirationMs, TimeUnit.MILLISECONDS);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isInBlacklist</span><span class="params">(String accessToken)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Boolean.TRUE.equals(redisTemplate.hasKey(<span class="string">&quot;blacklist:&quot;</span> + accessToken));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="filter过滤器">Filter过滤器</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// JWT过滤器</span></span><br><span class="line"><span class="keyword">import</span> org.springframework.security.authentication.UsernamePasswordAuthenticationToken;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.context.SecurityContextHolder;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.filter.OncePerRequestFilter;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.FilterChain;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.ServletException;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletResponse;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JwtFilter</span> <span class="keyword">extends</span> <span class="title class_">OncePerRequestFilter</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> JwtUtil jwtUtil;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> RedisService redisService;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">JwtFilter</span><span class="params">(JwtUtil jwtUtil, RedisService redisService)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.jwtUtil = jwtUtil;</span><br><span class="line">        <span class="built_in">this</span>.redisService = redisService;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doFilterInternal</span><span class="params">(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)</span> </span><br><span class="line">        <span class="keyword">throws</span> ServletException, IOException &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="type">String</span> <span class="variable">token</span> <span class="operator">=</span> resolveToken(request);</span><br><span class="line">        <span class="keyword">if</span> (token == <span class="literal">null</span>) &#123;</span><br><span class="line">            filterChain.doFilter(request, response);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (redisService.isInBlacklist(token)) &#123;</span><br><span class="line">            sendError(response, <span class="string">&quot;Token invalid&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (jwtUtil.validateToken(token)) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">username</span> <span class="operator">=</span> jwtUtil.getUsernameFromToken(token);</span><br><span class="line">            <span class="type">UsernamePasswordAuthenticationToken</span> <span class="variable">authentication</span> <span class="operator">=</span> </span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">UsernamePasswordAuthenticationToken</span>(username, <span class="literal">null</span>, <span class="literal">null</span>);</span><br><span class="line">            SecurityContextHolder.getContext().setAuthentication(authentication);</span><br><span class="line">            filterChain.doFilter(request, response);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            sendError(response, <span class="string">&quot;Token expired or invalid&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String <span class="title function_">resolveToken</span><span class="params">(HttpServletRequest request)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">bearerToken</span> <span class="operator">=</span> request.getHeader(<span class="string">&quot;Authorization&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (bearerToken != <span class="literal">null</span> &amp;&amp; bearerToken.startsWith(<span class="string">&quot;Bearer &quot;</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> bearerToken.substring(<span class="number">7</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">sendError</span><span class="params">(HttpServletResponse response, String message)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);</span><br><span class="line">        response.getWriter().write(message);</span><br><span class="line">        response.getWriter().flush();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="controller类">Controller类</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 控制器类</span></span><br><span class="line"><span class="keyword">import</span> org.springframework.http.ResponseEntity;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.*;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AuthController</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> JwtUtil jwtUtil;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> RedisService redisService;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">AuthController</span><span class="params">(JwtUtil jwtUtil, RedisService redisService)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.jwtUtil = jwtUtil;</span><br><span class="line">        <span class="built_in">this</span>.redisService = redisService;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/login&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;?&gt; login(<span class="meta">@RequestBody</span> LoginRequest request) &#123;</span><br><span class="line">        <span class="comment">// 这里应添加用户认证逻辑（如数据库验证）</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">username</span> <span class="operator">=</span> request.getUsername();</span><br><span class="line">        </span><br><span class="line">        <span class="type">String</span> <span class="variable">accessToken</span> <span class="operator">=</span> jwtUtil.generateAccessToken(username);</span><br><span class="line">        <span class="type">String</span> <span class="variable">refreshToken</span> <span class="operator">=</span> jwtUtil.generateRefreshToken(username);</span><br><span class="line">        </span><br><span class="line">        redisService.saveRefreshToken(refreshToken, username);</span><br><span class="line">        <span class="keyword">return</span> ResponseEntity.ok(<span class="keyword">new</span> <span class="title class_">TokenResponse</span>(accessToken, refreshToken));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/refresh&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;?&gt; refreshToken(<span class="meta">@RequestBody</span> RefreshRequest request) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">refreshToken</span> <span class="operator">=</span> request.getRefreshToken();</span><br><span class="line">        <span class="keyword">if</span> (!redisService.isRefreshTokenValid(refreshToken)) &#123;</span><br><span class="line">            <span class="keyword">return</span> ResponseEntity.status(<span class="number">401</span>).body(<span class="string">&quot;Invalid refresh token&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">String</span> <span class="variable">username</span> <span class="operator">=</span> jwtUtil.getUsernameFromToken(refreshToken);</span><br><span class="line">        <span class="type">String</span> <span class="variable">newAccessToken</span> <span class="operator">=</span> jwtUtil.generateAccessToken(username);</span><br><span class="line">        <span class="type">String</span> <span class="variable">newRefreshToken</span> <span class="operator">=</span> jwtUtil.generateRefreshToken(username);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 替换旧refreshToken</span></span><br><span class="line">        redisService.deleteRefreshToken(refreshToken);</span><br><span class="line">        redisService.saveRefreshToken(newRefreshToken, username);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将旧accessToken加入黑名单（可选）</span></span><br><span class="line">        <span class="comment">// long expiration = jwtUtil.getExpirationFromToken(refreshToken).getTime() - System.currentTimeMillis();</span></span><br><span class="line">        <span class="comment">// redisService.addToBlacklist(refreshToken, expiration);</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ResponseEntity.ok(<span class="keyword">new</span> <span class="title class_">TokenResponse</span>(newAccessToken, newRefreshToken));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// DTO类</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">LoginRequest</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> String username;</span><br><span class="line">        <span class="keyword">private</span> String password;</span><br><span class="line">        <span class="comment">// getters/setters</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">RefreshRequest</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> String refreshToken;</span><br><span class="line">        <span class="comment">// getters/setters</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">TokenResponse</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> String accessToken;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> String refreshToken;</span><br><span class="line">        <span class="comment">// constructor/getters</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="问题解析">问题解析</h1>
+<h2 id="相比单token的优势">相比单Token的优势</h2>
+<ul>
+<li><strong>高安全性</strong>：用户请求仅携带过期时间较短的AccessToken，即使令牌泄露，风险时间窗口也较小；用户仅在请求刷新Token时携带RefreshToken</li>
+<li><strong>长会话</strong>：RefreshToken一般设置较长的过期时间，只要RT不过期用户就无需重复登录</li>
+</ul>
+<h2 id="引入redis的作用">引入Redis的作用</h2>
+<ul>
+<li><strong>方便状态管理</strong>：如果不存在Redis，用户登出后只能等待Token过期才能被动失效，增加Token暴露风险；通过在Redis中引入黑名单blacklist，可以使得Token主动失效</li>
+<li><strong>多端会话管理</strong>：通过<font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">以
+</font><code>userId:deviceId</code><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">为键存储不同设备的Token，实现同用户多端登录。通过删除对应设备的键并加上黑名单，可以主动剔出对应设备</font></li>
+<li><strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">分布式一致性</font></strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">：若使用本地内存存储
+RT，在分布式多节点架构中，各节点无法共享 RT
+状态，导致用户在一个节点退出后，其他节点仍认为 RT
+有效。Redis作为</font><strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">集中式存储</font></strong><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">，确保所有服务节点访问同一份
+RT 数据，状态一致。</font></li>
+</ul>
+<h2 id="保证token安全性">保证Token安全性</h2>
+<ul>
+<li><strong>存储安全性</strong>：AT存于内存或
+SessionStorage（页面关闭失效），而RT通过 HttpOnly; Secure;
+SameSite=Strict Cookie 存储（XSS攻击无效）。</li>
+<li><strong>传输安全性</strong>：开启HTTPS，防止中间人攻击（篡改、伪造和窃听）；AT<font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">通过
+</font><code>Authorization: Bearer &#123;token&#125;</code><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">
+请求头传递，避免 URL 参数（防日志泄露），而RT通过
+</font><code>Cookie</code><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">（标记
+</font><code>HttpOnly; Secure</code><font style="color:rgba(0, 0, 0, 0.9);background-color:rgb(252, 252, 252);">）传输。</font></li>
+</ul>
+]]></content>
+      <categories>
+        <category>项目开发</category>
+      </categories>
+      <tags>
+        <tag>Redis</tag>
+        <tag>JWT</tag>
       </tags>
   </entry>
 </search>
